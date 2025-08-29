@@ -160,3 +160,4 @@ dist-ssr
 *.sw?
 node_modules/
 >>>>>>> frontend
+.vite
