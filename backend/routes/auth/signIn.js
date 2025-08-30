@@ -53,7 +53,22 @@ router.post("/", async (req, res) => {
     data.data._id
   );
 
-  return res.status(sessionData.error ? 500 : 200).json(sessionData);
+  if (sessionData.error) {
+    return res.status(500).json(sessionData);
+  }
+
+  const { refresh_token, ...rest } = sessionData.data;
+  res.cookie("refresh_token", refresh_token, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "strict",
+    maxAge: 365 * 24 * 60 * 60 * 1000, // 1 year
+  });
+
+  return res.status(200).json({
+    error: false,
+    data: rest,
+  });
 });
 
 module.exports = router;

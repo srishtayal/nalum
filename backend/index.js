@@ -1,3 +1,5 @@
+
+console.log("Starting backend server...");
 const express = require("express");
 
 const app = express();

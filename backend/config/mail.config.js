@@ -1,5 +1,5 @@
 module.exports = {
   EMAIL: "abhimanik101@gmail.com",
-  PASSWORD: "",
+  PASSWORD: "lurs yvfc ucnl kzlk",
   NAME: "NALUM",
 };
