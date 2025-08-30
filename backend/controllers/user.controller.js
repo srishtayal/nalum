@@ -6,7 +6,6 @@ exports.create = async (userData) => {
   if (!userData.email || !userData.password) {
     return { error: true, message: "Email and Password are required" };
   }
-
   return await generator(User, userData);
 };
 
@@ -15,7 +14,6 @@ exports.findOne = async (email) => {
   if (!email) {
     return { error: true, message: "Email is required" };
   }
-
   try {
     const data = await User.findOne({
       email: { $regex: new RegExp(`^${email}$`, "i") }, // case-insensitive
@@ -30,14 +28,12 @@ exports.findOne = async (email) => {
 };
 
 // Find by user_id (if you have custom user_id field)
-exports.findById = async (user_id) => {
-  if (!user_id) {
+exports.findById = async (id) => {
+  if (!id) {
     return { error: true, message: "User Id is required" };
   }
-
   try {
-    const data = await User.findOne({ user_id }); // if using custom user_id
-    // OR: const data = await User.findById(user_id); if you're using Mongo's _id
+    const data = await User.findById(id);
     return { error: false, data };
   } catch (err) {
     return {
@@ -48,14 +44,15 @@ exports.findById = async (user_id) => {
 };
 
 // Update user
-exports.update = async (user_id, changes) => {
-  if (!user_id || !changes) {
-    return { error: true, message: "User ID and changes are required" };
+exports.update = async (email, changes) => {
+  if (!email || !changes) {
+    return { error: true, message: "Email and changes are required" };
   }
-
   try {
-    await User.updateOne({ user_id }, { $set: changes });
-    // OR if using Mongo's default _id: await User.findByIdAndUpdate(user_id, { $set: changes });
+    await User.updateOne(
+      { email: { $regex: new RegExp(`^${email}$`, "i") } },
+      { $set: changes }
+    );
     return { error: false, message: "User updated successfully" };
   } catch (err) {
     return {

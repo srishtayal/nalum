@@ -3,15 +3,31 @@ const router = express.Router();
 const bcrypt = require("bcrypt");
 
 const users = require("../../controllers/user.controller.js");
-const otps = require("../../controllers/otp.controller.js");
-const mailer = require("../../mail/transporter.js");
 const sessions = require("../../controllers/session.controller.js");
 
 router.post("/", async (req, res) => {
-  const { email, password, fingerprint, name, batch, branch, campus, phone_number } = req.body;
+  const {
+    email,
+    password,
+    fingerprint,
+    name,
+    batch,
+    branch,
+    campus,
+    phone_number,
+  } = req.body;
 
   // ? Validate required fields
-  if (!email || !password || !fingerprint || !name || !batch || !branch || !campus || !phone_number) {
+  if (
+    !email ||
+    !password ||
+    !fingerprint ||
+    !name ||
+    !batch ||
+    !branch ||
+    !campus ||
+    !phone_number
+  ) {
     return res.status(400).json({
       error: true,
       code: 400,
@@ -28,10 +44,10 @@ router.post("/", async (req, res) => {
       message: "Internal server error",
     });
   } else if (data.data != null) {
-    return res.status(400).json({ 
-      error: true, 
-      message: "User already exists", 
-      code: 401 
+    return res.status(400).json({
+      error: true,
+      message: "User already exists",
+      code: 401,
     });
   }
 
@@ -52,41 +68,44 @@ router.post("/", async (req, res) => {
     branch,
     campus,
     phone_number,
+    email_verified: false,
   });
 
   if (userResponse.error) {
     return res.status(500).json(userResponse);
   }
-
-  // ? Generate OTP
-  const OTP = Math.floor(100000 + Math.random() * 900000);
-  const otpResponse = await otps.create(email, OTP);
-
-  if (otpResponse.error) {
-    return res.status(500).json(otpResponse);
-  }
-
-  // ? Send verification mail
-  const mailResponse = await mailer.sendMail(
-    email,
-    "OTP to Verify Your Account",
-    `Your OTP is ${OTP}`,
-    `<p>Your OTP is ${OTP}</p>`
-  );
-
-  if (mailResponse.error) {
-    return res.status(500).json(mailResponse);
-  }
-
   // ? Create session
   const sessionData = await sessions.create(
-  email,
-  fingerprint,
-  userResponse.data._id   // <-- FIXED
-);
+    email,
+    fingerprint,
+    userResponse.data._id
+  );
 
-return res.status(sessionData.error ? 500 : 200).json(sessionData);
+  if (sessionData.error) {
+    return res.status(500).json(sessionData);
+  }
 
+  // merge user + session data
+  const { refresh_token, ...sessionInfo } = sessionData.data;
+  res.cookie("refresh_token", refresh_token, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "strict",
+    maxAge: 365 * 24 * 60 * 60 * 1000, // 1 year
+  });
+
+  return res.status(200).json({
+    error: false,
+    data: {
+      ...sessionInfo,
+      email_verified: userResponse.data.email_verified, // include explicitly
+      name: userResponse.data.name,
+      batch: userResponse.data.batch,
+      branch: userResponse.data.branch,
+      campus: userResponse.data.campus,
+      phone_number: userResponse.data.phone_number,
+    },
+  });
 });
 
 module.exports = router;

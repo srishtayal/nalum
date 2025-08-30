@@ -20,6 +20,7 @@ exports.sendMail = async (recipient, subject, text, html) => {
     });
     return { error: false };
   } catch (error) {
-    return { error: true, message: error };
+    console.error("Mailer error:", error);
+    return { error: true, message: error.message };
   }
 };
