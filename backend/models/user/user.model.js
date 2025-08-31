@@ -54,7 +54,7 @@ const userSchema = new mongoose.Schema(
     },
     email_verified: {
       type: Boolean,
-      default: false, // set true after OTP verification
+      default: false, // set true after email verification
     },
   },
   { timestamps: true }
