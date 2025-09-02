@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { ArrowRight, Users, Calendar, Briefcase, Heart } from "lucide-react";
-import campusImage from "@/assets/nsut-campus-hero.png";
+import campusImage from "@/assets/banner.webp";
 
 const Hero = () => {
   return (
@@ -13,7 +13,7 @@ const Hero = () => {
           alt="NSUT Campus"
           className="w-full h-full object-cover"
         />
-        <div className="absolute inset-0 hero-gradient opacity-75"></div>
+        <div className="absolute inset-0 hero-gradient opacity-35"></div>
       </div>
 
       {/* Content */}
