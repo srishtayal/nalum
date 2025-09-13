@@ -1,8 +1,10 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import axios from "axios";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Eye, EyeOff, ArrowLeft, Mail, Lock, GraduationCap } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import nsutLogo from "@/assets/nsut-logo.svg";
@@ -15,7 +17,68 @@ const Signup = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState<Record<string, string>>({});
   const { toast } = useToast();
+  // Alumni verification link cooldown state
+  const [isVerificationDisabled, setIsVerificationDisabled] = useState(false);
+  const [timer, setTimer] = useState(0);
 
+  useEffect(() => {
+    let interval: NodeJS.Timeout | undefined;
+    if (isVerificationDisabled && timer > 0) {
+      interval = setInterval(() => {
+        setTimer((prev) => {
+          if (prev <= 1) {
+            setIsVerificationDisabled(false);
+            clearInterval(interval);
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+    }
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [isVerificationDisabled, timer]);
+
+
+  const sendVerificationLink = async (email: string) => {
+    try {
+      if(!email) {
+        toast({ title: "Please enter your email", variant: "destructive" });
+        return;
+      }
+      const response = await axios.post('http://localhost:5000/auth/send-verification-link', { email });
+      toast({ title: "Verification link sent!" });
+      setIsVerificationDisabled(true);
+      setTimer(60);
+    } catch (error: unknown) {
+      if (axios.isAxiosError(error)) {
+        toast({ title: error.response?.data?.message || "An error occurred", variant: "destructive" });
+        console.log(error);
+      } else {
+        toast({ title: "An error occurred", variant: "destructive" });
+      }
+    }
+  };
+  // send form data 
+  const submitFormData = async () => {
+    try {
+      const response = await axios.post('http://localhost:5000/auth/sign-up', formData);
+      toast({ title: "Registration successful!" });
+      console.log(response.data);
+    } catch (error: unknown) {
+      if (axios.isAxiosError(error)) {
+        toast({ title: error.response?.data?.message || "An error occurred", variant: "destructive" });
+        console.log(error);
+      } else {
+        toast({ title: "An error occurred", variant: "destructive" });
+      }
+    }
+  };
+  
+  // ---------------------------
+  // FORM HANDLERS
+  // ---------------------------
   const handleChange = (field: string, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
@@ -38,6 +101,7 @@ const Signup = () => {
             <Button
               onClick={() => {
                 setUserType("student");
+                handleChange("role","student");
                 nextStep();
               }}
               className="bg-[#8B0712] text-white hover:bg-gray-700"
@@ -47,6 +111,7 @@ const Signup = () => {
             <Button
               onClick={() => {
                 setUserType("alumni");
+                handleChange("role","alumni");
                 nextStep();
               }}
               className="bg-gray-600 text-white hover:bg-[#8B0712]"
@@ -87,52 +152,46 @@ const Signup = () => {
         );
       }
       if (step === 2) {
+        const currentYear = new Date().getFullYear();
+        const years = Array.from({ length: currentYear - 1983 + 1 }, (_, i) => currentYear - i);
         return (
-          <div className="space-y-6">
-            {/* Batch, Branch, Campus in a grid */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="batch">Batch</Label>
-                <Input
-                  id="batch"
-                  value={formData.batch || ""}
-                  onChange={(e) => handleChange("batch", e.target.value)}
-                  placeholder="2025"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="branch">Branch</Label>
-                <Input
-                  id="branch"
-                  value={formData.branch || ""}
-                  onChange={(e) => handleChange("branch", e.target.value)}
-                  placeholder="CSE"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="campus">Campus</Label>
-                <Input
-                  id="campus"
-                  value={formData.campus || ""}
-                  onChange={(e) => handleChange("campus", e.target.value)}
-                  placeholder="Main"
-                />
-              </div>
-            </div>
-
-            {/* Phone Number */}
-            <div className="space-y-2">
-              <Label htmlFor="phone">Phone Number</Label>
-              <Input
-                id="phone"
-                value={formData.phone || ""}
-                onChange={(e) => handleChange("phone", e.target.value)}
-                placeholder="+91 987654321"
-              />
-            </div>
-
-            {/* Navigation Buttons */}
-            <div className="flex justify-between mt-6">
+          <div className="space-y-4">
+            <Label>Full Name</Label>
+            <Input
+              value={formData.name || ""}
+              onChange={(e) => handleChange("name", e.target.value)}
+            />
+            <Label>Batch</Label>
+            <Select onValueChange={(value) => handleChange("batch", value)} value={formData.batch}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select a batch" />
+              </SelectTrigger>
+              <SelectContent>
+                {years.map(year => <SelectItem key={year} value={String(year)}>{year}</SelectItem>)}
+              </SelectContent>
+            </Select>
+            <Label>Branch</Label>
+            <Input
+              value={formData.branch || ""}
+              onChange={(e) => handleChange("branch", e.target.value)}
+            />
+            <Label>Campus</Label>
+            <Select onValueChange={(value) => handleChange("campus", value)} value={formData.campus}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select a campus" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="MAIN">MAIN</SelectItem>
+                <SelectItem value="EAST">EAST</SelectItem>
+                <SelectItem value="WEST">WEST</SelectItem>
+              </SelectContent>
+            </Select>
+            <Label>Phone Number</Label>
+            <Input
+              value={formData.phone_number || ""}
+              onChange={(e) => handleChange("phone_number", e.target.value)}
+            />
+            <div className="flex justify-between mt-4">
               <Button variant="outline" onClick={prevStep}>
                 Back
               </Button>
@@ -140,7 +199,6 @@ const Signup = () => {
             </div>
           </div>
         );
-
       }
       if (step === 3) {
         return (
@@ -163,7 +221,10 @@ const Signup = () => {
                 Back
               </Button>
               <Button
-                onClick={() => toast({ title: "Student Registered!" })}
+                onClick={() => {
+                  console.log(formData);
+                  submitFormData();
+                }}
               >
                 Finish
               </Button>
@@ -184,9 +245,15 @@ const Signup = () => {
               value={formData.email || ""}
               onChange={(e) => handleChange("email", e.target.value)}
             />
-            <Button onClick={() => toast({ title: "Verification link sent" })}>
-              Send Verification Link
+            <Button
+              onClick={() => sendVerificationLink(formData.email || "")}
+              disabled={isVerificationDisabled}
+            >
+              {isVerificationDisabled ? `Send Verification Link (${timer}s)` : "Send Verification Link"}
             </Button>
+            {isVerificationDisabled && (
+              <div className="text-xs text-gray-500">You can resend the link in {timer} second{timer !== 1 ? 's' : ''}.</div>
+            )}
             <div className="flex justify-between mt-4">
               <Button variant="outline" onClick={prevStep}>
                 Back
@@ -221,8 +288,8 @@ const Signup = () => {
             />
             <Label>Phone Number</Label>
             <Input
-              value={formData.phone || ""}
-              onChange={(e) => handleChange("phone", e.target.value)}
+              value={formData.phone_number || ""}
+              onChange={(e) => handleChange("phone_number", e.target.value)}
             />
             <div className="flex justify-between mt-4">
               <Button variant="outline" onClick={prevStep}>
@@ -273,7 +340,10 @@ const Signup = () => {
                 Back
               </Button>
               <Button
-                onClick={() => toast({ title: "Alumni Registered!" })}
+                onClick={() => {
+                  console.log(formData);
+                  submitFormData();
+                }}
               >
                 Finish
               </Button>

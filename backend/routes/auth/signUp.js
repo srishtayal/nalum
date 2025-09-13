@@ -6,6 +6,7 @@ const users = require("../../controllers/user.controller.js");
 const verificationTokens = require("../../controllers/verificationToken.controller.js");
 const mailer = require("../../mail/transporter.js");
 
+
 router.post("/", async (req, res) => {
   const {
     email,
@@ -15,6 +16,7 @@ router.post("/", async (req, res) => {
     branch,
     campus,
     phone_number,
+    role,
   } = req.body;
 
   // ? Validate required fields
@@ -25,7 +27,8 @@ router.post("/", async (req, res) => {
     !batch ||
     !branch ||
     !campus ||
-    !phone_number
+    !phone_number ||
+    !role
   ) {
     return res.status(400).json({
       error: true,
@@ -67,36 +70,18 @@ router.post("/", async (req, res) => {
     branch,
     campus,
     phone_number,
-    email_verified: false,
+    role,
   });
 
   if (userResponse.error) {
     return res.status(500).json(userResponse);
   }
-
-  // ? Create verification token
-  const tokenResponse = await verificationTokens.create(email);
-
-  if (tokenResponse.error) {
-    return res.status(500).json(tokenResponse);
-  }
-
-  const verificationLink = `http://localhost:8080/verify-account?email=${email}&token=${tokenResponse.data.token}`;
-
-  const mailResponse = await mailer.sendMail(
-    email,
-    "Verify Your Account",
-    `Click the following link to verify your account: ${verificationLink}`,
-    `<p>Click the following link to verify your account: <a href="${verificationLink}">${verificationLink}</a></p>`
-  );
-
-  return res
-    .status(mailResponse.error ? 500 : 200)
-    .json(
-      mailResponse.error
-        ? mailResponse
-        : { error: false, message: "Verification link sent to email." }
-    );
+  return res.status(201).json({
+    error: false,
+    code: 201,
+    message: "User created successfully",
+    data: userResponse.data,
+  });
 });
 
 module.exports = router;
