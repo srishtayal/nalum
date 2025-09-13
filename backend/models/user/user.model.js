@@ -56,6 +56,12 @@ const userSchema = new mongoose.Schema(
       type: Boolean,
       default: false, // set true after email verification
     },
+    role: {
+      type: String,
+      enum: ["student", "alumni"],
+      required: true,
+    },
+
   },
   { timestamps: true }
 );
