@@ -1,12 +1,16 @@
 const User = require("../models/user/user.model"); // Mongoose model
-const generator = require("./components/generator");
 
 // Create User
 exports.create = async (userData) => {
   if (!userData.email || !userData.password) {
     return { error: true, message: "Email and Password are required" };
   }
-  return await generator(User, userData);
+  try {
+    const user = await User.create(userData);
+    return { error: false, data: user };
+  } catch (err) {
+    return { error: true, message: err.message || "Error creating user" };
+  }
 };
 
 // Find one by email (case-insensitive)

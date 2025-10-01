@@ -38,9 +38,6 @@ router.get("/", async (req, res) => {
 
   // 5. Delete the token so it can't be reused
   await verificationTokens.remove(email, token);
-
-  // 6. Redirect to login page after successful verification
-  return res.redirect(302, "/sign-in");
 });
 
 module.exports = router;

@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 
-const verificationTokenSchema = new mongoose.Schema(
+const otpSchema = new mongoose.Schema(
   {
     email: {
       type: String,
@@ -13,17 +13,21 @@ const verificationTokenSchema = new mongoose.Schema(
         message: "Invalid email format",
       },
     },
-    token: {
+    otp: {
       type: String,
       required: true,
     },
     expires_at: {
       type: Date,
       required: true,
-      default: () => new Date(Date.now() + 1000 * 60 * 60 * 1), // 1 hour
+      default: () => new Date(Date.now() + 1000 * 60 * 5), // 5 minutes
     },
+    last_sent_at: { 
+        type: Date, 
+        default: Date.now 
+    }
   },
   { timestamps: true }
 );
 
-module.exports = mongoose.model("VerificationToken", verificationTokenSchema);
+module.exports = mongoose.model("OTP", otpSchema);
