@@ -1,13 +1,36 @@
 const User = require("../models/user/user.model"); // Mongoose model
+const Profile = require("../models/user/profile.model");
 
 // Create User
 exports.create = async (userData) => {
-  if (!userData.email || !userData.password) {
-    return { error: true, message: "Email and Password are required" };
+  const requiredFields = [
+    "email",
+    "password",
+    "name",
+    "batch",
+    "branch",
+    "campus",
+    "phone_number",
+    "role",
+  ];
+  for (const field of requiredFields) {
+    if (!userData[field]) {
+      return { error: true, message: `Missing required field: ${field}` };
+    }
   }
   try {
     const user = await User.create(userData);
-    return { error: false, data: user };
+    const profileData = {
+      user: user._id,
+      name: user.name,
+      email: user.email,
+      phone_number: user.phone_number,
+      batch: user.batch,
+      branch: user.branch,
+      campus: user.campus,
+    };
+    const profile = await Profile.create(profileData);
+    return { error: false, data: { user, profile } };
   } catch (err) {
     return { error: true, message: err.message || "Error creating user" };
   }
