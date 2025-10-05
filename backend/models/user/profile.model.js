@@ -8,12 +8,6 @@ const profileSchema = new mongoose.Schema(
       required: true,
       unique: true,
     },
-    name: { type: String, required: true },
-    email: { type: String, required: true },
-    phone_number: { type: String },
-    batch: { type: String },
-    branch: { type: String },
-    campus: { type: String },
 
     skills: [String],
 

@@ -22,12 +22,6 @@ exports.create = async (userData) => {
     const user = await User.create(userData);
     const profileData = {
       user: user._id,
-      name: user.name,
-      email: user.email,
-      phone_number: user.phone_number,
-      batch: user.batch,
-      branch: user.branch,
-      campus: user.campus,
     };
     const profile = await Profile.create(profileData);
     return { error: false, data: { user, profile } };

@@ -4,7 +4,7 @@ const Profile = require("../models/user/profile.model");
 exports.findOne = async (req, res) => {
   try {
     const user = req.user.user_id;
-    const profile = await Profile.findOne({ user });
+    const profile = await Profile.findOne({ user }).populate("user");
 
     if (!profile) {
       return res.status(404).send({ message: "Profile not found" });
@@ -29,7 +29,27 @@ exports.update = async (req, res) => {
       return res.status(404).send({ message: "Profile not found" });
     }
 
-    Object.assign(profile, req.body);
+    const allowedUpdates = [
+      "skills",
+      "experience",
+      "education",
+      "honours",
+      "projects",
+      "publications",
+      "social_media",
+      "custom_cv",
+      "status",
+      "linkedin_auto_updates",
+    ];
+
+    const updates = {};
+    for (const key of allowedUpdates) {
+      if (req.body[key] !== undefined) {
+        updates[key] = req.body[key];
+      }
+    }
+
+    Object.assign(profile, updates);
 
     const updatedProfile = await profile.save();
 
