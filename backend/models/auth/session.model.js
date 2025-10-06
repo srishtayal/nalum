@@ -24,21 +24,12 @@ const sessionSchema = new mongoose.Schema(
 			required: true,
 			unique: true,
 		},
-		fingerprint: {
-			type: String,
-			required: true,
-		},
 		refresh_token_expires_at: {
 			type: Date,
 			required: true,
 			default: () => new Date(Date.now() + 365 * 24 * 60 * 60 * 1000), // 1 year
 			expires: 0, // auto-delete when expired
-		},
-		access_token_expires_at: {
-			type: Date,
-			required: true,
-			default: () => new Date(Date.now() + 30 * 60 * 1000), // 30 minutes
-		},
+		}
 	},
 	{ timestamps: true }
 );

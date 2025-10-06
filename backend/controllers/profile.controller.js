@@ -1,10 +1,24 @@
 const Profile = require("../models/user/profile.model");
 
-// Retrieve a single profile with userId
+// Helper to resolve user id from request
+function resolveUserId(req) {
+  return (
+    req.params?.userId ||
+    req.body?.userId ||
+    (req.user && (req.user.user_id || req.user.id || req.user._id)) ||
+    null
+  );
+}
+
+// Retrieve a single profile (by token or params)
 exports.findOne = async (req, res) => {
   try {
-    const user = req.user.user_id;
-    const profile = await Profile.findOne({ user }).populate("user");
+    const userId = resolveUserId(req);
+    if (!userId) {
+      return res.status(400).send({ message: "User id is required" });
+    }
+
+    const profile = await Profile.findOne({ user: userId }).populate("user", "-password");
 
     if (!profile) {
       return res.status(404).send({ message: "Profile not found" });
@@ -19,17 +33,25 @@ exports.findOne = async (req, res) => {
   }
 };
 
-// Update a profile with userId
+// Update a profile (by token or params)
 exports.update = async (req, res) => {
   try {
-    const user = req.user.user_id;
-    const profile = await Profile.findOne({ user });
+    const userId = resolveUserId(req);
+    if (!userId) {
+      return res.status(400).send({ message: "User id is required" });
+    }
+
+    const profile = await Profile.findOne({ user: userId });
 
     if (!profile) {
       return res.status(404).send({ message: "Profile not found" });
     }
 
     const allowedUpdates = [
+      "name",
+      "batch",
+      "branch",
+      "campus",
       "skills",
       "experience",
       "education",
@@ -39,19 +61,26 @@ exports.update = async (req, res) => {
       "social_media",
       "custom_cv",
       "status",
-      "linkedin_auto_updates",
     ];
 
-    const updates = {};
     for (const key of allowedUpdates) {
-      if (req.body[key] !== undefined) {
-        updates[key] = req.body[key];
+      if (req.body[key] === undefined) continue;
+
+      if (key === "social_media") {
+        // Merge existing social_media object with provided fields
+        profile.social_media = {
+          ...profile.social_media,
+          ...req.body.social_media,
+        };
+      } else {
+        profile[key] = req.body[key];
       }
     }
 
-    Object.assign(profile, updates);
-
     const updatedProfile = await profile.save();
+
+    // avoid returning user password
+    await updatedProfile.populate("user", "-password").execPopulate?.();
 
     res.send(updatedProfile);
   } catch (error) {

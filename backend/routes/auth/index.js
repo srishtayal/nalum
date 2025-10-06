@@ -3,8 +3,7 @@ const router = express.Router();
 
 const signIn = require("./signIn");
 const signUp = require("./signUp");
-const verifyToken = require("./verifyToken");
-const updateToken = require("./updateToken");
+const refresh = require("./refresh"); 
 const revokeToken = require("./revokeToken");
 const forgetPassword = require("./forgetPassword");
 const resetPassword = require("./resetPassword");
@@ -17,8 +16,7 @@ const verifyAccountUsingOTP = require("./verifyAccountUsingOTP");
 
 router.use("/sign-in", signIn);
 router.use("/sign-up", signUp);
-router.use("/verify-token", verifyToken);
-router.use("/update-token", updateToken);
+router.use("/refresh", refresh);
 router.use("/revoke-token", revokeToken);
 router.use("/forget-password", forgetPassword);
 router.use("/reset-password", resetPassword);

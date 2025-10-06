@@ -3,26 +3,50 @@ const Profile = require("../models/user/profile.model");
 
 // Create User
 exports.create = async (userData) => {
-  const requiredFields = [
-    "email",
-    "password",
-    "name",
-    "batch",
-    "branch",
-    "campus",
-    "phone_number",
-    "role",
-  ];
-  for (const field of requiredFields) {
+  // Required fields for User + required profile fields
+  const requiredUserFields = ["email", "password", "role"];
+  const requiredProfileFields = ["name", "batch", "branch", "campus"];
+
+  for (const field of requiredUserFields) {
     if (!userData[field]) {
-      return { error: true, message: `Missing required field: ${field}` };
+      return { error: true, message: `Missing required user field: ${field}` };
     }
   }
+  for (const field of requiredProfileFields) {
+    if (!userData[field]) {
+      return { error: true, message: `Missing required profile field: ${field}` };
+    }
+  }
+
   try {
-    const user = await User.create(userData);
+    // Only store fields that exist on User model
+    const userPayload = {
+      email: userData.email,
+      password: userData.password,
+      role: userData.role,
+      email_verified: userData.email_verified || false,
+      customCV: userData.customCV || undefined,
+    };
+
+    const user = await User.create(userPayload);
+
+    // Build profile from provided profile fields
     const profileData = {
       user: user._id,
+      name: userData.name,
+      batch: userData.batch,
+      branch: userData.branch,
+      campus: userData.campus,
+      skills: Array.isArray(userData.skills) ? userData.skills : [],
+      experience: Array.isArray(userData.experience) ? userData.experience : [],
+      education: Array.isArray(userData.education) ? userData.education : [],
+      honours: Array.isArray(userData.honours) ? userData.honours : [],
+      projects: Array.isArray(userData.projects) ? userData.projects : [],
+      publications: Array.isArray(userData.publications) ? userData.publications : [],
+      social_media: userData.social_media || {},
+      status: userData.status || undefined,
     };
+
     const profile = await Profile.create(profileData);
     return { error: false, data: { user, profile } };
   } catch (err) {

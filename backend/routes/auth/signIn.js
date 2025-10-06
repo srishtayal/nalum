@@ -6,7 +6,7 @@ const users = require("../../controllers/user.controller.js");
 const sessions = require("../../controllers/session.controller.js");
 
 router.post("/", async (req, res) => {
-  if (!req.body.email || !req.body.password || !req.body.fingerprint) {
+  if (!req.body.email || !req.body.password) {
     return res.status(401).json({
       err: true,
       code: 401,
@@ -14,7 +14,7 @@ router.post("/", async (req, res) => {
     });
   }
 
-  const { email, password, fingerprint } = req.body;
+  const { email, password } = req.body;
   let data = await users.findOne(email);
 
   if (data.error) {
@@ -47,9 +47,8 @@ router.post("/", async (req, res) => {
     });
   }
 
-  const sessionData = await sessions.create(
+  const sessionData = await sessions.getOrCreate(
     email,
-    fingerprint,
     data.data._id
   );
 

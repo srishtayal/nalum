@@ -17,18 +17,8 @@ exports.protect = async (req, res, next) => {
     });
   }
 
-  const fingerprint = req.headers["x-fingerprint"];
-
-  if (!fingerprint) {
-    return res.status(401).json({
-      err: true,
-      code: 401,
-      message: "Not authorized to access this route",
-    });
-  }
-
   try {
-    const decoded = await sessions.validateAccessToken(token, fingerprint);
+    const decoded = await sessions.validateAccessToken(token);
 
     if (decoded.error) {
       return res.status(401).json({

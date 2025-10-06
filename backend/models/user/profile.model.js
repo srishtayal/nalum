@@ -19,7 +19,23 @@ const profileSchema = new mongoose.Schema(
         description: String,
       },
     ],
-
+    name: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+    batch: {
+      type: String,
+      required: true,
+    },
+    branch: {
+      type: String,
+      required: true,
+    },
+    campus: {
+      type: String,
+      required: true,
+    },
     education: [
       {
         degree: String,
@@ -58,29 +74,19 @@ const profileSchema = new mongoose.Schema(
       instagram: String,
       facebook: String,
       linkedin: String,
-      snapchat: String,
       github: String,
     },
 
-    custom_cv: {
-      type: String, // file path or URL
-      default: null,
-    },
 
     status: {
       type: String,
       enum: [
-        "open for work",
-        "open to recruit",
+        "open_for_work",
+        "open_to_recruit",
         "open to provide referral",
         "none",
       ],
       default: "none",
-    },
-
-    linkedin_auto_updates: {
-      type: Boolean,
-      default: false,
     },
   },
   { timestamps: true }
