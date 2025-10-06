@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Link } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -15,6 +15,8 @@ import { useToast } from "@/hooks/use-toast";
 import nsutLogo from "@/assets/nsut-logo.svg";
 import nsutCampusHero from "@/assets/nsut-campus-hero.png";
 import Header from "@/components/Header";
+import apiClient from "@/lib/api";
+import { useAuth } from "@/context/AuthContext";
 
 const Login = () => {
   const [formData, setFormData] = useState({
@@ -25,6 +27,15 @@ const Login = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const { toast } = useToast();
+  const { accessToken, setAccessToken } = useAuth();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    console.log("useEffect in Login triggered with accessToken:", accessToken);
+    if (accessToken) {
+      navigate("/home");
+    }
+  }, [accessToken, navigate]);
 
   // handle input changes
   const handleInputChange = (field: string, value: string) => {
@@ -43,13 +54,6 @@ const Login = () => {
 
     if (!formData.password) {
       newErrors.password = "Password is required";
-    } else if (
-      !/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/.test(
-        formData.password
-      )
-    ) {
-      newErrors.password =
-        "Password must be at least 8 characters, include uppercase, lowercase, number, and special character.";
     }
 
     setErrors(newErrors);
@@ -62,26 +66,23 @@ const Login = () => {
 
     setIsLoading(true);
 
-    // Simulate API call for login
-    setTimeout(() => {
+    try {
+      const response = await apiClient.post("/auth/sign-in", formData);
+      const { access_token } = response.data.data;
+      setAccessToken(access_token);
+      toast({
+        title: "Login Successful!",
+        description: "Welcome back to the NSUT Alumni Portal 🎉",
+      });
+    } catch (error) {
+      toast({
+        title: "Login Failed",
+        description: "Invalid email or password",
+        variant: "destructive",
+      });
+    } finally {
       setIsLoading(false);
-
-      if (
-        formData.email === "student@nsut.ac.in" &&
-        formData.password === "Test@1234"
-      ) {
-        toast({
-          title: "Login Successful!",
-          description: "Welcome back to the NSUT Alumni Portal 🎉",
-        });
-      } else {
-        toast({
-          title: "Login Failed",
-          description: "Invalid email or password",
-          variant: "destructive",
-        });
-      }
-    }, 1000);
+    }
   };
 
   return (

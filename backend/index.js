@@ -25,7 +25,7 @@ const cvRoutes = require("./routes/cv.js");
 app.use("/profile", profileRoutes);
 app.use("/cv", cvRoutes);
 // a sample api call to check if the backend is working
-app.get("/api/health", (req, res) => {
+app.get("/health", (req, res) => {
   res.status(200).json({ status: "OK", message: "Backend is working!" });
 });
 

@@ -1,359 +1,139 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
-import { Link } from "react-router-dom";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Eye, EyeOff, ArrowLeft, Mail, Lock, GraduationCap } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { Button } from "@/components/ui/button";
+import { GraduationCap } from "lucide-react";
 import nsutLogo from "@/assets/nsut-logo.svg";
 import nsutCampusHero from "@/assets/nsut-campus-hero.png";
 import Header from "@/components/Header";
 
+// Step Components
+import RoleSelection from "@/components/signup/RoleSelection";
+import PersonalInfo from "@/components/signup/PersonalInfo";
+import Skills from "@/components/signup/Skills";
+import Experience from "@/components/signup/Experience";
+import Education from "@/components/signup/Education";
+import Contributions from "@/components/signup/Contributions";
+import Socials from "@/components/signup/Socials";
+import Password from "@/components/signup/Password";
+import Review from "@/components/signup/Review";
+
+const TOTAL_STEPS = 8;
+
 const Signup = () => {
   const [step, setStep] = useState(0);
-  const [userType, setUserType] = useState<"student" | "alumni" | null>(null);
-  const [showPassword, setShowPassword] = useState(false);
-  const [formData, setFormData] = useState<Record<string, string>>({});
+  const [cameFromReview, setCameFromReview] = useState(false);
   const { toast } = useToast();
-  // Alumni verification link cooldown state
-  const [isVerificationDisabled, setIsVerificationDisabled] = useState(false);
-  const [timer, setTimer] = useState(0);
+  const navigate = useNavigate();
+  const [formData, setFormData] = useState({
+    role: "",
+    email: "",
+    name: "",
+    batch: "",
+    branch: "",
+    campus: "",
+    status: "",
+    skills: [] as string[],
+    experiences: [] as { role: string; company: string; duration: string }[],
+    educations: [] as { degree: string; institution: string; duration: string }[],
+    projects: [] as { title: string; description: string; link: string }[],
+    publications: [] as { title: string; description: string; journal: string; date: string }[],
+    honours: [] as { title: string; description: string; duration: string }[],
+    socials: { linkedin: "", github: "", portfolio: "" },
+    resume: null as File | null,
+    password: "",
+  });
 
-  useEffect(() => {
-    let interval: NodeJS.Timeout | undefined;
-    if (isVerificationDisabled && timer > 0) {
-      interval = setInterval(() => {
-        setTimer((prev) => {
-          if (prev <= 1) {
-            setIsVerificationDisabled(false);
-            clearInterval(interval);
-            return 0;
-          }
-          return prev - 1;
-        });
-      }, 1000);
-    }
-    return () => {
-      if (interval) clearInterval(interval);
-    };
-  }, [isVerificationDisabled, timer]);
-
-
-  const sendVerificationLink = async (email: string) => {
-    try {
-      if(!email) {
-        toast({ title: "Please enter your email", variant: "destructive" });
-        return;
-      }
-      const response = await axios.post('http://localhost:5000/auth/send-verification-link', { email });
-      toast({ title: "Verification link sent!" });
-      setIsVerificationDisabled(true);
-      setTimer(60);
-    } catch (error: unknown) {
-      if (axios.isAxiosError(error)) {
-        toast({ title: error.response?.data?.message || "An error occurred", variant: "destructive" });
-        console.log(error);
-      } else {
-        toast({ title: "An error occurred", variant: "destructive" });
-      }
+  const nextStep = () => {
+    if (cameFromReview) {
+      setStep(TOTAL_STEPS);
+      setCameFromReview(false);
+    } else {
+      setStep((prev) => (prev < TOTAL_STEPS ? prev + 1 : prev));
     }
   };
-  // send form data 
-  const submitFormData = async () => {
-    try {
-      const response = await axios.post('http://localhost:5000/auth/sign-up', formData);
-      toast({ title: "Registration successful!" });
-      console.log(response.data);
-    } catch (error: unknown) {
-      if (axios.isAxiosError(error)) {
-        toast({ title: error.response?.data?.message || "An error occurred", variant: "destructive" });
-        console.log(error);
-      } else {
-        toast({ title: "An error occurred", variant: "destructive" });
-      }
-    }
-  };
-  
-  // ---------------------------
-  // FORM HANDLERS
-  // ---------------------------
-  const handleChange = (field: string, value: string) => {
+  const prevStep = () => setStep((prev) => (prev > 0 ? prev - 1 : prev));
+
+  const editStep = (stepNumber: number) => {
+    setCameFromReview(true);
+    setStep(stepNumber);
+  }
+
+  const handleChange = (field: string, value: any) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
-  const nextStep = () => setStep((prev) => prev + 1);
-  const prevStep = () => setStep((prev) => prev - 1);
+  const handleSubmit = async () => {
+    const data = new FormData();
 
-  // ---------------------------
-  // STEP RENDERING
-  // ---------------------------
+    data.append('email', formData.email);
+    data.append('password', formData.password);
+    data.append('role', formData.role);
+    data.append('name', formData.name);
+    data.append('batch', formData.batch);
+    data.append('branch', formData.branch);
+    data.append('campus', formData.campus);
+    data.append('status', formData.status);
+    data.append('skills', JSON.stringify(formData.skills));
+    data.append('experience', JSON.stringify(formData.experiences));
+    data.append('education', JSON.stringify(formData.educations));
+    data.append('honours', JSON.stringify(formData.honours));
+    data.append('projects', JSON.stringify(formData.projects));
+    data.append('publications', JSON.stringify(formData.publications));
+    data.append('social_media', JSON.stringify(formData.socials));
+    
+    if (formData.resume) {
+      data.append('custom_cv', formData.resume);
+    }
+
+    try {
+      console.log("Submitting form data:", { ...formData, resume: formData.resume ? formData.resume.name : null });
+      const response = await axios.post('https://nalum-p4wh.onrender.com/auth/sign-up', data, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+
+        },
+      });
+
+      if (response.data.success) {
+        toast({ title: "Registration successful!" });
+        navigate("/login");
+      } else {
+        toast({ title: response.data.message || "An error occurred", variant: "destructive" });
+      }
+    } catch (error: unknown) {
+      if (axios.isAxiosError(error)) {
+        toast({ title: error.response?.data?.message || "An error occurred", variant: "destructive" });
+      } else {
+        toast({ title: "An error occurred", variant: "destructive" });
+      }
+    }
+  };
+
   const renderStep = () => {
-    // STEP 0: USER TYPE SELECTION
-    if (step === 0) {
-      return (
-        <div className="space-y-6">
-          <h2 className="text-xl font-bold text-gray-700 text-center">
-            Select User Type
-          </h2>
-          <div className="flex flex-col space-y-4">
-            <Button
-              onClick={() => {
-                setUserType("student");
-                handleChange("role","student");
-                nextStep();
-              }}
-              className="bg-[#8B0712] text-white hover:bg-gray-700"
-            >
-              Student
-            </Button>
-            <Button
-              onClick={() => {
-                setUserType("alumni");
-                handleChange("role","alumni");
-                nextStep();
-              }}
-              className="bg-gray-600 text-white hover:bg-[#8B0712]"
-            >
-              Alumni
-            </Button>
-          </div>
-        </div>
-      );
+    switch (step) {
+      case 0:
+        return <RoleSelection handleChange={handleChange} nextStep={nextStep} />;
+      case 1:
+        return <PersonalInfo formData={formData} handleChange={handleChange} />;
+      case 2:
+        return <Skills formData={formData} handleChange={handleChange} />;
+      case 3:
+        return <Experience formData={formData} handleChange={handleChange} />;
+      case 4:
+        return <Education formData={formData} handleChange={handleChange} />;
+      case 5:
+        return <Contributions formData={formData} handleChange={handleChange} />;
+      case 6:
+        return <Socials formData={formData} handleChange={handleChange} />;
+      case 7:
+        return <Password formData={formData} handleChange={handleChange} />;
+      case 8:
+        return <Review formData={formData} setStep={editStep} />;
+      default:
+        return <RoleSelection handleChange={handleChange} nextStep={nextStep} />;
     }
-
-    // STUDENT FLOW
-    if (userType === "student") {
-      if (step === 1) {
-        return (
-          <div className="space-y-4">
-            <Label>Email (must end with @nsut.ac.in)</Label>
-            <Input
-              type="email"
-              value={formData.email || ""}
-              onChange={(e) => handleChange("email", e.target.value)}
-            />
-            <Button onClick={() => toast({ title: "OTP Sent!" })}>
-              Send OTP
-            </Button>
-            <Input
-              placeholder="Enter OTP"
-              value={formData.otp || ""}
-              onChange={(e) => handleChange("otp", e.target.value)}
-            />
-            <div className="flex justify-between mt-4">
-              <Button variant="outline" onClick={prevStep}>
-                Back
-              </Button>
-              <Button onClick={nextStep}>Next</Button>
-            </div>
-          </div>
-        );
-      }
-      if (step === 2) {
-        const currentYear = new Date().getFullYear();
-        const years = Array.from({ length: currentYear - 1983 + 1 }, (_, i) => currentYear - i);
-        return (
-          <div className="space-y-4">
-            <Label>Full Name</Label>
-            <Input
-              value={formData.name || ""}
-              onChange={(e) => handleChange("name", e.target.value)}
-            />
-            <Label>Batch</Label>
-            <Select onValueChange={(value) => handleChange("batch", value)} value={formData.batch}>
-              <SelectTrigger>
-                <SelectValue placeholder="Select a batch" />
-              </SelectTrigger>
-              <SelectContent>
-                {years.map(year => <SelectItem key={year} value={String(year)}>{year}</SelectItem>)}
-              </SelectContent>
-            </Select>
-            <Label>Branch</Label>
-            <Input
-              value={formData.branch || ""}
-              onChange={(e) => handleChange("branch", e.target.value)}
-            />
-            <Label>Campus</Label>
-            <Select onValueChange={(value) => handleChange("campus", value)} value={formData.campus}>
-              <SelectTrigger>
-                <SelectValue placeholder="Select a campus" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="MAIN">MAIN</SelectItem>
-                <SelectItem value="EAST">EAST</SelectItem>
-                <SelectItem value="WEST">WEST</SelectItem>
-              </SelectContent>
-            </Select>
-            <Label>Phone Number</Label>
-            <Input
-              value={formData.phone_number || ""}
-              onChange={(e) => handleChange("phone_number", e.target.value)}
-            />
-            <div className="flex justify-between mt-4">
-              <Button variant="outline" onClick={prevStep}>
-                Back
-              </Button>
-              <Button onClick={nextStep}>Next</Button>
-            </div>
-          </div>
-        );
-      }
-      if (step === 3) {
-        return (
-          <div className="space-y-4">
-            <Label>Password</Label>
-            <Input
-              type={showPassword ? "text" : "password"}
-              value={formData.password || ""}
-              onChange={(e) => handleChange("password", e.target.value)}
-            />
-            <Button
-              type="button"
-              onClick={() => setShowPassword(!showPassword)}
-              className="text-sm"
-            >
-              {showPassword ? "Hide" : "Show"} Password
-            </Button>
-            <div className="flex justify-between mt-4">
-              <Button variant="outline" onClick={prevStep}>
-                Back
-              </Button>
-              <Button
-                onClick={() => {
-                  console.log(formData);
-                  submitFormData();
-                }}
-              >
-                Finish
-              </Button>
-            </div>
-          </div>
-        );
-      }
-    }
-
-    // ALUMNI FLOW
-    if (userType === "alumni") {
-      if (step === 1) {
-        return (
-          <div className="space-y-4">
-            <Label>Email</Label>
-            <Input
-              type="email"
-              value={formData.email || ""}
-              onChange={(e) => handleChange("email", e.target.value)}
-            />
-            <Button
-              onClick={() => sendVerificationLink(formData.email || "")}
-              disabled={isVerificationDisabled}
-            >
-              {isVerificationDisabled ? `Send Verification Link (${timer}s)` : "Send Verification Link"}
-            </Button>
-            {isVerificationDisabled && (
-              <div className="text-xs text-gray-500">You can resend the link in {timer} second{timer !== 1 ? 's' : ''}.</div>
-            )}
-            <div className="flex justify-between mt-4">
-              <Button variant="outline" onClick={prevStep}>
-                Back
-              </Button>
-              <Button onClick={nextStep}>Next</Button>
-            </div>
-          </div>
-        );
-      }
-      if (step === 2) {
-        return (
-          <div className="space-y-4">
-            <Label>Full Name</Label>
-            <Input
-              value={formData.name || ""}
-              onChange={(e) => handleChange("name", e.target.value)}
-            />
-            <Label>Batch</Label>
-            <Input
-              value={formData.batch || ""}
-              onChange={(e) => handleChange("batch", e.target.value)}
-            />
-            <Label>Branch</Label>
-            <Input
-              value={formData.branch || ""}
-              onChange={(e) => handleChange("branch", e.target.value)}
-            />
-            <Label>Campus</Label>
-            <Input
-              value={formData.campus || ""}
-              onChange={(e) => handleChange("campus", e.target.value)}
-            />
-            <Label>Phone Number</Label>
-            <Input
-              value={formData.phone_number || ""}
-              onChange={(e) => handleChange("phone_number", e.target.value)}
-            />
-            <div className="flex justify-between mt-4">
-              <Button variant="outline" onClick={prevStep}>
-                Back
-              </Button>
-              <Button onClick={nextStep}>Next</Button>
-            </div>
-          </div>
-        );
-      }
-      if (step === 3) {
-        return (
-          <div className="space-y-4">
-            <Label>Referral Code (Optional)</Label>
-            <Input
-              value={formData.referral || ""}
-              onChange={(e) => handleChange("referral", e.target.value)}
-            />
-            <Label>Proof of Graduation (Optional)</Label>
-            <Input type="file" onChange={(e) => console.log(e.target.files)} />
-            <div className="flex justify-between mt-4">
-              <Button variant="outline" onClick={prevStep}>
-                Back
-              </Button>
-              <Button onClick={nextStep}>Next</Button>
-            </div>
-          </div>
-        );
-      }
-      if (step === 4) {
-        return (
-          <div className="space-y-4">
-            <Label>Password</Label>
-            <Input
-              type={showPassword ? "text" : "password"}
-              value={formData.password || ""}
-              onChange={(e) => handleChange("password", e.target.value)}
-            />
-            <Button
-              type="button"
-              onClick={() => setShowPassword(!showPassword)}
-              className="text-sm"
-            >
-              {showPassword ? "Hide" : "Show"} Password
-            </Button>
-            <div className="flex justify-between mt-4">
-              <Button variant="outline" onClick={prevStep}>
-                Back
-              </Button>
-              <Button
-                onClick={() => {
-                  console.log(formData);
-                  submitFormData();
-                }}
-              >
-                Finish
-              </Button>
-            </div>
-          </div>
-        );
-      }
-    }
-
-    return null;
   };
 
   return (
@@ -372,21 +152,44 @@ const Signup = () => {
         </div>
         {/* Right Form */}
         <div className="w-full md:w-2/5 min-h-full flex items-center justify-center bg-white">
-          <div className="w-full max-w-md z-10 p-8">
+          <div className="w-full max-w-md z-10 px-6 py-8">
             <div className="text-center pb-6">
               <div className="flex justify-center mb-4">
                 <img src={nsutLogo} alt="NSUT Logo" className="h-16 w-16" />
               </div>
               <h2 className="text-3xl font-extrabold text-[#8B0712] mb-2">Create Account</h2>
               <p className="text-gray-700">Join the NSUT Alumni Portal</p>
-              {/* Step Indicator */}
-              <div className="flex justify-center gap-2 mt-4">
-                {[...Array(userType === 'alumni' ? 5 : userType === 'student' ? 4 : 1)].map((_, i) => (
-                  <span key={i} className={`h-2 w-8 rounded-full transition-all duration-300 ${step === i ? 'bg-[#8B0712]' : 'bg-gray-300'}`}></span>
-                ))}
+              {/* Progress Bar */}
+              <div className="flex items-center gap-4 mt-4">
+                <div className="w-full bg-gray-200 rounded-full h-2.5">
+                  <div
+                    className="bg-[#8B0712] h-2.5 rounded-full"
+                    style={{ width: `${((step + 1) / (TOTAL_STEPS + 1)) * 100}%` }}
+                  ></div>
+                </div>
+                <div className="text-sm font-semibold text-gray-600">
+                  Step {step + 1} of {TOTAL_STEPS + 1}
+                </div>
               </div>
             </div>
-            <div className="pt-2 pb-2">{renderStep()}</div>
+            <div className="pt-2 pb-2 overflow-y-auto" style={{ maxHeight: "calc(50vh)" }}>{renderStep()}</div>
+            <div className="mt-6 flex justify-between">
+              {step > 0 && (
+                <Button variant="outline" onClick={prevStep}>
+                  Back
+                </Button>
+              )}
+              {step > 0 && step < TOTAL_STEPS && (
+                <Button onClick={nextStep} className="ml-auto">
+                  {cameFromReview ? "Return to Review" : "Next"}
+                </Button>
+              )}
+              {step === TOTAL_STEPS && (
+                <Button onClick={handleSubmit} className="ml-auto">
+                  Submit
+                </Button>
+              )}
+            </div>
             <div className="mt-6 text-center">
               <p className="text-sm text-gray-700">
                 Already have an account?{" "}
