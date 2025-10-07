@@ -10,7 +10,7 @@ const cookieParser = require("cookie-parser");
 const dbConnect = require("./config/database.config.js");
 
 app.use(cors({
-  origin: 'http://nalum-p4wh.onrender.com',
+  origin: 'https://nalum.vercel.app',
   credentials: true
 }));
 app.use(helmet());
