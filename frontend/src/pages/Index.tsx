@@ -9,7 +9,7 @@ const Index = () => {
   useEffect(() => {
     const checkBackend = async () => {
       try {
-        const response = await axios.get("https://nalum-p4wh.onrender.com/api/health");
+        const response = await axios.get("https://nalum-p4wh.onrender.com/health");
         console.log("Backend is working:", response.data);
       } catch (error) {
         console.error("Error checking backend:", error);
