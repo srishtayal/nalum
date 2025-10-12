@@ -18,7 +18,7 @@ const Hero = () => {
 
       {/* Content */}
       <div className="relative z-10 container mx-auto px-4 text-center text-white">
-        <div className="max-w-4xl mx-auto">
+        <div className="max-w-4xl mx-auto bg-black/30 backdrop-blur-md rounded-lg shadow-lg border border-white/30 p-8">
           {/* Welcome Badge */}
           <div className="inline-flex items-center bg-white/10 backdrop-blur-sm rounded-full px-6 py-2 mb-8 border border-white/20">
             <span className="text-sm font-medium">Welcome to the NSUT Alumni Portal</span>

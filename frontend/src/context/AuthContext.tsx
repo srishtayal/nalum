@@ -4,21 +4,31 @@ import { setAuthToken } from '../lib/api';
 
 interface AuthContextType {
   accessToken: string | null;
-  setAccessToken: (token: string | null) => void;
+  email: string | null;
+  setAuth: (token: string | null, email: string | null) => void;
+  logout: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [accessToken, setAccessToken] = useState<string | null>(null);
+  const [email, setEmail] = useState<string | null>(null);
 
-  const setAuthTokenAndState = (token: string | null) => {
+  const setAuth = (token: string | null, email: string | null) => {
     setAccessToken(token);
+    setEmail(email);
     setAuthToken(token);
   };
 
+  const logout = () => {
+    setAccessToken(null);
+    setEmail(null);
+    setAuthToken(null);
+  };
+
   return (
-    <AuthContext.Provider value={{ accessToken, setAccessToken: setAuthTokenAndState }}>
+    <AuthContext.Provider value={{ accessToken, email, setAuth, logout }}>
       {children}
     </AuthContext.Provider>
   );

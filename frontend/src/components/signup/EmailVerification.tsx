@@ -1,6 +1,6 @@
-
 import { useState, useEffect } from "react";
 import axios from "axios";
+import api from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -44,7 +44,7 @@ const EmailVerification = ({ email, onEmailChange, onVerified }: EmailVerificati
         toast({ title: "Please enter your email", variant: "destructive" });
         return;
       }
-      await axios.post('https://nalum-p4wh.onrender.com/auth/send-otp', { email });
+      await api.post('/auth/send-otp', { email });
       toast({ title: "OTP sent to your email!" });
       setIsOtpSent(true);
       setIsVerificationDisabled(true);
@@ -60,8 +60,8 @@ const EmailVerification = ({ email, onEmailChange, onVerified }: EmailVerificati
 
   const verifyOtp = async () => {
     try {
-      const response = await axios.post('https://nalum-p4wh.onrender.com/auth/verify-account-otp', { email, otp });
-      if (response.data.success) {
+      const response = await api.post('/auth/verify-account-otp', { email, otp });
+      if (!response.data.err) {
         toast({ title: "Email verified successfully!" });
         onVerified();
       } else {
@@ -78,12 +78,12 @@ const EmailVerification = ({ email, onEmailChange, onVerified }: EmailVerificati
 
   return (
     <div className="space-y-4">
-      <h3 className="text-lg font-semibold">Verify Your Email</h3>
-      <p className="text-sm text-gray-600">
+      <h3 className="text-lg font-semibold text-white">Verify Your Email</h3>
+      <p className="text-sm text-gray-200">
         We'll send a 6-digit OTP to your email address to get started.
       </p>
       <div className="space-y-2">
-        <Label htmlFor="email">Email Address</Label>
+        <Label htmlFor="email" className="text-white">Email Address</Label>
         <div className="flex gap-2 pd-2">
           <Input
             id="email"
@@ -92,10 +92,12 @@ const EmailVerification = ({ email, onEmailChange, onVerified }: EmailVerificati
             value={email}
             onChange={(e) => onEmailChange(e.target.value)}
             disabled={isOtpSent}
+            className="bg-white/20 border-none text-white"
           />
           <Button
             onClick={sendOtp}
             disabled={isVerificationDisabled}
+            className="bg-[#8B0712] text-white hover:bg-gray-700"
           >
             {isVerificationDisabled ? `Resend in ${timer}s` : "Send OTP"}
           </Button>
@@ -103,14 +105,15 @@ const EmailVerification = ({ email, onEmailChange, onVerified }: EmailVerificati
       </div>
       {isOtpSent && (
         <div className="space-y-2">
-          <Label htmlFor="otp">Enter OTP</Label>
+          <Label htmlFor="otp" className="text-white">Enter OTP</Label>
           <Input
             id="otp"
             value={otp}
             onChange={(e) => setOtp(e.target.value)}
             placeholder="123456"
+            className="bg-white/20 border-none text-white"
           />
-          <Button onClick={verifyOtp} className="w-full">Verify OTP</Button>
+          <Button onClick={verifyOtp} className="w-full bg-[#8B0712] text-white hover:bg-gray-700">Verify OTP</Button>
         </div>
       )}
     </div>

@@ -21,6 +21,14 @@ router.post("/", async (req, res) => {
       message: otpData.message || "Internal server error",
     });
   }
+  if (process.env.NODE_ENV === 'development') {
+    console.log(`OTP for ${email}: ${otpData.data.otp}`);
+    return res.status(200).json({
+      error: false,
+      message: 'OTP sent successfully (logged to console in development)',
+      code: 200,
+    });
+  }
   return mailer
     .sendMail(
       email,

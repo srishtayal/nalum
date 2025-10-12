@@ -16,7 +16,7 @@ router.post("/", async (req, res) => {
 
   const { email, password } = req.body;
   let data = await users.findOne(email);
-
+  
   if (data.error) {
     return res.status(500).json({
       err: true,
@@ -30,7 +30,13 @@ router.post("/", async (req, res) => {
       message: "No User",
     });
   }
-
+  if(data.email_verified === false){
+    return res.status(401).json({
+      err: true,
+      code: 401,
+      message: "Email not verified",
+    });
+  }
   let matched;
 
   try {

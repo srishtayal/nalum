@@ -76,47 +76,49 @@ const Features = () => {
         </div>
 
         {/* Features Grid */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
-          {features.map((feature, index) => (
-            <div key={index} className="card-elevated p-6 group cursor-pointer">
-              <div className={`inline-flex items-center justify-center w-12 h-12 rounded-lg ${feature.bgColor} mb-4 group-hover:scale-110 transition-transform duration-300`}>
-                <feature.icon className={`h-6 w-6 ${feature.color}`} />
+        <div className="bg-black/30 backdrop-blur-md rounded-lg shadow-lg border border-white/30 p-8">
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
+            {features.map((feature, index) => (
+              <div key={index} className="card-elevated p-6 group cursor-pointer">
+                <div className={`inline-flex items-center justify-center w-12 h-12 rounded-lg ${feature.bgColor} mb-4 group-hover:scale-110 transition-transform duration-300`}>
+                  <feature.icon className={`h-6 w-6 ${feature.color}`} />
+                </div>
+                <h3 className="text-xl font-semibold mb-3 text-white">{feature.title}</h3>
+                <p className="text-muted-foreground mb-4 leading-relaxed">
+                  {feature.description}
+                </p>
+                <Button variant="ghost" size="sm" className="text-primary p-0 h-auto group-hover:text-primary-hover">
+                  Learn More
+                  <ArrowRight className="ml-1 h-4 w-4 group-hover:translate-x-1 transition-transform" />
+                </Button>
               </div>
-              <h3 className="text-xl font-semibold mb-3">{feature.title}</h3>
-              <p className="text-muted-foreground mb-4 leading-relaxed">
-                {feature.description}
-              </p>
-              <Button variant="ghost" size="sm" className="text-primary p-0 h-auto group-hover:text-primary-hover">
-                Learn More
-                <ArrowRight className="ml-1 h-4 w-4 group-hover:translate-x-1 transition-transform" />
+            ))}
+          </div>
+
+          {/* CTA Section */}
+          <div className="text-center bg-[#8B0712] rounded-2xl p-8 md:p-12 text-white">
+            <h3 className="text-2xl md:text-3xl font-bold mb-4">
+              Ready to Join the NSUT Family?
+            </h3>
+            <p className="text-lg text-white/90 mb-8 max-w-2xl mx-auto">
+              Take the first step towards connecting with an incredible network of NSUT alumni. 
+              Your journey of lifelong connections starts here.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <Link to="/signup">
+                <Button
+                  variant="accent"
+                  size="lg"
+                  className="bg-white text-primary hover:bg-white/90"
+                >
+                  Create Account
+                  <ArrowRight className="ml-2 h-5 w-5" />
+                </Button>
+              </Link>
+              <Button variant="outline-hero" size="lg">
+                Browse Directory
               </Button>
             </div>
-          ))}
-        </div>
-
-        {/* CTA Section */}
-        <div className="text-center bg-[#8B0712] rounded-2xl p-8 md:p-12 text-white">
-          <h3 className="text-2xl md:text-3xl font-bold mb-4">
-            Ready to Join the NSUT Family?
-          </h3>
-          <p className="text-lg text-white/90 mb-8 max-w-2xl mx-auto">
-            Take the first step towards connecting with an incredible network of NSUT alumni. 
-            Your journey of lifelong connections starts here.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link to="/signup">
-              <Button
-                variant="accent"
-                size="lg"
-                className="bg-white text-primary hover:bg-white/90"
-              >
-                Create Account
-                <ArrowRight className="ml-2 h-5 w-5" />
-              </Button>
-            </Link>
-            <Button variant="outline-hero" size="lg">
-              Browse Directory
-            </Button>
           </div>
         </div>
       </div>

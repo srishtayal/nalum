@@ -1,92 +1,58 @@
-const Profile = require("../models/user/profile.model");
+const axios = require("axios");
+const User = require("../models/user/user.model");
 
-// Helper to resolve user id from request
-function resolveUserId(req) {
-  return (
-    req.params?.userId ||
-    req.body?.userId ||
-    (req.user && (req.user.user_id || req.user.id || req.user._id)) ||
-    null
-  );
-}
-
-// Retrieve a single profile (by token or params)
-exports.findOne = async (req, res) => {
+exports.uploadCv = async (req, res) => {
   try {
-    const userId = resolveUserId(req);
-    if (!userId) {
-      return res.status(400).send({ message: "User id is required" });
+    if (!req.file) {
+      return res.status(400).json({ message: "No file uploaded." });
     }
 
-    const profile = await Profile.findOne({ user: userId }).populate("user", "-password");
+    const formData = new FormData();
+    formData.append("file", req.file.buffer, req.file.originalname);
 
-    if (!profile) {
-      return res.status(404).send({ message: "Profile not found" });
-    }
-
-    res.send(profile);
-  } catch (error) {
-    res.status(500).send({
-      message:
-        error.message || "Some error occurred while retrieving the profile.",
+    const parserResponse = await axios.post("http://localhost:8000/parse", formData, {
+      headers: {
+        ...formData.getHeaders(),
+      },
     });
+
+    res.json(parserResponse.data);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Error parsing the CV." });
   }
 };
 
-// Update a profile (by token or params)
-exports.update = async (req, res) => {
+exports.updateProfile = async (req, res) => {
   try {
-    const userId = resolveUserId(req);
-    if (!userId) {
-      return res.status(400).send({ message: "User id is required" });
+    const userId = req.user.id;
+    const profileData = req.body;
+
+    const user = await User.findByIdAndUpdate(userId, { profile: profileData, profileCompleted: true }, { new: true });
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found." });
     }
 
-    const profile = await Profile.findOne({ user: userId });
-
-    if (!profile) {
-      return res.status(404).send({ message: "Profile not found" });
-    }
-
-    const allowedUpdates = [
-      "name",
-      "batch",
-      "branch",
-      "campus",
-      "skills",
-      "experience",
-      "education",
-      "honours",
-      "projects",
-      "publications",
-      "social_media",
-      "custom_cv",
-      "status",
-    ];
-
-    for (const key of allowedUpdates) {
-      if (req.body[key] === undefined) continue;
-
-      if (key === "social_media") {
-        // Merge existing social_media object with provided fields
-        profile.social_media = {
-          ...profile.social_media,
-          ...req.body.social_media,
-        };
-      } else {
-        profile[key] = req.body[key];
-      }
-    }
-
-    const updatedProfile = await profile.save();
-
-    // avoid returning user password
-    await updatedProfile.populate("user", "-password").execPopulate?.();
-
-    res.send(updatedProfile);
+    res.json({ message: "Profile updated successfully.", user });
   } catch (error) {
-    res.status(500).send({
-      message:
-        error.message || "Some error occurred while updating the profile.",
-    });
+    console.error(error);
+    res.status(500).json({ message: "Error updating the profile." });
+  }
+};
+
+exports.getProfileStatus = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const user = await User.findById(userId);
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found." });
+    }
+
+    res.json({ profileCompleted: user.profileCompleted });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Error getting profile status." });
   }
 };

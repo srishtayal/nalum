@@ -10,7 +10,7 @@ const Header = () => {
 
   // Hide CTA buttons on login/signup routes
   const hideCTA =
-    location.pathname === "/login" || location.pathname === "/signup";
+    location.pathname === "/login" || location.pathname === "/signup" || location.pathname === "/otp-verification" || location.pathname=== "/profile-form";
 
   // Replace anchors with actual routes
   const navItems = [
@@ -22,16 +22,18 @@ const Header = () => {
     { label: "Contact", to: "/contact" },
   ];
 
+  const isAuthPage = location.pathname === "/login" || location.pathname === "/signup" || location.pathname === "/otp-verification";
+
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-md border-b border-border">
+    <header className="fixed top-0 left-0 right-0 z-50 bg-black/30 backdrop-blur-md">
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <Link to="/" className="flex items-center space-x-3">
             <img src={nsutLogo} alt="NSUT Logo" className="h-10 w-10" />
             <div className="flex flex-col">
-              <span className="font-bold text-primary text-lg">NSUT</span>
-              <span className="text-xs text-muted-foreground">SINCE 1983</span>
+              <span className="font-bold text-lg text-white">NSUT</span>
+              <span className="text-xs text-white">SINCE 1983</span>
             </div>
           </Link>
 
@@ -41,7 +43,7 @@ const Header = () => {
               <Link
                 key={item.label}
                 to={item.to}
-                className="text-foreground hover:text-primary transition-colors font-medium"
+                className="transition-colors font-medium text-white hover:text-primary"
               >
                 {item.label}
               </Link>
@@ -62,7 +64,9 @@ const Header = () => {
 
           {/* Mobile Menu Button */}
           <button
-            className="md:hidden p-2"
+            className={`md:hidden p-2 ${
+              isAuthPage ? "text-primary" : "text-primary"
+            }`}
             onClick={() => setIsMenuOpen(!isMenuOpen)}
             aria-label="Toggle menu"
           >
@@ -76,20 +80,30 @@ const Header = () => {
 
         {/* Mobile Navigation */}
         {isMenuOpen && (
-          <div className="md:hidden py-4 border-t border-border">
+          <div
+            className={`md:hidden py-4 border-t ${
+              isAuthPage
+                ? "bg-black/80 border-gray-700"
+                : "bg-white border-border"
+            }`}
+          >
             <nav className="flex flex-col space-y-4">
               {navItems.map((item) => (
                 <Link
                   key={item.label}
                   to={item.to}
-                  className="text-foreground hover:text-primary transition-colors font-medium py-2"
+                  className={`font-medium py-2 px-4 ${
+                    isAuthPage
+                      ? "text-white hover:bg-gray-700"
+                      : "text-foreground hover:bg-gray-100"
+                  }`}
                   onClick={() => setIsMenuOpen(false)}
                 >
                   {item.label}
                 </Link>
               ))}
               {!hideCTA && (
-                <div className="flex flex-col space-y-2 pt-4">
+                <div className="flex flex-col space-y-2 pt-4 px-4">
                   <Button variant="outline" size="sm" asChild>
                     <Link to="/login">Sign In</Link>
                   </Button>
