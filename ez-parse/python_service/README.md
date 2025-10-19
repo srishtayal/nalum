@@ -1,112 +1,103 @@
 # EZ-Parse Service
 
-This service provides a simple REST API to parse PDF resumes and extract structured data in JSON format. It acts as a wrapper around the `ez-parse` resume parsing library.
+This service provides a lightweight REST API that wraps the `ez-parse` resume parsing library and exposes a single endpoint to parse PDF resumes and return structured JSON.
 
 ## Features
 
--   **PDF Resume Parsing**: Upload a PDF resume and get back structured JSON data.
--   **Simple REST API**: Easy to integrate with any backend service that can make HTTP requests.
--   **Lightweight**: Built with FastAPI, a modern, fast (high-performance) web framework for building APIs with Python.
+- PDF resume parsing (POST /parse)
+- Simple FastAPI-based REST API
+- Uses `pdfminer.six` for PDF text extraction and the project's `Resume-Parser/parser.py` for parsing logic
 
 ## Prerequisites
 
--   Python 3.7+
--   `pip`
+- Python 3.7 or newer
+- pip
 
 ## Installation
 
-1.  **Clone the repository** (if you haven't already).
+1. Clone the repository (if you haven't already).
 
-2.  **Create and activate a virtual environment** in the repository root:
+2. Create and activate a virtual environment in the repository root.
 
-    ```bash
-    python3 -m venv .venv
-    source .venv/bin/activate
-    ```
+   - Linux / macOS
 
-3.  **Install the required dependencies**:
+     ```bash
+     python3 -m venv .venv
+     source .venv/bin/activate
+     ```
 
-    ```bash
-    pip install -r python_service/requirements.txt
-    ```
+   - Windows (PowerShell)
+
+     ```powershell
+     python -m venv .venv
+     .\.venv\Scripts\Activate.ps1
+     ```
+
+   - Windows (Command Prompt)
+
+     ```cmd
+     python -m venv .venv
+     .venv\Scripts\activate.bat
+     ```
+
+   Note for PowerShell users: If you get a script execution policy error, run (as Administrator or for the current user):
+
+   ```powershell
+   Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
+   ```
+
+1.Install dependencies:
+
+   ```bash
+   pip install -r python_service/requirements.txt
+   ```
+
+### Windows (alternate installer)
+
+```powershell
+pip install -r python_service/requirements.txt
+```
 
 ## Running the Service
 
 To start the service, run the following command from the root of the project:
 
+### Linux / macOS
+
 ```bash
 uvicorn python_service.app:app --reload --port 8000
 ```
 
-The service will be running at `http://localhost:8000` and will automatically reload when you make changes to the code.
+### Windows (PowerShell or Command Prompt)
 
-## API Endpoint
-
-### `POST /parse`
-
-Parses a PDF resume and returns the extracted text in JSON format.
-
-**Request**
-
--   **URL**: `/parse`
--   **Method**: `POST`
--   **Headers**:
-    -   `accept: application/json`
--   **Body**: `multipart/form-data`
-    -   `file`: The PDF file to be parsed.
-
-**Example Response**
-
-A successful request will return a `200 OK` status code with a JSON object containing the parsed data from the resume. The structure of the JSON may vary depending on the content of the resume.
-
-```json
-{
-    "name": "John Doe",
-    "email": "john.doe@example.com",
-    "mobile_number": "123-456-7890",
-    "skills": [
-        "Python",
-        "FastAPI",
-        "JavaScript",
-        "React"
-    ],
-    "college_name": "University of Example",
-    "degree": "Bachelor of Science in Computer Science",
-    "designation": "Software Engineer",
-    "experience": [
-        "Software Engineer at Tech Company (2020-Present)",
-        "Intern at Another Company (2019)"
-    ],
-    "company_names": [
-        "Tech Company",
-        "Another Company"
-    ]
-}
+```powershell
+uvicorn python_service.app:app --reload --port 8000
 ```
 
-**Error Responses**
+The service will be available at <http://localhost:8000> and will reload automatically on code changes when run with `--reload`.
 
--   `400 Bad Request`: If the uploaded file is not a PDF or is empty.
--   `500 Internal Server Error`: If an unexpected error occurs during parsing.
+## API
 
-## Example Usage
+POST /parse
 
-### cURL
+- Description: Parse an uploaded PDF resume and return extracted fields as JSON.
+- Request: multipart/form-data with a `file` field containing a PDF.
+- Response: 200 OK with parsed JSON, or 4xx/5xx on error.
 
-You can use `curl` to test the service:
+Example cURL request:
 
 ```bash
 curl -X POST "http://localhost:8000/parse" \
-     -H "accept: application/json" \
-     -F "file=@/path/to/your/resume.pdf"
+  -H "accept: application/json" \
+  -F "file=@/path/to/your/resume.pdf"
 ```
 
-### Express.js + Axios
+## Example integration (Express + Axios)
 
-If you have a Node.js backend with Express, you can use `axios` and `form-data` to call the service.
+If you need to call this service from a Node.js backend, here's a minimal example:
 
 ```javascript
-// server.js (Express handler)
+// Express handler
 const axios = require('axios');
 const FormData = require('form-data');
 const fs = require('fs');
@@ -122,29 +113,30 @@ app.post('/upload', upload.single('file'), async (req, res) => {
       headers: form.getHeaders(),
     });
 
-    // response.data contains the parsed JSON
-    // You can now save response.data to your database
     res.json(response.data);
   } catch (err) {
     res.status(500).json({ error: err.message });
   } finally {
-    // Clean up the uploaded file
     fs.unlinkSync(req.file.path);
   }
 });
 ```
 
-## How It Works
+## How it works
 
-The service uses `pdfminer.six` to extract raw text from the PDF. This text is then processed by the `Resume-Parser/parser.py` module, which uses regular expressions and keyword matching to identify and extract relevant information from the resume text.
+The service extracts text from PDFs using `pdfminer.six` and then passes the raw text to `Resume-Parser/parser.py`, which applies regexes and heuristics to produce structured fields such as name, email, phone, skills, education, experience, and company names.
 
-## Security & Performance
+## Security & performance notes
 
--   **File Validation**: The service currently only accepts files with a `.pdf` extension. For more robust security, you should add more thorough file validation (e.g., checking file signatures).
--   **Job Queue**: For high-traffic applications, consider using a job queue (like Celery with Redis or RabbitMQ) to handle parsing tasks asynchronously. This will prevent long-running parsing jobs from blocking requests.
--   **Authentication**: If this service is exposed to the internet, you should add an authentication layer (e.g., API keys, OAuth2) to protect the endpoint from unauthorized access.
+- File validation: currently the service checks the file extension. For production, validate file signatures and file size limits.
+- Scalability: for high traffic, consider offloading parsing jobs to a background queue (e.g., Celery + Redis) to avoid long request times.
+- Authentication: add API keys or OAuth2 if exposing the service publicly.
 
-python3 -m venv .venv
-source .venv/bin/activate
+## Quick start (Windows PowerShell)
+
+```powershell
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
 pip install -r python_service/requirements.txt
 uvicorn python_service.app:app --reload --port 8000
+```

@@ -1,6 +1,5 @@
 const mongoose = require("mongoose");
 
-
 const userSchema = new mongoose.Schema(
   {
     name: {
@@ -36,6 +35,10 @@ const userSchema = new mongoose.Schema(
       type: String,
       enum: ["student", "alumni"],
       required: true,
+    },
+    verified_alumni: {
+      type: Boolean,
+      default: false,
     },
   },
   { timestamps: true }

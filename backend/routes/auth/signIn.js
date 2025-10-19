@@ -16,7 +16,7 @@ router.post("/", async (req, res) => {
 
   const { email, password } = req.body;
   let data = await users.findOne(email);
-  
+
   if (data.error) {
     return res.status(500).json({
       err: true,
@@ -30,7 +30,7 @@ router.post("/", async (req, res) => {
       message: "No User",
     });
   }
-  if(data.email_verified === false){
+  if (data.email_verified === false) {
     return res.status(401).json({
       err: true,
       code: 401,
@@ -53,10 +53,7 @@ router.post("/", async (req, res) => {
     });
   }
 
-  const sessionData = await sessions.getOrCreate(
-    email,
-    data.data._id
-  );
+  const sessionData = await sessions.getOrCreate(email, data.data._id);
 
   if (sessionData.error) {
     return res.status(500).json(sessionData);
@@ -72,7 +69,18 @@ router.post("/", async (req, res) => {
 
   return res.status(200).json({
     error: false,
-    data: rest,
+    data: {
+      ...rest,
+      user: {
+        id: data.data._id,
+        name: data.data.name,
+        email: data.data.email,
+        role: data.data.role,
+        email_verified: data.data.email_verified,
+        profileCompleted: data.data.profileCompleted,
+        verified_alumni: data.data.verified_alumni,
+      },
+    },
   });
 });
 
