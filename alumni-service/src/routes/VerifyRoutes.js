@@ -1,29 +1,37 @@
-import express from 'express';
-import pool from '../db/postgres.js';
+import express from "express";
+import pool from "../db/postgres.js";
 
 const router = express.Router();
 
-router.post('/verify', async (req, res) => {
-  const { alumniId, email } = req.body;
-
-  if (!alumniId || !email) {
-    return res.status(400).json({ error: 'alumniId and email are required' });
-  }
-
+router.post("/verify", async (req, res) => {
   try {
-    const result = await pool.query(
-      'SELECT * FROM alumni WHERE alumni_id = $1 AND email = $2',
-      [alumniId, email]
-    );
+    const { name, roll_no, batch, branch } = req.body;
 
-    if (result.rows.length > 0) {
-      return res.json({ verified: true, data: result.rows[0] });
+    let result;
+
+    // If roll_no is provided, query by roll_no (unique identifier)
+    if (roll_no && roll_no.trim() !== "") {
+      result = await pool.query("SELECT * FROM alumni WHERE roll_no = $1", [
+        roll_no,
+      ]);
     } else {
-      return res.json({ verified: false });
+      // Otherwise, query by combination of name, batch, and branch
+      result = await pool.query(
+        "SELECT * FROM alumni WHERE name = $1 AND batch = $2 AND branch = $3",
+        [name, batch, branch]
+      );
     }
+
+    return res.status(200).json({
+      success: true,
+      matches: result.rows,
+    });
   } catch (err) {
-    console.error('Error verifying alumni:', err);
-    res.status(500).json({ error: 'Internal server error' });
+    console.error("Error verifying alumni:", err);
+    return res.status(500).json({
+      success: false,
+      error: "Internal server error",
+    });
   }
 });
 

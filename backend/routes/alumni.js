@@ -9,4 +9,10 @@ router.post("/verify-code", protect, alumniController.verifyCode);
 // Generate verification codes route (protected - will be admin-only in Phase 5)
 router.post("/generate-codes", protect, alumniController.generateCodes);
 
+// Check manual verification details (calls microservice)
+router.post("/check-manual", protect, alumniController.checkManualVerification);
+
+// Confirm manual verification match
+router.post("/confirm-match", protect, alumniController.confirmManualMatch);
+
 module.exports = router;

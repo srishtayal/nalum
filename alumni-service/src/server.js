@@ -2,10 +2,12 @@ import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import verifyRoutes from './routes/VerifyRoutes.js';
+import morgan from 'morgan'; // <-- CORRECT: Use import instead of require
 
 dotenv.config();
 const app = express();
 
+app.use(morgan("dev")); // This line is perfect as it is
 app.use(cors());
 app.use(express.json());
 
