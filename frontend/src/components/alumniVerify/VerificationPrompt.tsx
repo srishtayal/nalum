@@ -2,7 +2,6 @@ import { useState } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { Button } from "@/components/ui/button";
 import VerifyCodeModal from "./VerifyCodeModal";
-import VerifyManualFlow from "./VerifyManualFlow";
 
 const VerificationPrompt = () => {
   const { isVerifiedAlumni } = useAuth();
@@ -25,8 +24,6 @@ const VerificationPrompt = () => {
           >
             Verify Now
           </Button>
-          {" or "}
-          <VerifyManualFlow />
         </p>
       </div>
       <VerifyCodeModal

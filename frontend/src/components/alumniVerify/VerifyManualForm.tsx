@@ -38,7 +38,9 @@ const VerifyManualForm = ({
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div className="space-y-2">
-        <Label htmlFor="name">Full Name</Label>
+        <Label htmlFor="name">
+          Full Name <span className="text-red-500">*</span>
+        </Label>
         <Input
           id="name"
           type="text"
@@ -61,7 +63,9 @@ const VerifyManualForm = ({
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="batch">Batch/Year</Label>
+        <Label htmlFor="batch">
+          Year of Passing <span className="text-red-500">*</span>
+        </Label>
         <Input
           id="batch"
           type="text"
@@ -73,7 +77,9 @@ const VerifyManualForm = ({
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="branch">Branch/Department</Label>
+        <Label htmlFor="branch">
+          Branch <span className="text-red-500">*</span>
+        </Label>
         <Input
           id="branch"
           type="text"

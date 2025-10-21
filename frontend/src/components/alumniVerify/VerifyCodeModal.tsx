@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/context/AuthContext";
 import { verifyAlumniCode } from "@/lib/api";
+import VerifyManualFlow from "./VerifyManualFlow";
 import axios from "axios";
 
 interface VerifyCodeModalProps {
@@ -23,8 +24,14 @@ const VerifyCodeModal = ({ isOpen, onClose }: VerifyCodeModalProps) => {
   const [code, setCode] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
+  const [view, setView] = useState<"code" | "manual">("code");
   const { toast } = useToast();
   const { setAuth, accessToken, email } = useAuth();
+
+  const handleClose = () => {
+    setView("code");
+    onClose();
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -51,7 +58,7 @@ const VerifyCodeModal = ({ isOpen, onClose }: VerifyCodeModalProps) => {
 
         // Reset form and close modal
         setCode("");
-        onClose();
+        handleClose();
       }
     } catch (error) {
       if (axios.isAxiosError(error)) {
@@ -77,43 +84,59 @@ const VerifyCodeModal = ({ isOpen, onClose }: VerifyCodeModalProps) => {
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
+    <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Verify Your Alumni Status</DialogTitle>
           <DialogDescription>
-            Enter the 10-digit verification code provided to you. If you don't
-            have a code, please contact the alumni office.
+            {view === "code"
+              ? "Enter the 10-digit verification code provided to you. If you don't have a code, please contact the alumni office."
+              : "Enter your details to verify your alumni status. We'll search our records for a match."}
           </DialogDescription>
         </DialogHeader>
-        <form onSubmit={handleSubmit}>
-          <div className="space-y-4 py-4">
-            <div className="space-y-2">
-              <Input
-                id="code"
-                placeholder="Enter 10-digit code"
-                value={code}
-                onChange={(e) => setCode(e.target.value)}
-                maxLength={10}
-                className={error ? "border-red-500" : ""}
-              />
-              {error && <p className="text-sm text-red-500">{error}</p>}
+
+        {view === "code" ? (
+          <form onSubmit={handleSubmit}>
+            <div className="space-y-4 py-4">
+              <div className="space-y-2">
+                <Input
+                  id="code"
+                  placeholder="Enter 10-digit code"
+                  value={code}
+                  onChange={(e) => setCode(e.target.value)}
+                  maxLength={10}
+                  className={error ? "border-red-500" : ""}
+                />
+                {error && <p className="text-sm text-red-500">{error}</p>}
+              </div>
             </div>
-          </div>
-          <DialogFooter>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={onClose}
-              disabled={isLoading}
-            >
-              Cancel
-            </Button>
-            <Button type="submit" disabled={isLoading}>
-              {isLoading ? "Verifying..." : "Verify"}
-            </Button>
-          </DialogFooter>
-        </form>
+            <DialogFooter className="flex-col space-y-2 sm:flex-row sm:space-y-0">
+              <Button
+                type="button"
+                variant="link"
+                className="text-sm"
+                onClick={() => setView("manual")}
+              >
+                Don't have a code? Verify Manually
+              </Button>
+              <div className="flex gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={handleClose}
+                  disabled={isLoading}
+                >
+                  Cancel
+                </Button>
+                <Button type="submit" disabled={isLoading}>
+                  {isLoading ? "Verifying..." : "Verify"}
+                </Button>
+              </div>
+            </DialogFooter>
+          </form>
+        ) : (
+          <VerifyManualFlow onClose={handleClose} />
+        )}
       </DialogContent>
     </Dialog>
   );

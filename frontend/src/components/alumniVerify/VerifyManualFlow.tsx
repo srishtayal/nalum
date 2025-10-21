@@ -1,12 +1,4 @@
 import { useState, useEffect } from "react";
-import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/context/AuthContext";
 import {
@@ -25,8 +17,11 @@ interface Match {
   branch: string;
 }
 
-const VerifyManualFlow = () => {
-  const [isFormModalOpen, setIsFormModalOpen] = useState(false);
+interface VerifyManualFlowProps {
+  onClose?: () => void;
+}
+
+const VerifyManualFlow = ({ onClose }: VerifyManualFlowProps) => {
   const [isSelectModalOpen, setIsSelectModalOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [profileData, setProfileData] = useState({
@@ -79,14 +74,13 @@ const VerifyManualFlow = () => {
             "Your verification request has been sent to the admin for manual review. You will be notified once it's processed.",
           variant: "default",
         });
-        setIsFormModalOpen(false);
+        if (onClose) onClose();
       } else if (matchesData.length === 1) {
         // Single match - auto-confirm
         await handleConfirmMatch(matchesData[0]);
       } else {
         // Multiple matches - show selection modal
         setMatches(matchesData);
-        setIsFormModalOpen(false);
         setIsSelectModalOpen(true);
       }
     } catch (error) {
@@ -125,6 +119,7 @@ const VerifyManualFlow = () => {
       });
 
       setIsSelectModalOpen(false);
+      if (onClose) onClose();
     } catch (error) {
       if (axios.isAxiosError(error)) {
         toast({
@@ -147,31 +142,11 @@ const VerifyManualFlow = () => {
 
   return (
     <>
-      <Button
-        variant="link"
-        className="p-0 h-auto font-semibold text-yellow-900 underline"
-        onClick={() => setIsFormModalOpen(true)}
-      >
-        Verify Manually
-      </Button>
-
-      {/* Form Modal */}
-      <Dialog open={isFormModalOpen} onOpenChange={setIsFormModalOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Manual Alumni Verification</DialogTitle>
-            <DialogDescription>
-              Enter your details to verify your alumni status. We'll search our
-              records for a match.
-            </DialogDescription>
-          </DialogHeader>
-          <VerifyManualForm
-            initialData={profileData}
-            onSubmit={handleFormSubmit}
-            isLoading={isLoading}
-          />
-        </DialogContent>
-      </Dialog>
+      <VerifyManualForm
+        initialData={profileData}
+        onSubmit={handleFormSubmit}
+        isLoading={isLoading}
+      />
 
       {/* Match Selection Modal */}
       <SelectMatchModal
