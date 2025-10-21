@@ -5,7 +5,7 @@ import RecruitmentPreview from "@/components/home/RecruitmentPreview";
 import ReferralPreview from "@/components/home/ReferralPreview";
 import CalendarPreview from "@/components/home/CalendarPreview";
 import ArticlesPreview from "@/components/home/ArticlesPreview";
-import VerificationPrompt from "@/components/auth/VerificationPrompt";
+import VerificationPrompt from "@/components/alumniVerify/VerificationPrompt";
 
 const HomePage = () => {
   return (
