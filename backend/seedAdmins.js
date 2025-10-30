@@ -29,6 +29,14 @@ const adminUsers = [
     profileCompleted: true,
   },
   {
+    name: "Admin Two",
+    email: "admin2@nalum.com",
+    password: "Admin@123",
+    role: "admin",
+    email_verified: true,
+    profileCompleted: true,
+  },
+  {
     name: "Moderator One",
     email: "moderator1@nalum.com",
     password: "Admin@123",
@@ -89,10 +97,11 @@ async function seedAdmins() {
 
     if (createdCount > 0) {
       console.log("\n🔐 Admin Credentials:");
-      console.log("   Email: superadmin@nalum.com");
-      console.log("   Email: admin1@nalum.com");
-      console.log("   Email: moderator1@nalum.com");
-      console.log("   Email: moderator2@nalum.com");
+      console.log("   1. superadmin@nalum.com");
+      console.log("   2. admin1@nalum.com");
+      console.log("   3. admin2@nalum.com");
+      console.log("   4. moderator1@nalum.com");
+      console.log("   5. moderator2@nalum.com");
       console.log("   Password (all): Admin@123");
       console.log("\n⚠️  Change these passwords in production!");
     }

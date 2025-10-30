@@ -13,6 +13,7 @@ const bcrypt = require("bcrypt");
 const DEFAULT_ADMIN_EMAILS = [
   "superadmin@nalum.com",
   "admin1@nalum.com",
+  "admin2@nalum.com",
   "moderator1@nalum.com",
   "moderator2@nalum.com",
 ];
