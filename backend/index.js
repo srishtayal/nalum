@@ -11,6 +11,8 @@ const dbConnect = require("./config/database.config.js");
 const profileRoutes = require("./routes/profile/index.js");
 const pdfParser = require("./routes/parser.js");
 const alumniRoutes = require("./routes/alumni.js");
+const adminRoutes = require("./routes/admin/index.js");
+const { checkBanned } = require("./middleware/checkBanned.js");
 const morgan = require("morgan");
 
 app.use(morgan("dev"));
@@ -25,10 +27,18 @@ app.use(cookieParser());
 
 dbConnect();
 
+// Apply checkBanned middleware to protected routes (not to auth or admin routes)
 app.use("/auth", authRoutes);
-app.use("/profile", profileRoutes);
-app.use("/parser", pdfParser);
-app.use("/alumni", alumniRoutes);
+app.use("/profile", checkBanned, profileRoutes);
+app.use("/parser", checkBanned, pdfParser);
+app.use("/alumni", checkBanned, alumniRoutes);
+
+// Admin routes (no checkBanned needed)
+app.use("/admin", adminRoutes);
+
+// Serve static files for newsletter uploads
+app.use("/uploads", express.static("uploads"));
+
 // a sample api call to check if the backend is working
 app.get("/health", (req, res) => {
   res.status(200).json({ status: "OK", message: "Backend is working!" });
