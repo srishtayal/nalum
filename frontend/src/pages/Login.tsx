@@ -10,7 +10,14 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Eye, EyeOff, ArrowLeft, GraduationCap, Mail, Lock } from "lucide-react";
+import {
+  Eye,
+  EyeOff,
+  ArrowLeft,
+  GraduationCap,
+  Mail,
+  Lock,
+} from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import nsutLogo from "@/assets/nsut-logo.svg";
 import nsutCampusHero from "@/assets/nsut-campus-hero.png";
@@ -30,8 +37,6 @@ const Login = () => {
   const { toast } = useToast();
   const { accessToken, setAuth } = useAuth();
   const navigate = useNavigate();
-
-
 
   // handle input changes
   const handleInputChange = (field: string, value: string) => {
@@ -64,8 +69,9 @@ const Login = () => {
 
     try {
       const response = await apiClient.post("/auth/sign-in", formData);
-      const { access_token, email } = response.data.data;
-      setAuth(access_token, email);
+      const { access_token, email, user } = response.data.data;
+      const verified_alumni = user?.verified_alumni || false;
+      setAuth(access_token, email, verified_alumni);
       toast({
         title: "Login Successful!",
         description: "Welcome back to the NSUT Alumni Portal 🎉",
@@ -75,9 +81,8 @@ const Login = () => {
       const profileStatusResponse = await apiClient.get("/profile/status", {
         headers: {
           Authorization: `Bearer ${access_token}`,
-        }
-      }
-    );
+        },
+      });
       console.log("Profile Status Response:", profileStatusResponse.data);
       if (!profileStatusResponse.data.profileCompleted) {
         navigate("/profile-form");
@@ -85,7 +90,11 @@ const Login = () => {
         navigate("/home");
       }
     } catch (error) {
-      if (axios.isAxiosError(error) && error.response?.status === 401 && error.response?.data?.code === 401) {
+      if (
+        axios.isAxiosError(error) &&
+        error.response?.status === 401 &&
+        error.response?.data?.code === 401
+      ) {
         toast({
           title: "Email Not Verified",
           description: "Please verify your email before logging in.",
@@ -124,7 +133,9 @@ const Login = () => {
           <form onSubmit={handleSubmit} className="space-y-4 text-gray-200">
             {/* Email */}
             <div className="space-y-2">
-              <Label htmlFor="email" className="text-white">Email Address</Label>
+              <Label htmlFor="email" className="text-white">
+                Email Address
+              </Label>
               <div className="relative">
                 <Mail className="absolute left-3 top-3 h-4 w-4 text-black" />
                 <Input
@@ -133,14 +144,20 @@ const Login = () => {
                   placeholder="your.email@example.com"
                   value={formData.email}
                   onChange={(e) => handleInputChange("email", e.target.value)}
-                  className={`pl-10 bg-white/20 border-none text-white ${errors.email ? "border-destructive" : ""}`}
+                  className={`pl-10 bg-white/20 border-none text-white ${
+                    errors.email ? "border-destructive" : ""
+                  }`}
                 />
               </div>
-              {errors.email && <p className="text-sm text-red-400">{errors.email}</p>}
+              {errors.email && (
+                <p className="text-sm text-red-400">{errors.email}</p>
+              )}
             </div>
             {/* Password */}
             <div className="space-y-2">
-              <Label htmlFor="password" className="text-white">Password</Label>
+              <Label htmlFor="password" className="text-white">
+                Password
+              </Label>
               <div className="relative">
                 <Lock className="absolute left-3 top-3 h-4 w-4 text-black" />
                 <Input
@@ -148,18 +165,28 @@ const Login = () => {
                   type={showPassword ? "text" : "password"}
                   placeholder="Enter your password"
                   value={formData.password}
-                  onChange={(e) => handleInputChange("password", e.target.value)}
-                  className={`pl-10 pr-10 bg-white/20 border-none text-white ${errors.password ? "border-destructive" : ""}`}
+                  onChange={(e) =>
+                    handleInputChange("password", e.target.value)
+                  }
+                  className={`pl-10 pr-10 bg-white/20 border-none text-white ${
+                    errors.password ? "border-destructive" : ""
+                  }`}
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
                   className="absolute right-3 top-3 text-white hover:text-gray-300"
                 >
-                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  {showPassword ? (
+                    <EyeOff className="h-4 w-4" />
+                  ) : (
+                    <Eye className="h-4 w-4" />
+                  )}
                 </button>
               </div>
-              {errors.password && <p className="text-sm text-red-400">{errors.password}</p>}
+              {errors.password && (
+                <p className="text-sm text-red-400">{errors.password}</p>
+              )}
             </div>
             {/* Remember + Forgot */}
             <div className="flex items-center justify-between">
@@ -169,7 +196,9 @@ const Login = () => {
                   id="remember"
                   className="w-4 h-4 text-primary border-border rounded focus:ring-primary"
                 />
-                <Label htmlFor="remember" className="text-sm text-white">Remember me</Label>
+                <Label htmlFor="remember" className="text-sm text-white">
+                  Remember me
+                </Label>
               </div>
               <Link
                 to="/forgot-password"
@@ -196,7 +225,9 @@ const Login = () => {
                 <span className="w-full border-t border-white/30" />
               </div>
               <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-transparent px-2 text-white">New to NSUT Alumni?</span>
+                <span className="bg-transparent px-2 text-white">
+                  New to NSUT Alumni?
+                </span>
               </div>
             </div>
           </div>
