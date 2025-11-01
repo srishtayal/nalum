@@ -33,12 +33,24 @@ const userSchema = new mongoose.Schema(
     },
     role: {
       type: String,
-      enum: ["student", "alumni"],
+      enum: ["student", "alumni", "admin"],
       required: true,
     },
     verified_alumni: {
       type: Boolean,
       default: false,
+    },
+    banned: {
+      type: Boolean,
+      default: false,
+    },
+    ban_expires_at: {
+      type: Date,
+      default: null,
+    },
+    ban_reason: {
+      type: String,
+      default: null,
     },
   },
   { timestamps: true }

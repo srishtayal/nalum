@@ -1,0 +1,186 @@
+const User = require("../../models/user/user.model");
+const Ban = require("../../models/admin/ban.model");
+const Event = require("../../models/admin/event.model");
+const Newsletter = require("../../models/admin/newsletter.model");
+const VerificationQueue = require("../../models/verificationQueue.model");
+const AdminActivity = require("../../models/admin/adminActivity.model");
+
+// Get dashboard statistics
+exports.getDashboardStats = async (req, res) => {
+  try {
+    // User statistics
+    const totalUsers = await User.countDocuments();
+    const totalStudents = await User.countDocuments({ role: "student" });
+    const totalAlumni = await User.countDocuments({ role: "alumni" });
+    const verifiedAlumni = await User.countDocuments({ verified_alumni: true });
+    const bannedUsers = await User.countDocuments({ banned: true });
+
+    // Verification statistics
+    const pendingVerifications = await VerificationQueue.countDocuments();
+
+    // Event statistics
+    const totalEvents = await Event.countDocuments();
+    const pendingEvents = await Event.countDocuments({ status: "pending" });
+    const approvedEvents = await Event.countDocuments({ status: "approved" });
+    const rejectedEvents = await Event.countDocuments({ status: "rejected" });
+
+    // Newsletter statistics
+    const totalNewsletters = await Newsletter.countDocuments({ is_active: true });
+    const totalNewsletterViews = await Newsletter.aggregate([
+      { $match: { is_active: true } },
+      { $group: { _id: null, total: { $sum: "$view_count" } } },
+    ]);
+    const totalNewsletterDownloads = await Newsletter.aggregate([
+      { $match: { is_active: true } },
+      { $group: { _id: null, total: { $sum: "$download_count" } } },
+    ]);
+
+    // Recent registrations (last 30 days)
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+    const recentRegistrations = await User.countDocuments({
+      createdAt: { $gte: thirtyDaysAgo },
+    });
+
+    // Active bans (will expire in the future)
+    const activeBans = await Ban.countDocuments({
+      is_active: true,
+      ban_expires_at: { $gt: new Date() },
+    });
+
+    // Recent admin activities (last 10)
+    const recentActivities = await AdminActivity.find()
+      .sort({ createdAt: -1 })
+      .limit(10);
+
+    res.status(200).json({
+      success: true,
+      stats: {
+        users: {
+          total: totalUsers,
+          students: totalStudents,
+          alumni: totalAlumni,
+          verified_alumni: verifiedAlumni,
+          banned: bannedUsers,
+          recent_registrations: recentRegistrations,
+        },
+        verifications: {
+          pending: pendingVerifications,
+          verified: verifiedAlumni,
+        },
+        events: {
+          total: totalEvents,
+          pending: pendingEvents,
+          approved: approvedEvents,
+          rejected: rejectedEvents,
+        },
+        newsletters: {
+          total: totalNewsletters,
+          total_views: totalNewsletterViews[0]?.total || 0,
+          total_downloads: totalNewsletterDownloads[0]?.total || 0,
+        },
+        bans: {
+          active: activeBans,
+          total: bannedUsers,
+        },
+      },
+      recent_activities: recentActivities,
+    });
+  } catch (error) {
+    console.error("Error fetching dashboard stats:", error);
+    res.status(500).json({
+      success: false,
+      message: "An error occurred while fetching statistics",
+    });
+  }
+};
+
+// Get user registration graph data (last 30 days)
+exports.getRegistrationGraph = async (req, res) => {
+  try {
+    const { days = 30 } = req.query;
+    const startDate = new Date();
+    startDate.setDate(startDate.getDate() - parseInt(days));
+
+    const registrations = await User.aggregate([
+      {
+        $match: {
+          createdAt: { $gte: startDate },
+        },
+      },
+      {
+        $group: {
+          _id: {
+            $dateToString: { format: "%Y-%m-%d", date: "$createdAt" },
+          },
+          count: { $sum: 1 },
+        },
+      },
+      {
+        $sort: { _id: 1 },
+      },
+    ]);
+
+    res.status(200).json({
+      success: true,
+      data: registrations,
+    });
+  } catch (error) {
+    console.error("Error fetching registration graph:", error);
+    res.status(500).json({
+      success: false,
+      message: "An error occurred while fetching registration data",
+    });
+  }
+};
+
+// Get all users with pagination and filters
+exports.getAllUsers = async (req, res) => {
+  try {
+    const {
+      page = 1,
+      limit = 20,
+      role,
+      verified,
+      banned,
+      search,
+    } = req.query;
+
+    const query = {};
+
+    if (role) query.role = role;
+    if (verified !== undefined) query.verified_alumni = verified === "true";
+    if (banned !== undefined) query.banned = banned === "true";
+    if (search) {
+      query.$or = [
+        { name: { $regex: search, $options: "i" } },
+        { email: { $regex: search, $options: "i" } },
+      ];
+    }
+
+    const users = await User.find(query)
+      .select("name email role verified_alumni banned ban_expires_at createdAt")
+      .sort({ createdAt: -1 })
+      .skip((page - 1) * limit)
+      .limit(parseInt(limit));
+
+    const total = await User.countDocuments(query);
+
+    res.status(200).json({
+      success: true,
+      data: users,
+      pagination: {
+        total,
+        page: parseInt(page),
+        limit: parseInt(limit),
+        totalPages: Math.ceil(total / limit),
+      },
+    });
+  } catch (error) {
+    console.error("Error fetching users:", error);
+    res.status(500).json({
+      success: false,
+      message: "An error occurred while fetching users",
+    });
+  }
+};

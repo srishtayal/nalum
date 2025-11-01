@@ -1,0 +1,231 @@
+const User = require("../../models/user/user.model");
+const Ban = require("../../models/admin/ban.model");
+const { logAdminActivity } = require("../../middleware/adminAuth");
+
+// Calculate ban expiry date
+const calculateBanExpiry = (duration) => {
+  const now = new Date();
+  switch (duration) {
+    case "24h":
+      return new Date(now.getTime() + 24 * 60 * 60 * 1000);
+    case "7d":
+      return new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+    case "30d":
+      return new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
+    case "365d":
+      return new Date(now.getTime() + 365 * 24 * 60 * 60 * 1000);
+    case "permanent":
+      return null;
+    default:
+      throw new Error("Invalid ban duration");
+  }
+};
+
+// Ban a user
+exports.banUser = async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const { duration, reason } = req.body;
+
+    // Validation
+    if (!duration || !reason) {
+      return res.status(400).json({
+        success: false,
+        message: "Duration and reason are required",
+      });
+    }
+
+    if (!["24h", "7d", "30d", "365d", "permanent"].includes(duration)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid ban duration",
+      });
+    }
+
+    // Find user
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    // Check if user is already banned
+    if (user.banned) {
+      return res.status(400).json({
+        success: false,
+        message: "User is already banned",
+      });
+    }
+
+    // Calculate ban expiry
+    const banExpiresAt = calculateBanExpiry(duration);
+
+    // Update user
+    user.banned = true;
+    user.ban_expires_at = banExpiresAt;
+    user.ban_reason = reason;
+    await user.save();
+
+    // Create ban record
+    await Ban.create({
+      user: userId,
+      banned_by: req.admin.email,
+      reason,
+      duration,
+      ban_expires_at: banExpiresAt,
+      is_active: true,
+    });
+
+    // Log activity
+    await logAdminActivity(
+      req.admin.email,
+      "ban_user",
+      "user",
+      userId,
+      {
+        user_name: user.name,
+        user_email: user.email,
+        duration,
+        reason,
+        ban_expires_at: banExpiresAt,
+      },
+      req.ip
+    );
+
+    res.status(200).json({
+      success: true,
+      message: "User banned successfully",
+      ban: {
+        duration,
+        expires_at: banExpiresAt,
+        reason,
+      },
+    });
+  } catch (error) {
+    console.error("Error banning user:", error);
+    res.status(500).json({
+      success: false,
+      message: "An error occurred while banning user",
+    });
+  }
+};
+
+// Unban a user
+exports.unbanUser = async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const { notes } = req.body;
+
+    // Find user
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    // Check if user is banned
+    if (!user.banned) {
+      return res.status(400).json({
+        success: false,
+        message: "User is not banned",
+      });
+    }
+
+    // Update user
+    user.banned = false;
+    user.ban_expires_at = null;
+    user.ban_reason = null;
+    await user.save();
+
+    // Update ban record
+    await Ban.updateMany(
+      { user: userId, is_active: true },
+      {
+        is_active: false,
+        unbanned_at: new Date(),
+        unbanned_by: req.admin.email,
+      }
+    );
+
+    // Log activity
+    await logAdminActivity(
+      req.admin.email,
+      "unban_user",
+      "user",
+      userId,
+      {
+        user_name: user.name,
+        user_email: user.email,
+        notes: notes || "",
+      },
+      req.ip
+    );
+
+    res.status(200).json({
+      success: true,
+      message: "User unbanned successfully",
+    });
+  } catch (error) {
+    console.error("Error unbanning user:", error);
+    res.status(500).json({
+      success: false,
+      message: "An error occurred while unbanning user",
+    });
+  }
+};
+
+// Get all banned users
+exports.getBannedUsers = async (req, res) => {
+  try {
+    const { page = 1, limit = 10 } = req.query;
+
+    const bannedUsers = await User.find({ banned: true })
+      .select("name email role ban_reason ban_expires_at createdAt")
+      .sort({ updatedAt: -1 })
+      .skip((page - 1) * limit)
+      .limit(parseInt(limit));
+
+    const total = await User.countDocuments({ banned: true });
+
+    res.status(200).json({
+      success: true,
+      data: bannedUsers,
+      pagination: {
+        total,
+        page: parseInt(page),
+        limit: parseInt(limit),
+        totalPages: Math.ceil(total / limit),
+      },
+    });
+  } catch (error) {
+    console.error("Error fetching banned users:", error);
+    res.status(500).json({
+      success: false,
+      message: "An error occurred while fetching banned users",
+    });
+  }
+};
+
+// Get ban history for a user
+exports.getUserBanHistory = async (req, res) => {
+  try {
+    const { userId } = req.params;
+
+    const banHistory = await Ban.find({ user: userId }).sort({ createdAt: -1 });
+
+    res.status(200).json({
+      success: true,
+      data: banHistory,
+    });
+  } catch (error) {
+    console.error("Error fetching ban history:", error);
+    res.status(500).json({
+      success: false,
+      message: "An error occurred while fetching ban history",
+    });
+  }
+};
