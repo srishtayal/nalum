@@ -21,6 +21,8 @@ import EventApprovals from "./pages/admin/EventApprovals";
 import Newsletters from "./pages/admin/Newsletters";
 import BannedUsers from "./pages/admin/BannedUsers";
 
+import Dashboard from "./pages/dashboard";
+
 const App = () => {
   const { logout } = useAuth();
 
@@ -41,6 +43,7 @@ const App = () => {
       {/* Regular User Routes */}
       <Route element={<ProtectedRoute />}>
         <Route path="/home" element={<HomePage />} />
+        <Route path="/dashboard" element={<Dashboard />} />
       </Route>
       <Route path="/profile-form" element={<ProfileForm />} />
       <Route path="/login" element={<Login />} />

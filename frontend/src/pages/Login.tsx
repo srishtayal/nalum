@@ -77,18 +77,7 @@ const Login = () => {
         description: "Welcome back to the NSUT Alumni Portal 🎉",
       });
 
-      // Check profile completion status
-      const profileStatusResponse = await apiClient.get("/profile/status", {
-        headers: {
-          Authorization: `Bearer ${access_token}`,
-        },
-      });
-      console.log("Profile Status Response:", profileStatusResponse.data);
-      if (!profileStatusResponse.data.profileCompleted) {
-        navigate("/profile-form");
-      } else {
-        navigate("/home");
-      }
+      navigate("/dashboard");
     } catch (error) {
       if (
         axios.isAxiosError(error) &&
