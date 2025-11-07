@@ -21,7 +21,7 @@ const AdminProtectedRoute = () => {
     console.log("[AdminProtectedRoute] Authenticated, rendering Outlet");
   }
 
-  return isAuthenticated ? <Outlet /> : <Navigate to="/admin-panel/login" replace />;
+  return isAuthenticated ? <Outlet /> : <Navigate to="/admin/login" replace />;
 };
 
 export default AdminProtectedRoute;

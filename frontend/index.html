@@ -2,6 +2,13 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
+    <!-- Google Tag Manager -->
+    <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+    new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+    j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+    'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+    })(window,document,'script','dataLayer','GTM-XXXXXXX');</script>
+    <!-- End Google Tag Manager -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>NSUT Alumni Portal - Connect, Grow, Give Back</title>
     <meta name="description" content="Official NSUT Alumni Portal connecting 15,000+ graduates worldwide. Join our network for career opportunities, mentorship, events, and ways to give back to NSUT." />
@@ -22,16 +29,39 @@
     <meta name="twitter:description" content="Connect with NSUT alumni worldwide. Career opportunities, mentorship, and networking awaits." />
     <meta name="twitter:image" content="https://nsut-alumni.com/twitter-image.jpg" />
 
-    <!-- Google Fonts - Montserrat -->
+    <!-- Google Fonts - Montserrat & a Serif font -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Lora:wght@400;700&display=swap" rel="stylesheet">
     
     <!-- Canonical URL -->
     <link rel="canonical" href="https://nsut-alumni.com" />
+
+    <!-- Schema.org for WebPage -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebPage",
+      "name": "NSUT Alumni Portal",
+      "url": "https://nsut-alumni.com",
+      "description": "The official portal for alumni of Netaji Subhas University of Technology to connect, network, and engage with the community.",
+      "publisher": {
+        "@type": "Organization",
+        "name": "NSUT Alumni Association",
+        "logo": {
+          "@type": "ImageObject",
+          "url": "https://nsut-alumni.com/logo.png"
+        }
+      }
+    }
+    </script>
   </head>
 
   <body>
+    <!-- Google Tag Manager (noscript) -->
+    <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-XXXXXXX"
+    height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+    <!-- End Google Tag Manager (noscript) -->
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>

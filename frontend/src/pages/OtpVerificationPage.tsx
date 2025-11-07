@@ -20,7 +20,7 @@ const OtpVerificationPage = () => {
       style={{ backgroundImage: `url(${nsutCampusHero})` }}
     >
       <div className="w-full max-w-md z-10 px-6 py-8 bg-black/30 backdrop-blur-md rounded-lg shadow-lg border border-white/30">
-        {verified ? (
+        {verifiedi ? (
           <div className="text-center">
             <h2 className="text-2xl font-bold text-green-400 mb-4">Email Verified Successfully!</h2>
             <p className="text-gray-200 mb-6">You can now proceed to log in.</p>

@@ -116,3 +116,6 @@ export const useAdminAuth = () => {
   }
   return context;
 };
+
+// Default export for compatibility
+export default AdminAuthProvider;

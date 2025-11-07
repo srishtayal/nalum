@@ -1,79 +1,82 @@
-import { Routes, Route, Navigate } from "react-router-dom";
-import HomePage from "./pages/HomePage";
-import Login from "./pages/Login";
-import SignUp from "./pages/SignUp";
-import NotFound from "./pages/NotFound";
-import ProtectedRoute from "./components/ProtectedRoute";
-import Index from "./pages/Index";
-import OtpVerificationPage from "./pages/OtpVerificationPage";
-import ProfileForm from "./pages/ProfileForm";
-import { useEffect } from "react";
-import { useAuth } from "./context/AuthContext";
+import { Toaster } from '@/components/ui/sonner';
+import { TooltipProvider } from '@/components/ui/tooltip';
+import { AuthProvider } from '@/context/AuthContext';
+import AdminAuthContextProvider from '@/context/AdminAuthContext';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { Route, Routes } from 'react-router-dom';
+import AdminLayout from '@/components/admin/AdminLayout';
+import AdminProtectedRoute from '@/components/admin/AdminProtectedRoute';
+import VerificationPrompt from '@/components/alumniVerify/VerificationPrompt';
+import ProtectedRoute from '@/components/ProtectedRoute';
+import AdminDashboard from '@/pages/admin/AdminDashboard';
+import AdminLoginPage from '@/pages/admin/AdminLoginPage';
+import EventsPage from '@/pages/admin/EventsPage';
+import NewslettersPage from '@/pages/admin/NewslettersPage';
+import UsersPage from '@/pages/admin/UsersPage';
+import VerificationPage from '@/pages/admin/VerificationPage';
+import HomePage from '@/pages/HomePage';
+import Login from '@/pages/Login';
+import NotFound from '@/pages/NotFound';
+import OtpVerificationPage from '@/pages/OtpVerificationPage';
+import ProfileForm from '@/pages/ProfileForm';
+import Root from '@/pages/Root';
+import SignUp from '@/pages/SignUp';
 
-// Admin imports
-import { AdminAuthProvider } from "./context/AdminAuthContext";
-import AdminProtectedRoute from "./components/admin/AdminProtectedRoute";
-import AdminLogin from "./pages/admin/AdminLogin";
-import AdminDashboard from "./pages/admin/AdminDashboard";
-import VerificationQueue from "./pages/admin/VerificationQueue";
-import UserManagement from "./pages/admin/UserManagement";
-import EventApprovals from "./pages/admin/EventApprovals";
-import Newsletters from "./pages/admin/Newsletters";
-import BannedUsers from "./pages/admin/BannedUsers";
+const queryClient = new QueryClient();
+function App() {
+	return (
+		<QueryClientProvider client={queryClient}>
+			<AuthProvider>
+				<AdminAuthContextProvider>
+					<TooltipProvider>
+							<Routes>
+								<Route path="/" element={<Root />}>
+									<Route index element={<HomePage />} />
+									<Route path="/login" element={<Login />} />
+									<Route path="/signup" element={<SignUp />} />
+									<Route path="/verify-otp" element={<OtpVerificationPage />} />
+									<Route
+										path="/profile-creation"
+										element={(
+											<ProtectedRoute>
+												<ProfileForm />
+											</ProtectedRoute>
+										)}
+									/>
+									<Route
+										path="/alumni-verification"
+										element={(
+											<ProtectedRoute>
+												<VerificationPrompt />
+											</ProtectedRoute>
+										)}
+									/>
+								</Route>
 
-const App = () => {
-  const { logout } = useAuth();
+								<Route path="/admin/login" element={<AdminLoginPage />} />
+								<Route
+									path="/admin"
+									element={(
+										<AdminProtectedRoute>
+											<AdminLayout />
+										</AdminProtectedRoute>
+									)}
+								>
+									<Route index element={<AdminDashboard />} />
+									<Route path="users" element={<UsersPage />} />
+									<Route path="events" element={<EventsPage />} />
+									<Route path="newsletters" element={<NewslettersPage />} />
+									<Route path="verification" element={<VerificationPage />} />
+								</Route>
 
-  useEffect(() => {
-    const handleAuthError = () => {
-      logout();
-    };
-
-    window.addEventListener("auth-error", handleAuthError);
-
-    return () => {
-      window.removeEventListener("auth-error", handleAuthError);
-    };
-  }, [logout]);
-
-  return (
-    <Routes>
-      {/* Regular User Routes */}
-      <Route element={<ProtectedRoute />}>
-        <Route path="/home" element={<HomePage />} />
-      </Route>
-      <Route path="/profile-form" element={<ProfileForm />} />
-      <Route path="/login" element={<Login />} />
-      <Route path="/" element={<Index />} />
-      <Route path="/signup" element={<SignUp />} />
-      <Route path="/otp-verification" element={<OtpVerificationPage />} />
-
-      {/* Admin Routes */}
-      <Route
-        path="/admin-panel/*"
-        element={
-          <AdminAuthProvider>
-            <Routes>
-              <Route path="/login" element={<AdminLogin />} />
-              <Route element={<AdminProtectedRoute />}>
-                <Route path="/dashboard" element={<AdminDashboard />} />
-                <Route path="/verification" element={<VerificationQueue />} />
-                <Route path="/verifications" element={<VerificationQueue />} />
-                <Route path="/users" element={<UserManagement />} />
-                <Route path="/events" element={<EventApprovals />} />
-                <Route path="/newsletters" element={<Newsletters />} />
-                <Route path="/banned" element={<BannedUsers />} />
-              </Route>
-              <Route path="/" element={<Navigate to="/admin-panel/dashboard" replace />} />
-            </Routes>
-          </AdminAuthProvider>
-        }
-      />
-
-      {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-      <Route path="*" element={<NotFound />} />
-    </Routes>
-  );
-};
+								<Route path="*" element={<NotFound />} />
+							</Routes>
+						<Toaster />
+					</TooltipProvider>
+				</AdminAuthContextProvider>
+			</AuthProvider>
+		</QueryClientProvider>
+	);
+}
 
 export default App;

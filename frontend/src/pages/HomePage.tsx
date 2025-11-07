@@ -1,31 +1,20 @@
-import { Sidebar, SidebarProvider } from "@/components/ui/sidebar"; // make sure SidebarProvider is exported
-import UserProfileCard from "@/components/home/UserProfileCard";
-import DiscussionForumPreview from "@/components/home/DiscussionForumPreview";
-import RecruitmentPreview from "@/components/home/RecruitmentPreview";
-import ReferralPreview from "@/components/home/ReferralPreview";
-import CalendarPreview from "@/components/home/CalendarPreview";
-import ArticlesPreview from "@/components/home/ArticlesPreview";
-import VerificationPrompt from "@/components/alumniVerify/VerificationPrompt";
+import Hero from '@/components/home/Hero';
+import IconCtaSection from '@/components/home/IconCtaSection';
+import NewsSection from '@/components/home/NewsSection';
+import BenefitsSection from '@/components/home/BenefitsSection';
+import GivingSection from '@/components/home/GivingSection';
+import SocialMediaSection from '@/components/home/SocialMediaSection';
 
 const HomePage = () => {
   return (
-    <SidebarProvider>
-      <div className="flex min-h-screen bg-gray-100 dark:bg-gray-900">
-        <Sidebar />
-        <main className="flex-1 p-6">
-          <h1 className="text-3xl font-bold mb-6">Welcome, User!</h1>
-          <VerificationPrompt />
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <UserProfileCard />
-            <DiscussionForumPreview />
-            <RecruitmentPreview />
-            <ReferralPreview />
-            <CalendarPreview />
-            <ArticlesPreview />
-          </div>
-        </main>
-      </div>
-    </SidebarProvider>
+    <div>
+      <Hero />
+      <IconCtaSection />
+      <NewsSection />
+      <BenefitsSection />
+      <GivingSection />
+      <SocialMediaSection />
+    </div>
   );
 };
 
