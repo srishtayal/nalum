@@ -1,0 +1,205 @@
+
+import { Link } from 'react-router-dom';
+import { Facebook, Twitter, Instagram, Youtube, Linkedin } from 'lucide-react';
+
+const Footer = () => {
+  const quickNav = ["Communities", "Volunteer", "Events", "Benefits", "Giving", "Stories"];
+  const secondaryNav = ["About", "myNSUT Login", "Contact", "NSUT.edu"];
+  const socialLinks = [
+    { icon: Facebook, href: "#", label: "Facebook" },
+    { icon: Twitter, href: "#", label: "Twitter" },
+    { icon: Instagram, href: "#", label: "Instagram" },
+    { icon: Youtube, href: "#", label: "YouTube" },
+    { icon: Linkedin, href: "#", label: "LinkedIn" },
+  ];
+
+  return (
+    <>
+      <style>{`
+        .footer-link {
+          position: relative;
+          display: inline-block;
+          transition: color 0.3s ease;
+        }
+        .footer-link::after {
+          content: "";
+          position: absolute;
+          bottom: -2px;
+          left: 0;
+          width: 0;
+          height: 2px;
+          background: linear-gradient(90deg, #FFD700 0%, #C00404 100%);
+          transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+          border-radius: 1px;
+        }
+        .footer-link:hover {
+          color: #FFD700;
+        }
+        .footer-link:hover::after {
+          width: 100%;
+        }
+        
+        .social-icon {
+          position: relative;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          width: 40px;
+          height: 40px;
+          border-radius: 50%;
+          background: rgba(255, 215, 0, 0.1);
+          transition: all 0.3s ease;
+        }
+        .social-icon:hover {
+          background: #FFD700;
+          transform: translateY(-4px) scale(1.1);
+          box-shadow: 0 4px 12px rgba(255, 215, 0, 0.3);
+        }
+        .social-icon svg {
+          transition: all 0.3s ease;
+        }
+        .social-icon:hover svg {
+          color: #C00404;
+          transform: rotate(5deg);
+        }
+        
+        .gift-button-footer {
+          position: relative;
+          overflow: hidden;
+          transition: all 0.3s ease;
+        }
+        .gift-button-footer::before {
+          content: "";
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          width: 0;
+          height: 0;
+          border-radius: 50%;
+          background: rgba(192, 4, 4, 0.2);
+          transform: translate(-50%, -50%);
+          transition: width 0.6s, height 0.6s;
+        }
+        .gift-button-footer:hover::before {
+          width: 300px;
+          height: 300px;
+        }
+        .gift-button-footer:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 6px 20px rgba(255, 215, 0, 0.4);
+        }
+        
+        .footer-heading {
+          position: relative;
+          display: inline-block;
+        }
+        .footer-heading::after {
+          content: "";
+          position: absolute;
+          bottom: -4px;
+          left: 0;
+          width: 40px;
+          height: 2px;
+          background: linear-gradient(90deg, #FFD700 0%, #C00404 100%);
+          border-radius: 1px;
+        }
+      `}</style>
+      <footer className="bg-gradient-to-b from-gray-900 to-[#1a1a1a] text-white relative overflow-hidden">
+        {/* Decorative elements */}
+        <div className="absolute inset-0 opacity-5">
+          <svg width="100%" height="100%">
+            <pattern id="footer-plus" x="0" y="0" width="40" height="40" patternUnits="userSpaceOnUse">
+              <path d="M20 15 L20 25 M15 20 L25 20" stroke="white" strokeWidth="1.5" fill="none"/>
+            </pattern>
+            <rect width="100%" height="100%" fill="url(#footer-plus)"/>
+          </svg>
+        </div>
+
+        <div className="container mx-auto px-4 py-12 relative z-10">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
+            {/* Quick Nav */}
+            <div className="md:col-span-2">
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-8">
+                <div>
+                  <h3 className="font-serif text-lg font-semibold mb-4 footer-heading">Quick Navigation</h3>
+                  <ul className="space-y-3">
+                    {quickNav.map(item => (
+                      <li key={item}>
+                        <Link 
+                          to={`/${item.toLowerCase()}`} 
+                          className="footer-link text-gray-200"
+                        >
+                          {item}
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+                <div>
+                  <h3 className="font-serif text-lg font-semibold mb-4 footer-heading">More</h3>
+                  <ul className="space-y-3">
+                    {secondaryNav.map(item => (
+                      <li key={item}>
+                        <Link 
+                          to={`/${item.toLowerCase().replace(' ', '-')}`} 
+                          className="footer-link text-gray-200"
+                        >
+                          {item}
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            </div>
+
+            {/* Call to Action & Social */}
+            <div className="space-y-6">
+              <a 
+                href="/giving" 
+                className="gift-button-footer block w-full text-center bg-nsut-yellow text-nsut-maroon font-bold py-3 px-6 rounded-lg relative z-10"
+              >
+                Make a Gift
+              </a>
+              <div>
+                <h3 className="font-serif text-lg font-semibold mb-4 text-center footer-heading">Connect With Us</h3>
+                <div className="flex justify-center space-x-3">
+                  {socialLinks.map((social, index) => (
+                    <a 
+                      key={index} 
+                      href={social.href} 
+                      className="social-icon"
+                      aria-label={social.label}
+                    >
+                      <social.icon size={20} className="text-gray-200" />
+                    </a>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Bottom Section */}
+          <div className="pt-8 border-t border-white/20">
+            <div className="flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-gray-300">
+              <p className="text-center md:text-left">
+                &copy; {new Date().getFullYear()} NSUT University / Netaji Subhas University of Technology
+              </p>
+              <div className="flex items-center gap-4">
+                <Link to="/accessibility" className="footer-link">
+                  Accessibility
+                </Link>
+                <span className="text-gray-500">|</span>
+                <Link to="/privacy" className="footer-link">
+                  Privacy
+                </Link>
+              </div>
+            </div>
+          </div>
+        </div>
+      </footer>
+    </>
+  );
+};
+
+export default Footer;

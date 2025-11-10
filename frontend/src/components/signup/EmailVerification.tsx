@@ -77,43 +77,63 @@ const EmailVerification = ({ email, onEmailChange, onVerified }: EmailVerificati
   };
 
   return (
-    <div className="space-y-4">
-      <h3 className="text-lg font-semibold text-white">Verify Your Email</h3>
-      <p className="text-sm text-gray-200">
-        We'll send a 6-digit OTP to your email address to get started.
-      </p>
+    <div className="space-y-6">
       <div className="space-y-2">
-        <Label htmlFor="email" className="text-white">Email Address</Label>
-        <div className="flex gap-2 pd-2">
+        <Label htmlFor="email" className="text-gray-900">Email Address</Label>
+        <div className="flex gap-2">
           <Input
             id="email"
             type="email"
-            placeholder="e.g., your.email@example.com"
+            placeholder="your.email@example.com"
             value={email}
             onChange={(e) => onEmailChange(e.target.value)}
             disabled={isOtpSent}
-            className="bg-white/20 border-none text-white"
+            className="flex-1 h-12"
           />
           <Button
             onClick={sendOtp}
             disabled={isVerificationDisabled}
-            className="bg-[#8B0712] text-white hover:bg-gray-700"
+            className="bg-nsut-maroon hover:bg-nsut-maroon/90 text-white font-semibold px-6"
           >
-            {isVerificationDisabled ? `Resend in ${timer}s` : "Send OTP"}
+            {isVerificationDisabled ? `${timer}s` : "Send OTP"}
           </Button>
         </div>
       </div>
       {isOtpSent && (
-        <div className="space-y-2">
-          <Label htmlFor="otp" className="text-white">Enter OTP</Label>
-          <Input
-            id="otp"
-            value={otp}
-            onChange={(e) => setOtp(e.target.value)}
-            placeholder="123456"
-            className="bg-white/20 border-none text-white"
-          />
-          <Button onClick={verifyOtp} className="w-full bg-[#8B0712] text-white hover:bg-gray-700">Verify OTP</Button>
+        <div className="space-y-4 animate-in fade-in slide-in-from-top-2 duration-300">
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+            <p className="text-sm text-blue-800">
+              We've sent a 6-digit verification code to your email. Please check your inbox and enter the code below.
+            </p>
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="otp" className="text-gray-900">Verification Code</Label>
+            <Input
+              id="otp"
+              value={otp}
+              onChange={(e) => setOtp(e.target.value)}
+              placeholder="Enter 6-digit code"
+              maxLength={6}
+              className="h-12 text-center text-2xl tracking-widest font-semibold"
+            />
+          </div>
+          <Button 
+            onClick={verifyOtp} 
+            className="w-full h-12 bg-nsut-maroon hover:bg-nsut-maroon/90 text-white font-semibold text-base"
+          >
+            Verify Email
+          </Button>
+          {!isVerificationDisabled && (
+            <p className="text-center text-sm text-gray-600">
+              Didn't receive the code?{" "}
+              <button
+                onClick={sendOtp}
+                className="font-medium text-nsut-maroon hover:text-nsut-maroon/80"
+              >
+                Resend OTP
+              </button>
+            </p>
+          )}
         </div>
       )}
     </div>

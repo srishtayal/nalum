@@ -30,7 +30,7 @@ router.post("/", async (req, res) => {
       message: "No User",
     });
   }
-  if (data.email_verified === false) {
+  if (data.data.email_verified === false) {
     return res.status(401).json({
       err: true,
       code: 401,

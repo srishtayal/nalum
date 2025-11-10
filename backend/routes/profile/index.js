@@ -2,10 +2,16 @@ const express = require("express");
 const router = express.Router();
 const profileStatus = require("./profileStatus");
 const createProfile = require("./createProfile");
+const updateProfile = require("./updateProfile");
+const getProfile = require("./getProfile");
 const searchProfile = require("./searchProfile");
+const profilePicture = require("./profilePicture");
 
 router.use("/create", createProfile);
+router.use("/update", updateProfile);
+router.use("/me", getProfile);
 router.use("/status", profileStatus);
 router.use("/search", searchProfile);
+router.use("/", profilePicture); // Handles /profile/picture
 
 module.exports = router;
