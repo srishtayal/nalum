@@ -6,12 +6,17 @@ import { AuthProvider, useAuth } from '@/context/AuthContext';
 import { useEffect } from 'react';
 import { toast } from 'sonner';
 import ProtectedRoute from '@/components/ProtectedRoute';
+import ProtectedVerificationRoute from '@/components/ProtectedVerificationRoute';
 import HomePage from '@/pages/HomePage';
 import Login from '@/pages/Login';
 import NotFound from '@/pages/NotFound';
 import OtpVerificationPage from '@/pages/OtpVerificationPage';
 import ProfileForm from '@/pages/ProfileForm';
-import Dashboard from '@/pages/Dashboard';
+import Dashboard from '@/pages/dashboard/Dashboard';
+import ShowProfile from '@/pages/dashboard/showProfile';
+import UpdateProfile from '@/pages/dashboard/updateProfile';
+import AlumniDirectory from '@/pages/dashboard/alumniDirectory';
+import VerifyAlumni from '@/pages/dashboard/verifyAlumni';
 import Root from '@/pages/Root';
 import SignUp from '@/pages/SignUp';
 import { AdminAuthProvider } from './context/AdminAuthContext';
@@ -93,11 +98,55 @@ function AppContent() {
 				<Route path="/signup" element={<SignUp />} />
 				<Route path="/otp-verification" element={<OtpVerificationPage />} />
 				<Route path="/profile-form" element={<ProfileForm />} />
+				
+				{/* Verification Route - requires auth but not verification */}
+				<Route 
+					path="/dashboard/verify-alumni" 
+					element={
+						<ProtectedRoute>
+							<VerifyAlumni />
+						</ProtectedRoute>
+					}
+				/>
+				
+				{/* Protected Dashboard Routes - require verification */}
 				<Route 
 					path="/dashboard" 
 					element={
 						<ProtectedRoute>
-							<Dashboard />
+							<ProtectedVerificationRoute>
+								<Dashboard />
+							</ProtectedVerificationRoute>
+						</ProtectedRoute>
+					}
+				/>
+				<Route 
+					path="/dashboard/profile" 
+					element={
+						<ProtectedRoute>
+							<ProtectedVerificationRoute>
+								<ShowProfile />
+							</ProtectedVerificationRoute>
+						</ProtectedRoute>
+					}
+				/>
+				<Route 
+					path="/dashboard/update-profile" 
+					element={
+						<ProtectedRoute>
+							<ProtectedVerificationRoute>
+								<UpdateProfile />
+							</ProtectedVerificationRoute>
+						</ProtectedRoute>
+					}
+				/>
+				<Route 
+					path="/dashboard/alumni" 
+					element={
+						<ProtectedRoute>
+							<ProtectedVerificationRoute>
+								<AlumniDirectory />
+							</ProtectedVerificationRoute>
 						</ProtectedRoute>
 					}
 				/>

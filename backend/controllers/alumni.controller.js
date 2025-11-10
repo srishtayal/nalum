@@ -3,9 +3,35 @@ const { nanoid } = require("nanoid");
 const VerificationCode = require("../models/verificationCode.model.js");
 const User = require("../models/user/user.model.js");
 const VerificationQueue = require("../models/verificationQueue.model.js");
+exports.getVerificationStatus = async (req, res) => {
+  try {
+    const { user_id } = req.user;
+    
+    // Find the user
+    const user = await User.findById(user_id);
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+    
+    // Return the verification status
+    return res.status(200).json({
+      success: true,
+      verified_alumni: user.verified_alumni,
+    });
+  } catch (error) {
+    console.error("Error fetching verification status:", error);
+    return res.status(500).json({
+      success: false,
+      message: "An error occurred while fetching verification status",
+    });
+  }
+};
 
 exports.verifyCode = async (req, res) => {
-  try {
+    try {
     const { code } = req.body;
     const { user_id } = req.user;
 
@@ -119,15 +145,20 @@ exports.checkManualVerification = async (req, res) => {
 
     // If no matches found, add to admin verification queue
     if (!matches || matches.length === 0) {
-      await VerificationQueue.create({
-        user: user_id,
-        details_provided: {
-          name,
-          roll_no,
-          batch,
-          branch,
-        },
-      });
+      // Check if user already has a pending request
+      const existingRequest = await VerificationQueue.findOne({ user: user_id });
+      
+      if (!existingRequest) {
+        await VerificationQueue.create({
+          user: user_id,
+          details_provided: {
+            name,
+            roll_no,
+            batch,
+            branch,
+          },
+        });
+      }
     }
 
     return res.status(200).json({
