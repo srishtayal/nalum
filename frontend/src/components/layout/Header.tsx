@@ -2,12 +2,11 @@ import { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import { Search, Menu, X } from "lucide-react";
 
-const Header = () => {
+const Header = ({ setHeaderHeight }) => {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const headerRef = useRef<HTMLDivElement>(null);
-  const [headerHeight, setHeaderHeight] = useState(0);
 
   // --- Hardcoded Nav Links ---
   const navLinks = {
@@ -35,13 +34,13 @@ const Header = () => {
       "Planned Giving",
       "Donor Recognition",
     ],
-    Stories: ["Alumni Stories", "Giving Stories", "Campus News", "All Stories"],
+    Stories: ["Notable Alumni","Alumni Stories", "Giving Stories", "Campus News", "All Stories"],
   };
 
   // --- Handle scroll effects and dynamic height ---
   useEffect(() => {
     const handleScroll = () => {
-      setScrolled(window.scrollY > 50);
+      setScrolled(window.scrollY > 200); // Increased scroll threshold
     };
     
     const updateHeight = () => {
@@ -55,14 +54,14 @@ const Header = () => {
     
     // Update height initially and after transitions
     updateHeight();
-    const timer = setTimeout(updateHeight, 100);
+    const timer = setTimeout(updateHeight, 300); // Allow transition to finish
 
     return () => {
       window.removeEventListener("scroll", handleScroll);
       window.removeEventListener("resize", updateHeight);
       clearTimeout(timer);
     };
-  }, [scrolled]);
+  }, [scrolled, setHeaderHeight]);
 
   return (
     <>
@@ -174,14 +173,17 @@ const Header = () => {
           box-shadow: 0 4px 12px rgba(184, 134, 11, 0.4);
         }
       `}</style>
-      <header ref={headerRef} className="w-full sticky top-0 z-50">
+      <header 
+        ref={headerRef} 
+        className="w-full fixed top-0 z-50"
+      >
         {/* === TOP BAR === */}
         <div
           className={`bg-nsut-maroon text-white transition-all duration-300 ${
-            scrolled ? "opacity-0 h-0 overflow-hidden" : "opacity-100"
+            scrolled ? "opacity-0 h-0 overflow-hidden" : "opacity-100 py-1"
           }`}
         >
-          <div className="container mx-auto px-4 flex justify-between items-center py-1 border-b border-nsut-yellow/30">
+          <div className="container mx-auto px-4 flex justify-between items-center border-b border-nsut-yellow/30">
             <a
               href="https://www.nsut.ac.in/"
               target="_blank"

@@ -7,14 +7,14 @@ import SocialMediaSection from '@/components/home/SocialMediaSection';
 
 const HomePage = () => {
   return (
-    <div>
+    <main>
       <Hero />
       <IconCtaSection />
       <NewsSection />
       <BenefitsSection />
       <GivingSection />
       <SocialMediaSection />
-    </div>
+    </main>
   );
 };
 

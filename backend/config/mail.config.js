@@ -1,5 +1,6 @@
+require('dotenv').config();
 module.exports = {
-  EMAIL: "abhimanik101@gmail.com",
-  PASSWORD: "lurs yvfc ucnl kzlk",
+  EMAIL: process.env.MAIL_EMAIL,
+  PASSWORD: process.env.MAIL_PASSWORD,
   NAME: "NALUM",
 };

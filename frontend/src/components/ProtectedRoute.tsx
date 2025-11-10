@@ -1,49 +1,31 @@
 import { useAuth } from '../context/AuthContext';
-import { Navigate, Outlet } from 'react-router-dom';
-import { useState, useEffect } from 'react';
-import apiClient from '../lib/api';
+import { Navigate } from 'react-router-dom';
+import { ReactNode } from 'react';
 
-const ProtectedRoute = () => {
-  const { accessToken } = useAuth();
-  const [isProfileComplete, setIsProfileComplete] = useState<boolean | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+interface ProtectedRouteProps {
+  children: ReactNode;
+}
 
-  useEffect(() => {
-    if (!accessToken) {
-      setIsLoading(false);
-      return;
-    }
+const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
+  const { accessToken, isRestoringSession } = useAuth();
 
-    const checkProfileStatus = async () => {
-      try {
-        const response = await apiClient.get('/profile/status');
-        setIsProfileComplete(response.data.profileCompleted);
-      } catch (error) {
-        console.error("Failed to fetch profile status", error);
-        // Decide what to do on error - for now, we'll block access
-        setIsProfileComplete(false);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    checkProfileStatus();
-  }, [accessToken]);
+  // Show loading while checking for active session
+  if (isRestoringSession) {
+    return (
+      <div className="min-h-screen w-full flex items-center justify-center bg-gray-50">
+        <div className="text-center">
+          <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-[#800000] border-t-transparent mb-4"></div>
+          <p className="text-gray-600 text-lg">Loading...</p>
+        </div>
+      </div>
+    );
+  }
 
   if (!accessToken) {
     return <Navigate to="/login" replace />;
   }
 
-  if (isLoading) {
-    // You can replace this with a proper loading spinner component
-    return <div>Loading...</div>;
-  }
-
-  if (isProfileComplete === false) {
-    return <Navigate to="/profile-form" replace />;
-  }
-
-  return isProfileComplete ? <Outlet /> : null;
+  return <>{children}</>;
 };
 
 export default ProtectedRoute;

@@ -1,79 +1,135 @@
 import { Toaster } from '@/components/ui/sonner';
 import { TooltipProvider } from '@/components/ui/tooltip';
-import { AuthProvider } from '@/context/AuthContext';
-import AdminAuthContextProvider from '@/context/AdminAuthContext';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { Route, Routes } from 'react-router-dom';
-import AdminLayout from '@/components/admin/AdminLayout';
-import AdminProtectedRoute from '@/components/admin/AdminProtectedRoute';
-import VerificationPrompt from '@/components/alumniVerify/VerificationPrompt';
+import { Navigate, Route, Routes, useNavigate } from 'react-router-dom';
+import { AuthProvider, useAuth } from '@/context/AuthContext';
+import { useEffect } from 'react';
+import { toast } from 'sonner';
 import ProtectedRoute from '@/components/ProtectedRoute';
-import AdminDashboard from '@/pages/admin/AdminDashboard';
-import AdminLoginPage from '@/pages/admin/AdminLoginPage';
-import EventsPage from '@/pages/admin/EventsPage';
-import NewslettersPage from '@/pages/admin/NewslettersPage';
-import UsersPage from '@/pages/admin/UsersPage';
-import VerificationPage from '@/pages/admin/VerificationPage';
 import HomePage from '@/pages/HomePage';
 import Login from '@/pages/Login';
 import NotFound from '@/pages/NotFound';
 import OtpVerificationPage from '@/pages/OtpVerificationPage';
 import ProfileForm from '@/pages/ProfileForm';
+import Dashboard from '@/pages/Dashboard';
 import Root from '@/pages/Root';
 import SignUp from '@/pages/SignUp';
+import { AdminAuthProvider } from './context/AdminAuthContext';
+import AdminLogin from './pages/admin/AdminLogin';
+import AdminProtectedRoute from './components/admin/AdminProtectedRoute';
+import AdminDashboard from './pages/admin/AdminDashboard';
+import VerificationQueue from './pages/admin/VerificationQueue';
+import UserManagement from './pages/admin/UserManagement';
+import EventApprovals from './pages/admin/EventApprovals';
+import Newsletters from './pages/admin/Newsletters';
+import BannedUsers from './pages/admin/BannedUsers';
+import NotableAlumni from './pages/stories/notableAlumni';
 
 const queryClient = new QueryClient();
+
+// Auth Error Handler Component
+function AuthErrorHandler() {
+	const navigate = useNavigate();
+	const { logout } = useAuth();
+
+	useEffect(() => {
+		const handleAuthError = () => {
+			logout();
+			toast.error('Session Expired', {
+				description: 'Your session has expired. Please log in again.',
+				style: {
+					background: '#800000',
+					color: 'white',
+					border: '2px solid #FFD700',
+					fontSize: '16px',
+				},
+				classNames: {
+					title: 'text-xl font-bold text-white',
+					description: 'text-base text-white',
+				},
+			});
+			navigate('/login');
+		};
+
+		window.addEventListener('auth-error', handleAuthError);
+		return () => window.removeEventListener('auth-error', handleAuthError);
+	}, [logout, navigate]);
+
+	return null;
+}
+
+// Loading Screen Component
+function LoadingScreen() {
+	return (
+		<div className="min-h-screen w-full flex items-center justify-center bg-gray-50">
+			<div className="text-center">
+				<div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-[#800000] border-t-transparent mb-4"></div>
+				<p className="text-gray-600 text-lg">Restoring your session...</p>
+			</div>
+		</div>
+	);
+}
+
+// App Content with Session Check
+function AppContent() {
+	const { isRestoringSession } = useAuth();
+
+	if (isRestoringSession) {
+		return <LoadingScreen />;
+	}
+
+	return (
+		<>
+			<AuthErrorHandler />
+			<Routes>
+				{/* Main App Routes */}
+				<Route path="/" element={<Root />}>
+					<Route index element={<HomePage />} />
+					<Route path="/stories/notable-alumni" element={<NotableAlumni />} />
+				</Route>
+
+				{/* Auth Routes (without header/footer) */}
+				<Route path="/login" element={<Login />} />
+				<Route path="/signup" element={<SignUp />} />
+				<Route path="/otp-verification" element={<OtpVerificationPage />} />
+				<Route path="/profile-form" element={<ProfileForm />} />
+				<Route 
+					path="/dashboard" 
+					element={
+						<ProtectedRoute>
+							<Dashboard />
+						</ProtectedRoute>
+					}
+				/>
+
+				{/* Admin Panel Routes */}
+				<Route path="/admin-panel/login" element={<AdminLogin />} />
+				<Route element={<AdminProtectedRoute />}>
+					<Route path="/admin-panel/dashboard" element={<AdminDashboard />} />
+					<Route path="/admin-panel/verification" element={<VerificationQueue />} />
+					<Route path="/admin-panel/verifications" element={<VerificationQueue />} />
+					<Route path="/admin-panel/users" element={<UserManagement />} />
+					<Route path="/admin-panel/events" element={<EventApprovals />} />
+					<Route path="/admin-panel/newsletters" element={<Newsletters />} />
+					<Route path="/admin-panel/banned" element={<BannedUsers />} />
+				</Route>
+				<Route path="/admin-panel" element={<Navigate to="/admin-panel/dashboard" replace />} />
+
+				{/* 404 Route */}
+				<Route path="*" element={<NotFound />} />
+			</Routes>
+			<Toaster />
+		</>
+	);
+}
+
 function App() {
 	return (
 		<QueryClientProvider client={queryClient}>
 			<AuthProvider>
-				<AdminAuthContextProvider>
-					<TooltipProvider>
-							<Routes>
-								<Route path="/" element={<Root />}>
-									<Route index element={<HomePage />} />
-									<Route path="/login" element={<Login />} />
-									<Route path="/signup" element={<SignUp />} />
-									<Route path="/verify-otp" element={<OtpVerificationPage />} />
-									<Route
-										path="/profile-creation"
-										element={(
-											<ProtectedRoute>
-												<ProfileForm />
-											</ProtectedRoute>
-										)}
-									/>
-									<Route
-										path="/alumni-verification"
-										element={(
-											<ProtectedRoute>
-												<VerificationPrompt />
-											</ProtectedRoute>
-										)}
-									/>
-								</Route>
-
-								<Route path="/admin/login" element={<AdminLoginPage />} />
-								<Route
-									path="/admin"
-									element={(
-										<AdminProtectedRoute>
-											<AdminLayout />
-										</AdminProtectedRoute>
-									)}
-								>
-									<Route index element={<AdminDashboard />} />
-									<Route path="users" element={<UsersPage />} />
-									<Route path="events" element={<EventsPage />} />
-									<Route path="newsletters" element={<NewslettersPage />} />
-									<Route path="verification" element={<VerificationPage />} />
-								</Route>
-
-								<Route path="*" element={<NotFound />} />
-							</Routes>
-						<Toaster />
-					</TooltipProvider>
-				</AdminAuthContextProvider>
+				<AdminAuthProvider>
+					<AppContent />
+				</AdminAuthProvider>
 			</AuthProvider>
 		</QueryClientProvider>
 	);

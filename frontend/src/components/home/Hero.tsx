@@ -88,7 +88,7 @@ const Hero = () => {
   return (
     <div 
       ref={heroRef}
-      className="relative h-screen bg-cover bg-center text-white overflow-hidden"
+      className="relative h-[140vh] bg-cover bg-center text-white overflow-hidden"
     >
       {/* Background Images with crossfade */}
       <div className="absolute inset-0">
@@ -122,7 +122,7 @@ const Hero = () => {
       {/* Play/Pause Button */}
       <button
         onClick={toggleSlideshow}
-        className="absolute top-24 right-8 z-20 bg-white/20 hover:bg-white/30 backdrop-blur-sm p-3 rounded-full transition-all duration-300 hover:scale-110 group"
+        className="absolute top-48 right-8 z-20 bg-white/20 hover:bg-white/30 backdrop-blur-sm p-3 rounded-full transition-all duration-300 hover:scale-110 group"
         aria-label={isPlaying ? 'Pause slideshow' : 'Play slideshow'}
       >
         {isPlaying ? (
@@ -158,18 +158,18 @@ const Hero = () => {
 
       {/* Content with scroll animation */}
       <div
-  className="relative z-10 flex flex-col items-center justify-center h-full text-center px-4 transition-transform duration-100 ease-out"
-  style={{
-    transform: `translateY(${Math.min(scrollY * 0.5, 300)}px)`, // Limit to 200px shift
-  }}
->
-  <h1 className="text-4xl md:text-6xl font-serif font-bold animate-fade-in">
-    Continue your lifelong journey.
-  </h1>
-  <p className="mt-4 text-lg md:text-xl max-w-2xl animate-fade-in animation-delay-300">
-    Build connections, explore resources, and find new opportunities.
-  </p>
-</div>
+        className="relative z-10 h-screen flex flex-col items-center justify-center text-center px-4"
+        style={{
+          transform: `translateY(${Math.min(scrollY * 0.9, 600)}px)`, // Limit to 500px shift
+        }}
+      >
+        <h1 className="text-4xl md:text-6xl font-serif font-bold animate-fade-in">
+          Continue your lifelong journey.
+        </h1>
+        <p className="mt-4 text-lg md:text-xl max-w-2xl animate-fade-in animation-delay-300">
+          Build connections, explore resources, and find new opportunities.
+        </p>
+      </div>
 
     </div>
   );
