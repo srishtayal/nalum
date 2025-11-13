@@ -1,8 +1,11 @@
-import { useAdminAuth } from "../../context/AdminAuthContext";
+import { useAuth } from "../../context/AuthContext";
 import { Bell } from "lucide-react";
 
+/**
+ * Simplified AdminHeader - uses main AuthContext
+ */
 const AdminHeader = () => {
-  const { admin } = useAdminAuth();
+  const { user } = useAuth();
 
   return (
     <header className="bg-white shadow-sm border-b border-gray-200">
@@ -12,7 +15,7 @@ const AdminHeader = () => {
             Admin Panel
           </h2>
           <p className="text-sm text-gray-600">
-            Welcome back, {admin?.name}
+            Welcome back, {user?.name}
           </p>
         </div>
 
@@ -26,11 +29,11 @@ const AdminHeader = () => {
           {/* Admin Info */}
           <div className="flex items-center space-x-3">
             <div className="text-right">
-              <p className="text-sm font-medium text-gray-900">{admin?.name}</p>
-              <p className="text-xs text-gray-500">{admin?.email}</p>
+              <p className="text-sm font-medium text-gray-900">{user?.name}</p>
+              <p className="text-xs text-gray-500">{user?.email}</p>
             </div>
             <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center text-white font-semibold">
-              {admin?.name?.charAt(0).toUpperCase()}
+              {user?.name?.charAt(0).toUpperCase()}
             </div>
           </div>
         </div>

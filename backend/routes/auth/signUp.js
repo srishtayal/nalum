@@ -14,6 +14,25 @@ router.post("/",async (req,res) => {
   }
   
   const {name,email,password,role} = req.body;
+  
+  // Block admin signup - admins can only be created via scripts
+  if(role === "admin"){
+    return res.status(403).json({
+      err: true,
+      code: 403,
+      message: "Admin accounts cannot be created via signup. Contact system administrator."
+    });
+  }
+  
+  // Validate student email
+  if(role === "student" && !email.endsWith("@nsut.ac.in")){
+    return res.status(400).json({
+      err: true,
+      code: 400,
+      message: "Students must use their @nsut.ac.in email address"
+    });
+  }
+  
   const existingUser = await users.findOne(email);
   if(existingUser.error){
     return res.status(500).json({

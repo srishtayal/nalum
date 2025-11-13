@@ -79,9 +79,9 @@ const NewsSection = () => {
     {
       icon: GraduationCap,
       badge: 'UPCOMING EVENT',
-      headline: '3th Convocation Ceremony',
+      headline: '3rd Convocation Ceremony',
       date: 'December 11, 2025',
-      description: 'Join us in celebrating the achievements of our graduating class at the 3th Annual Convocation Ceremony. This prestigious event marks a significant milestone in the academic journey of our students as they prepare to embark on their professional careers.',
+      description: 'Join us in celebrating the achievements of our graduating class at the 3rd Annual Convocation Ceremony. This prestigious event marks a significant milestone in the academic journey of our students as they prepare to embark on their professional careers.',
       link: 'https://www.nsut.ac.in/convocation/',
       cta: 'View Details'
     },

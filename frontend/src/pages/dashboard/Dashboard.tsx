@@ -1,14 +1,68 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { GraduationCap, User, Calendar, Mail } from "lucide-react";
+import { GraduationCap, User, Calendar, Mail, Eye, Edit2, Users, AlertCircle } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
+import { useEffect, useState } from "react";
+import api from "@/lib/api";
+import UserAvatar from "@/components/UserAvatar";
+
+interface Profile {
+  user: {
+    name: string;
+    email: string;
+  };
+  profile_picture?: string;
+}
+
+interface VerificationStatus {
+  verified_alumni: boolean;
+}
 
 const Dashboard = () => {
-  const { email, logout } = useAuth();
+  const { email, logout, accessToken } = useAuth();
+  const [profile, setProfile] = useState<Profile | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [verificationStatus, setVerificationStatus] = useState<VerificationStatus | null>(null);
+
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const response = await api.get('/profile/me', {
+          headers: {
+            Authorization: `Bearer ${accessToken}`
+          }
+        });
+        setProfile(response.data.profile);
+        console.log('Profile data:', response.data);
+      } catch (error) {
+        console.error('Error fetching profile data:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    const fetchVerificationStatus = async () => {
+      try {
+        const response = await api.get('/alumni/status', {
+          headers: {
+            Authorization: `Bearer ${accessToken}`
+          }
+        });
+        setVerificationStatus(response.data);
+      } catch (error) {
+        console.error('Error fetching verification status:', error);
+      }
+    };
+
+    if (accessToken) {
+      fetchProfile();
+      fetchVerificationStatus();
+    }
+  }, [accessToken]);
 
   return (
     <div className="min-h-screen bg-gray-50 pt-16">
-      {/* Header/Navbar placeholder */}
+      {/* Header/Navbar */}
       <div className="bg-white shadow-sm border-b">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -16,7 +70,14 @@ const Dashboard = () => {
             <h1 className="text-2xl font-serif font-bold text-gray-900">NALUM Dashboard</h1>
           </div>
           <div className="flex items-center gap-4">
-            <span className="text-sm text-gray-600">{email}</span>
+            <span className="text-sm text-gray-600 hidden md:block">{email}</span>
+            {!isLoading && profile && (
+              <UserAvatar 
+                src={profile.profile_picture} 
+                name={profile.user.name} 
+                size="md"
+              />
+            )}
             <Button
               onClick={logout}
               variant="outline"
@@ -106,13 +167,43 @@ const Dashboard = () => {
               <Button
                 variant="outline"
                 className="h-auto py-4 justify-start"
-                disabled
+                asChild
               >
-                <User className="h-5 w-5 mr-3" />
-                <div className="text-left">
-                  <p className="font-semibold">Edit Profile</p>
-                  <p className="text-sm text-gray-500">Coming soon</p>
-                </div>
+                <Link to="/dashboard/profile">
+                  <Eye className="h-5 w-5 mr-3" />
+                  <div className="text-left">
+                    <p className="font-semibold">View Profile</p>
+                    <p className="text-sm text-gray-500">See your complete profile</p>
+                  </div>
+                </Link>
+              </Button>
+
+              <Button
+                variant="outline"
+                className="h-auto py-4 justify-start"
+                asChild
+              >
+                <Link to="/dashboard/update-profile">
+                  <Edit2 className="h-5 w-5 mr-3" />
+                  <div className="text-left">
+                    <p className="font-semibold">Edit Profile</p>
+                    <p className="text-sm text-gray-500">Update your information</p>
+                  </div>
+                </Link>
+              </Button>
+              
+              <Button
+                variant="outline"
+                className="h-auto py-4 justify-start"
+                asChild
+              >
+                <Link to="/dashboard/alumni">
+                  <Users className="h-5 w-5 mr-3" />
+                  <div className="text-left">
+                    <p className="font-semibold">Alumni Directory</p>
+                    <p className="text-sm text-gray-500">Search and connect with alumni</p>
+                  </div>
+                </Link>
               </Button>
             </div>
           </div>

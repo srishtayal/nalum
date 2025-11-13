@@ -1,14 +1,29 @@
 import { useEffect, useState } from "react";
 import AdminLayout from "../../components/admin/AdminLayout";
-import {
-  getVerificationQueue,
-  approveVerification,
-  rejectVerification,
-  VerificationQueueItem,
-} from "../../lib/adminApi";
 import { CheckCircle, XCircle, User } from "lucide-react";
+import { toast } from "sonner";
+import { useAdminApi } from "@/hooks/useAdminApi";
+
+interface VerificationQueueItem {
+  _id: string;
+  user: {
+    _id: string;
+    name: string;
+    email: string;
+    role: string;
+    createdAt: string;
+  };
+  details_provided: {
+    name: string;
+    roll_no?: string;
+    batch: string;
+    branch: string;
+  };
+  createdAt: string;
+}
 
 const VerificationQueue = () => {
+  const adminApi = useAdminApi();
   const [queue, setQueue] = useState<VerificationQueueItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
@@ -17,43 +32,31 @@ const VerificationQueue = () => {
   const [showRejectModal, setShowRejectModal] = useState(false);
 
   const fetchQueue = async () => {
-    console.log("[VerificationQueue] Starting to fetch queue...");
     try {
-      const response = await getVerificationQueue(1, 50);
-      console.log("[VerificationQueue] API Response:", response);
-      if (response.success) {
-        console.log("[VerificationQueue] Queue data:", response.data);
-        console.log("[VerificationQueue] Queue length:", response.data.length);
-        setQueue(response.data);
-      } else {
-        console.error("[VerificationQueue] Response not successful:", response);
-      }
-    } catch (err: any) {
-      console.error("[VerificationQueue] Failed to fetch queue:", err);
-      console.error("[VerificationQueue] Error details:", {
-        message: err.message,
-        response: err.response?.data,
-        status: err.response?.status,
-      });
+      const response = await adminApi.get("/admin/verification/queue");
+      setQueue(response.data.data || []);
+    } catch (err) {
+      console.error("Failed to fetch queue:", err);
+      toast.error("Failed to load verification queue");
     } finally {
       setIsLoading(false);
-      console.log("[VerificationQueue] Loading complete");
     }
   };
 
   useEffect(() => {
-    console.log("[VerificationQueue] Component mounted");
     fetchQueue();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleApprove = async (userId: string) => {
     setActionLoading(userId);
     try {
-      await approveVerification(userId);
-      setQueue(queue.filter((item) => item.user._id !== userId));
-      alert("User approved successfully!");
-    } catch (err: any) {
-      alert(err.response?.data?.message || "Failed to approve");
+      await adminApi.post(`/admin/verification/approve/${userId}`);
+      toast.success("User verification approved!");
+      fetchQueue();
+    } catch (err) {
+      console.error("Failed to approve:", err);
+      toast.error("Failed to approve verification");
     } finally {
       setActionLoading(null);
     }
@@ -61,31 +64,35 @@ const VerificationQueue = () => {
 
   const handleRejectClick = (item: VerificationQueueItem) => {
     setSelectedItem(item);
+    setRejectReason("");
     setShowRejectModal(true);
   };
 
   const handleRejectSubmit = async () => {
     if (!selectedItem || !rejectReason.trim()) {
-      alert("Please provide a reason");
+      toast.error("Please provide a reason");
       return;
     }
 
     setActionLoading(selectedItem.user._id);
     try {
-      await rejectVerification(selectedItem.user._id, rejectReason);
-      setQueue(queue.filter((item) => item.user._id !== selectedItem.user._id));
+      await adminApi.post(
+        `/admin/verification/reject/${selectedItem.user._id}`,
+        { reason: rejectReason }
+      );
+      toast.success("Verification rejected");
       setShowRejectModal(false);
-      setRejectReason("");
-      alert("Verification rejected");
-    } catch (err: any) {
-      alert(err.response?.data?.message || "Failed to reject");
+      fetchQueue();
+    } catch (err) {
+      console.error("Failed to reject:", err);
+      toast.error("Failed to reject verification");
     } finally {
       setActionLoading(null);
+      setSelectedItem(null);
     }
   };
 
   if (isLoading) {
-    console.log("[VerificationQueue] Rendering loading state");
     return (
       <AdminLayout>
         <div className="flex items-center justify-center h-full">
@@ -94,9 +101,6 @@ const VerificationQueue = () => {
       </AdminLayout>
     );
   }
-
-  console.log("[VerificationQueue] Rendering with queue:", queue);
-  console.log("[VerificationQueue] Queue length:", queue.length);
 
   return (
     <AdminLayout>

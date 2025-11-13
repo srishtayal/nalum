@@ -1,12 +1,6 @@
-import axios from "axios";
+import apiClient from "./api";
 
-// Admin-specific axios instance
-const adminApi = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || "http://localhost:5000",
-  withCredentials: true, // For refresh token cookie
-});
-
-// Types
+// Re-export types
 export interface Admin {
   id: string;
   email: string;
@@ -132,102 +126,47 @@ export interface BannedUser {
   created_at: string;
 }
 
-// Store admin token
-let adminToken: string | null = localStorage.getItem("admin_token");
+export interface VerificationCodeType {
+  _id: string;
+  code: string;
+  generated_by: {
+    _id: string;
+    name: string;
+    email: string;
+  };
+  used_by?: {
+    _id: string;
+    name: string;
+    email: string;
+  };
+  is_used: boolean;
+  used_at?: string;
+  expires_at: string;
+  createdAt: string;
+}
 
-export const setAdminToken = (token: string | null) => {
-  adminToken = token;
-  if (token) {
-    localStorage.setItem("admin_token", token);
-  } else {
-    localStorage.removeItem("admin_token");
-  }
-};
+export interface CodeStats {
+  total: number;
+  active: number;
+  used: number;
+  expired: number;
+}
 
-export const getAdminToken = () => adminToken;
-
-// Add token to requests
-adminApi.interceptors.request.use((config) => {
-  console.log("[adminApi] Request:", config.method?.toUpperCase(), config.url);
-  if (adminToken) {
-    console.log("[adminApi] Adding token to request");
-    config.headers.Authorization = `Bearer ${adminToken}`;
-  } else {
-    console.log("[adminApi] No token available");
-  }
-  return config;
-});
-
-// Handle token refresh
-adminApi.interceptors.response.use(
-  (response) => {
-    console.log("[adminApi] Response:", response.config.method?.toUpperCase(), response.config.url, "Status:", response.status);
-    return response;
-  },
-  async (error) => {
-    console.error("[adminApi] Request failed:", error.config?.method?.toUpperCase(), error.config?.url);
-    console.error("[adminApi] Error status:", error.response?.status);
-    console.error("[adminApi] Error data:", error.response?.data);
-    
-    const originalRequest = error.config;
-    
-    if (error.response?.status === 401 && !originalRequest._retry) {
-      originalRequest._retry = true;
-      
-      try {
-        // Try to refresh token
-        const response = await axios.post(
-          `${import.meta.env.VITE_API_URL || "http://localhost:5000"}/auth/refresh`,
-          {},
-          { withCredentials: true }
-        );
-        
-        const newToken = response.data.data.access_token;
-        setAdminToken(newToken);
-        
-        originalRequest.headers.Authorization = `Bearer ${newToken}`;
-        return adminApi(originalRequest);
-      } catch (refreshError) {
-        // Refresh failed, logout
-        setAdminToken(null);
-        window.location.href = "/admin-panel/login";
-        return Promise.reject(refreshError);
-      }
-    }
-    
-    return Promise.reject(error);
-  }
-);
+/**
+ * Simplified Admin API - Uses main apiClient with automatic auth
+ * All functions use the unified authentication system
+ */
 
 // API Functions
 
-// Auth
-export const adminLogin = async (email: string, password: string) => {
-  const response = await adminApi.post<LoginResponse>("/admin/auth/login", {
-    email,
-    password,
-  });
-  return response.data;
-};
-
-export const adminLogout = async () => {
-  const response = await adminApi.post("/admin/auth/logout");
-  return response.data;
-};
-
-export const getCurrentAdmin = async () => {
-  const response = await adminApi.get("/admin/auth/me");
-  return response.data;
-};
-
 // Dashboard & Statistics
 export const getDashboardStats = async () => {
-  const response = await adminApi.get<{ success: boolean; stats: DashboardStats }>("/admin/statistics/dashboard");
+  const response = await apiClient.get<{ success: boolean; stats: DashboardStats }>("/admin/statistics/dashboard");
   return response.data;
 };
 
 export const getRegistrationGraph = async (days: number = 30) => {
-  const response = await adminApi.get(`/admin/statistics/registrations?days=${days}`);
+  const response = await apiClient.get(`/admin/statistics/registrations?days=${days}`);
   return response.data;
 };
 
@@ -239,51 +178,51 @@ export const getAllUsers = async (params?: {
   banned?: boolean;
   search?: string;
 }) => {
-  const response = await adminApi.get("/admin/statistics/users", { params });
+  const response = await apiClient.get("/admin/statistics/users", { params });
   return response.data;
 };
 
 // Verification Queue
 export const getVerificationQueue = async (page: number = 1, limit: number = 10) => {
   console.log("[adminApi] getVerificationQueue called with page:", page, "limit:", limit);
-  const response = await adminApi.get(`/admin/verification/queue?page=${page}&limit=${limit}`);
+  const response = await apiClient.get(`/admin/verification/queue?page=${page}&limit=${limit}`);
   console.log("[adminApi] getVerificationQueue response:", response.data);
   return response.data;
 };
 
 export const approveVerification = async (userId: string, notes?: string) => {
-  const response = await adminApi.post(`/admin/verification/approve/${userId}`, { notes });
+  const response = await apiClient.post(`/admin/verification/approve/${userId}`, { notes });
   return response.data;
 };
 
 export const rejectVerification = async (userId: string, reason: string) => {
-  const response = await adminApi.post(`/admin/verification/reject/${userId}`, { reason });
+  const response = await apiClient.post(`/admin/verification/reject/${userId}`, { reason });
   return response.data;
 };
 
 export const getVerificationStats = async () => {
-  const response = await adminApi.get("/admin/verification/stats");
+  const response = await apiClient.get("/admin/verification/stats");
   return response.data;
 };
 
 // User Management (Ban/Unban)
 export const banUser = async (userId: string, duration: string, reason: string) => {
-  const response = await adminApi.post(`/admin/users/ban/${userId}`, { duration, reason });
+  const response = await apiClient.post(`/admin/users/ban/${userId}`, { duration, reason });
   return response.data;
 };
 
 export const unbanUser = async (userId: string, notes?: string) => {
-  const response = await adminApi.post(`/admin/users/unban/${userId}`, { notes });
+  const response = await apiClient.post(`/admin/users/unban/${userId}`, { notes });
   return response.data;
 };
 
 export const getBannedUsers = async (page: number = 1, limit: number = 10) => {
-  const response = await adminApi.get(`/admin/users/banned?page=${page}&limit=${limit}`);
+  const response = await apiClient.get(`/admin/users/banned?page=${page}&limit=${limit}`);
   return response.data;
 };
 
 export const getUserBanHistory = async (userId: string) => {
-  const response = await adminApi.get(`/admin/users/history/${userId}`);
+  const response = await apiClient.get(`/admin/users/history/${userId}`);
   return response.data;
 };
 
@@ -294,32 +233,32 @@ export const getAllEvents = async (params?: {
   status?: string;
   event_type?: string;
 }) => {
-  const response = await adminApi.get("/admin/events/all", { params });
+  const response = await apiClient.get("/admin/events/all", { params });
   return response.data;
 };
 
 export const getPendingEvents = async (page: number = 1, limit: number = 10) => {
-  const response = await adminApi.get(`/admin/events/pending?page=${page}&limit=${limit}`);
+  const response = await apiClient.get(`/admin/events/pending?page=${page}&limit=${limit}`);
   return response.data;
 };
 
 export const getEventById = async (eventId: string) => {
-  const response = await adminApi.get(`/admin/events/${eventId}`);
+  const response = await apiClient.get(`/admin/events/${eventId}`);
   return response.data;
 };
 
 export const approveEvent = async (eventId: string, notes?: string) => {
-  const response = await adminApi.post(`/admin/events/approve/${eventId}`, { notes });
+  const response = await apiClient.post(`/admin/events/approve/${eventId}`, { notes });
   return response.data;
 };
 
 export const rejectEvent = async (eventId: string, reason: string) => {
-  const response = await adminApi.post(`/admin/events/reject/${eventId}`, { reason });
+  const response = await apiClient.post(`/admin/events/reject/${eventId}`, { reason });
   return response.data;
 };
 
 export const deleteEvent = async (eventId: string) => {
-  const response = await adminApi.delete(`/admin/events/${eventId}`);
+  const response = await apiClient.delete(`/admin/events/${eventId}`);
   return response.data;
 };
 
@@ -330,7 +269,7 @@ export const uploadNewsletter = async (file: File, title: string, description: s
   formData.append("title", title);
   formData.append("description", description);
   
-  const response = await adminApi.post("/admin/newsletters/upload", formData, {
+  const response = await apiClient.post("/admin/newsletters/upload", formData, {
     headers: {
       "Content-Type": "multipart/form-data",
     },
@@ -340,13 +279,36 @@ export const uploadNewsletter = async (file: File, title: string, description: s
 
 export const getAllNewsletters = async (page: number = 1, limit: number = 10, is_active?: boolean) => {
   const params = is_active !== undefined ? { page, limit, is_active } : { page, limit };
-  const response = await adminApi.get("/admin/newsletters/all", { params });
+  const response = await apiClient.get("/admin/newsletters/all", { params });
   return response.data;
 };
 
 export const deleteNewsletter = async (newsletterId: string) => {
-  const response = await adminApi.delete(`/admin/newsletters/${newsletterId}`);
+  const response = await apiClient.delete(`/admin/newsletters/${newsletterId}`);
   return response.data;
 };
 
-export default adminApi;
+// Verification Codes
+export const generateVerificationCodes = async (count: number = 1) => {
+  const response = await apiClient.post("/admin/codes/generate", { count });
+  return response.data;
+};
+
+export const getAllVerificationCodes = async (params?: {
+  page?: number;
+  limit?: number;
+  status?: "all" | "active" | "used" | "expired";
+}) => {
+  const response = await apiClient.get("/admin/codes", { params });
+  return response.data;
+};
+
+export const getCodeStatistics = async () => {
+  const response = await apiClient.get("/admin/codes/stats");
+  return response.data;
+};
+
+export const deleteExpiredCodes = async () => {
+  const response = await apiClient.delete("/admin/codes/expired");
+  return response.data;
+};
