@@ -33,10 +33,10 @@ interface ApiErrorResponse {
 }
 
 const VerifyAlumni = () => {
-  const { accessToken } = useAuth();
+  const { accessToken ,role } = useAuth();
   const [activeMethod, setActiveMethod] = useState<'code' | 'database' | 'manual' | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [verificationStatus, setVerificationStatus] = useState<VerificationStatus | null>(null);
+  const [verificationStatus, setVerificationStatus] = useState<VerificationStatus | undefined>(undefined);
   const [isCheckingStatus, setIsCheckingStatus] = useState(true);
 
   // Code verification state

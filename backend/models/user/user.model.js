@@ -60,7 +60,7 @@ const userSchema = new mongoose.Schema(
       type: Boolean,
       default: function() {
         // Only alumni need this field
-        return this.role === "alumni" ? false : undefined;
+        return this.role === "alumni" ? false : true;
       },
     },
     banned: {
