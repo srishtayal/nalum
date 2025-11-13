@@ -51,6 +51,22 @@ exports.verifyCode = async (req, res) => {
         message: "User not found",
       });
     }
+    
+    // Only alumni can use verification codes
+    if (user.role !== "alumni") {
+      return res.status(403).json({
+        success: false,
+        message: "Verification codes are only for alumni users",
+      });
+    }
+    
+    // Check if email is verified first
+    if (!user.email_verified) {
+      return res.status(403).json({
+        success: false,
+        message: "Please verify your email address first before using a verification code",
+      });
+    }
 
     // Check if user is already verified
     if (user.verified_alumni) {
@@ -72,9 +88,19 @@ exports.verifyCode = async (req, res) => {
         message: "Verification code is invalid or has already been used",
       });
     }
+    
+    // Check if code is expired
+    if (!verificationCode.isValid()) {
+      return res.status(400).json({
+        success: false,
+        message: "Verification code has expired",
+      });
+    }
 
     // Mark the code as used
     verificationCode.is_used = true;
+    verificationCode.used_by = user_id;
+    verificationCode.used_at = new Date();
     await verificationCode.save();
 
     // Update user's alumni verification status
@@ -91,34 +117,6 @@ exports.verifyCode = async (req, res) => {
     return res.status(500).json({
       success: false,
       message: "An error occurred while verifying the code",
-    });
-  }
-};
-
-exports.generateCodes = async (req, res) => {
-  try {
-    const count = req.body.count || 1;
-
-    // Generate the specified number of unique codes
-    const codesToInsert = [];
-    for (let i = 0; i < count; i++) {
-      const code = nanoid(10);
-      codesToInsert.push({ code });
-    }
-
-    // Insert all codes in a single operation
-    const newCodes = await VerificationCode.insertMany(codesToInsert);
-
-    return res.status(201).json({
-      success: true,
-      message: `${count} codes generated successfully`,
-      codes: newCodes,
-    });
-  } catch (error) {
-    console.error("Error generating verification codes:", error);
-    return res.status(500).json({
-      success: false,
-      message: "An error occurred while generating codes",
     });
   }
 };

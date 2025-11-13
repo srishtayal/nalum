@@ -14,8 +14,7 @@ router.post("/check-manual", protect, alumniController.checkManualVerification);
 router.post("/confirm-match", protect, alumniController.confirmManualMatch);
 
 // Admin-only routes for managing verification queue
-// These are accessible via /alumni/admin/* (e.g., /alumni/admin/generate-codes)
-router.post("/admin/generate-codes", protect, isAdmin, alumniController.generateCodes);
+// Note: Code generation has moved to /admin/codes/generate
 router.get("/admin/queue", protect, isAdmin, alumniController.getQueue);
 router.post("/admin/queue/:userId/approve", protect, isAdmin, alumniController.approveFromQueue);
 router.post("/admin/queue/:userId/deny", protect, isAdmin, alumniController.denyFromQueue);
