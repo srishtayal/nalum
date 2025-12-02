@@ -5,7 +5,15 @@ const router = express.Router();
 const users = require("../../controllers/user.controller");
 
 router.post("/",async (req,res) => {
+  console.log("SignUp request received:", { body: req.body });
+  
   if(!req.body.name || !req.body.email || !req.body.password || !req.body.role){
+    console.log("Missing required fields:", {
+      name: !!req.body.name,
+      email: !!req.body.email,
+      password: !!req.body.password,
+      role: !!req.body.role
+    });
     return res.status(400).json({
       err: true,
       code: 400,

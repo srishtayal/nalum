@@ -200,7 +200,7 @@ PORT=5000
 
 Frontend (.env):
 ```
-VITE_API_URL=https://your-api-domain.com
+API_URL=https://your-api-domain.com
 ```
 
 ### Security Checklist
