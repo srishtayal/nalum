@@ -6,16 +6,19 @@ import { AuthProvider, useAuth } from '@/context/AuthContext';
 import { useEffect } from 'react';
 import { toast } from 'sonner';
 import ProtectedRoute from '@/components/ProtectedRoute';
+import ProtectedVerificationRoute from '@/components/ProtectedVerificationRoute';
 import HomePage from '@/pages/HomePage';
-import Login from '@/pages/Login';
+import Login from '@/pages/auth/Login';
 import NotFound from '@/pages/NotFound';
-import OtpVerificationPage from '@/pages/OtpVerificationPage';
-import ProfileForm from '@/pages/ProfileForm';
-import Dashboard from '@/pages/Dashboard';
+import OtpVerificationPage from '@/pages/auth/OtpVerificationPage';
+import ProfileForm from '@/pages/auth/ProfileForm';
+import Dashboard from '@/pages/dashboard/Dashboard';
+import ShowProfile from '@/pages/dashboard/showProfile';
+import UpdateProfile from '@/pages/dashboard/updateProfile';
+import AlumniDirectory from '@/pages/dashboard/alumniDirectory';
+import VerifyAlumni from '@/pages/dashboard/verifyAlumni';
 import Root from '@/pages/Root';
-import SignUp from '@/pages/SignUp';
-import { AdminAuthProvider } from './context/AdminAuthContext';
-import AdminLogin from './pages/admin/AdminLogin';
+import SignUp from '@/pages/auth/SignUp';
 import AdminProtectedRoute from './components/admin/AdminProtectedRoute';
 import AdminDashboard from './pages/admin/AdminDashboard';
 import VerificationQueue from './pages/admin/VerificationQueue';
@@ -23,7 +26,9 @@ import UserManagement from './pages/admin/UserManagement';
 import EventApprovals from './pages/admin/EventApprovals';
 import Newsletters from './pages/admin/Newsletters';
 import BannedUsers from './pages/admin/BannedUsers';
+import CodeManagement from './pages/admin/CodeManagement';
 import NotableAlumni from './pages/stories/notableAlumni';
+import { startKeepAlive, stopKeepAlive } from '@/lib/keepAlive';
 
 const queryClient = new QueryClient();
 
@@ -93,17 +98,60 @@ function AppContent() {
 				<Route path="/signup" element={<SignUp />} />
 				<Route path="/otp-verification" element={<OtpVerificationPage />} />
 				<Route path="/profile-form" element={<ProfileForm />} />
+				
+				{/* Verification Route - requires auth but not verification */}
+				<Route 
+					path="/dashboard/verify-alumni" 
+					element={
+						<ProtectedRoute>
+							<VerifyAlumni />
+						</ProtectedRoute>
+					}
+				/>
+				
+				{/* Protected Dashboard Routes - require verification */}
 				<Route 
 					path="/dashboard" 
 					element={
 						<ProtectedRoute>
-							<Dashboard />
+							<ProtectedVerificationRoute>
+								<Dashboard />
+							</ProtectedVerificationRoute>
+						</ProtectedRoute>
+					}
+				/>
+				<Route 
+					path="/dashboard/profile" 
+					element={
+						<ProtectedRoute>
+							<ProtectedVerificationRoute>
+								<ShowProfile />
+							</ProtectedVerificationRoute>
+						</ProtectedRoute>
+					}
+				/>
+				<Route 
+					path="/dashboard/update-profile" 
+					element={
+						<ProtectedRoute>
+							<ProtectedVerificationRoute>
+								<UpdateProfile />
+							</ProtectedVerificationRoute>
+						</ProtectedRoute>
+					}
+				/>
+				<Route 
+					path="/dashboard/alumni" 
+					element={
+						<ProtectedRoute>
+							<ProtectedVerificationRoute>
+								<AlumniDirectory />
+							</ProtectedVerificationRoute>
 						</ProtectedRoute>
 					}
 				/>
 
-				{/* Admin Panel Routes */}
-				<Route path="/admin-panel/login" element={<AdminLogin />} />
+				{/* Admin Panel Routes - Use main login, role-based access */}
 				<Route element={<AdminProtectedRoute />}>
 					<Route path="/admin-panel/dashboard" element={<AdminDashboard />} />
 					<Route path="/admin-panel/verification" element={<VerificationQueue />} />
@@ -112,8 +160,10 @@ function AppContent() {
 					<Route path="/admin-panel/events" element={<EventApprovals />} />
 					<Route path="/admin-panel/newsletters" element={<Newsletters />} />
 					<Route path="/admin-panel/banned" element={<BannedUsers />} />
+					<Route path="/admin-panel/codes" element={<CodeManagement />} />
 				</Route>
 				<Route path="/admin-panel" element={<Navigate to="/admin-panel/dashboard" replace />} />
+				<Route path="/admin-panel/login" element={<Navigate to="/login" replace />} />
 
 				{/* 404 Route */}
 				<Route path="*" element={<NotFound />} />
@@ -124,12 +174,20 @@ function AppContent() {
 }
 
 function App() {
+	useEffect(() => {
+		// Start keep-alive when app mounts
+		startKeepAlive();
+		
+		// Cleanup on unmount
+		return () => {
+			stopKeepAlive();
+		};
+	}, []);
+
 	return (
 		<QueryClientProvider client={queryClient}>
 			<AuthProvider>
-				<AdminAuthProvider>
-					<AppContent />
-				</AdminAuthProvider>
+				<AppContent />
 			</AuthProvider>
 		</QueryClientProvider>
 	);

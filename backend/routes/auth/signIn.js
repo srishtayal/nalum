@@ -37,6 +37,17 @@ router.post("/", async (req, res) => {
       message: "Email not verified",
     });
   }
+  
+  // Check student verification timeout (30 days)
+  if (data.data.role === "student" && data.data.isStudentVerificationExpired()) {
+    return res.status(403).json({
+      err: true,
+      code: 403,
+      message: "Your email verification has expired. Please verify your @nsut.ac.in email again.",
+      verification_expired: true,
+    });
+  }
+  
   let matched;
 
   try {
@@ -63,7 +74,7 @@ router.post("/", async (req, res) => {
   res.cookie("refresh_token", refresh_token, {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
-    sameSite: "strict",
+    sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
     maxAge: 365 * 24 * 60 * 60 * 1000, // 1 year
   });
 

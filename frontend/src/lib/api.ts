@@ -1,4 +1,5 @@
 import axios from "axios";
+import { BASE_URL } from "./constants";
 
 let accessToken: string | null = null;
 
@@ -7,11 +8,11 @@ export const setAuthToken = (token: string | null) => {
 };
 
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL,
+  baseURL: BASE_URL,
 });
 
 const refreshApi = axios.create({
-  baseURL: import.meta.env.VITE_API_URL,
+  baseURL: BASE_URL,
 });
 
 api.interceptors.request.use((config) => {

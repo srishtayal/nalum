@@ -26,8 +26,11 @@ router.post("/", async (req, res) => {
     return res.status(400).json({ error: true, code: 400, message: otpData.message || "Invalid OTP" });
   }
 
-  // Mark user as verified
-  const updateResponse = await userController.update(email, { email_verified: true });
+  // Mark user as verified with timestamp
+  const updateResponse = await userController.update(email, { 
+    email_verified: true,
+    email_verified_at: new Date()
+  });
   if (updateResponse.error) {
     return res.status(500).json({ error: true, code: 500, message: updateResponse.message || "Error verifying account" });
   }

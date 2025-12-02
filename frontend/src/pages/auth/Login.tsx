@@ -74,7 +74,10 @@ const Login = () => {
       const response = await apiClient.post("/auth/sign-in", formData);
       const { access_token, email, user } = response.data.data;
       const verified_alumni = user?.verified_alumni || false;
-      setAuth(access_token, email, verified_alumni);
+      
+      // Set full user data in auth context
+      setAuth(access_token, email, verified_alumni, user);
+      
       toast.success("Login Successful!", {
         description: "Welcome back to the NSUT Alumni Portal 🎉",
         style: {
@@ -89,6 +92,13 @@ const Login = () => {
         },
       });
 
+      // Redirect admin users to admin panel
+      if (user?.role === 'admin') {
+        navigate("/admin-panel/dashboard");
+        return;
+      }
+
+      // Regular user flow - check profile completion
       const profileStatusResponse = await apiClient.get("/profile/status", {
         headers: { Authorization: `Bearer ${access_token}` },
       });

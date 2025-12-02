@@ -20,7 +20,7 @@ import {
 } from "lucide-react";
 import nsutLogo from "@/assets/nsut-logo.svg";
 import nsutCampusHero from "@/assets/nsut-campus-hero.png";
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../../context/AuthContext';
 interface Experience {
   company: string;
   role: string;

@@ -3,9 +3,35 @@ const { nanoid } = require("nanoid");
 const VerificationCode = require("../models/verificationCode.model.js");
 const User = require("../models/user/user.model.js");
 const VerificationQueue = require("../models/verificationQueue.model.js");
+exports.getVerificationStatus = async (req, res) => {
+  try {
+    const { user_id } = req.user;
+    
+    // Find the user
+    const user = await User.findById(user_id);
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+    
+    // Return the verification status
+    return res.status(200).json({
+      success: true,
+      verified_alumni: user.verified_alumni,
+    });
+  } catch (error) {
+    console.error("Error fetching verification status:", error);
+    return res.status(500).json({
+      success: false,
+      message: "An error occurred while fetching verification status",
+    });
+  }
+};
 
 exports.verifyCode = async (req, res) => {
-  try {
+    try {
     const { code } = req.body;
     const { user_id } = req.user;
 
@@ -23,6 +49,22 @@ exports.verifyCode = async (req, res) => {
       return res.status(404).json({
         success: false,
         message: "User not found",
+      });
+    }
+    
+    // Only alumni can use verification codes
+    if (user.role !== "alumni") {
+      return res.status(403).json({
+        success: false,
+        message: "Verification codes are only for alumni users",
+      });
+    }
+    
+    // Check if email is verified first
+    if (!user.email_verified) {
+      return res.status(403).json({
+        success: false,
+        message: "Please verify your email address first before using a verification code",
       });
     }
 
@@ -46,9 +88,19 @@ exports.verifyCode = async (req, res) => {
         message: "Verification code is invalid or has already been used",
       });
     }
+    
+    // Check if code is expired
+    if (!verificationCode.isValid()) {
+      return res.status(400).json({
+        success: false,
+        message: "Verification code has expired",
+      });
+    }
 
     // Mark the code as used
     verificationCode.is_used = true;
+    verificationCode.used_by = user_id;
+    verificationCode.used_at = new Date();
     await verificationCode.save();
 
     // Update user's alumni verification status
@@ -65,34 +117,6 @@ exports.verifyCode = async (req, res) => {
     return res.status(500).json({
       success: false,
       message: "An error occurred while verifying the code",
-    });
-  }
-};
-
-exports.generateCodes = async (req, res) => {
-  try {
-    const count = req.body.count || 1;
-
-    // Generate the specified number of unique codes
-    const codesToInsert = [];
-    for (let i = 0; i < count; i++) {
-      const code = nanoid(10);
-      codesToInsert.push({ code });
-    }
-
-    // Insert all codes in a single operation
-    const newCodes = await VerificationCode.insertMany(codesToInsert);
-
-    return res.status(201).json({
-      success: true,
-      message: `${count} codes generated successfully`,
-      codes: newCodes,
-    });
-  } catch (error) {
-    console.error("Error generating verification codes:", error);
-    return res.status(500).json({
-      success: false,
-      message: "An error occurred while generating codes",
     });
   }
 };
@@ -119,15 +143,20 @@ exports.checkManualVerification = async (req, res) => {
 
     // If no matches found, add to admin verification queue
     if (!matches || matches.length === 0) {
-      await VerificationQueue.create({
-        user: user_id,
-        details_provided: {
-          name,
-          roll_no,
-          batch,
-          branch,
-        },
-      });
+      // Check if user already has a pending request
+      const existingRequest = await VerificationQueue.findOne({ user: user_id });
+      
+      if (!existingRequest) {
+        await VerificationQueue.create({
+          user: user_id,
+          details_provided: {
+            name,
+            roll_no,
+            batch,
+            branch,
+          },
+        });
+      }
     }
 
     return res.status(200).json({

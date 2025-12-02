@@ -2,11 +2,10 @@ import React, { createContext, useContext, useState, useEffect } from "react";
 import {
   adminLogin as apiAdminLogin,
   adminLogout as apiAdminLogout,
-  getCurrentAdmin,
   setAdminToken,
-  getAdminToken,
   Admin,
 } from "../lib/adminApi";
+import axios from "axios";
 
 interface AdminAuthContextType {
   admin: Admin | null;
@@ -26,38 +25,49 @@ export const AdminAuthProvider: React.FC<{ children: React.ReactNode }> = ({
   const [admin, setAdmin] = useState<Admin | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Check if admin is already logged in on mount
+  import { BASE_URL } from "@/lib/constants";
+  // Silent refresh on app load to restore session (similar to main AuthContext)
   useEffect(() => {
-    const checkAuth = async () => {
-      console.log("[AdminAuthContext] Checking auth on mount...");
-      const token = getAdminToken();
-      console.log("[AdminAuthContext] Token from storage:", token ? "exists" : "none");
-      
-      if (!token) {
-        console.log("[AdminAuthContext] No token, setting loading to false");
-        setIsLoading(false);
-        return;
-      }
-
+    const restoreSession = async () => {
       try {
-        console.log("[AdminAuthContext] Fetching current admin...");
-        const response = await getCurrentAdmin();
-        console.log("[AdminAuthContext] getCurrentAdmin response:", response);
-        if (response.success) {
-          console.log("[AdminAuthContext] Admin authenticated:", response.admin);
-          setAdmin(response.admin);
+        const response = await axios.post(
+          `${BASE_URL}/auth/refresh`,
+          {},
+          { withCredentials: true }
+        );
+        
+        const { access_token, email, user } = response.data.data;
+        
+        // Check if the user is an admin
+        if (user?.role === 'admin') {
+          setAdminToken(access_token);
+          setAdmin({
+            id: user._id || user.id,
+            email: email,
+            name: user.name,
+            role: user.role,
+          });
+          console.log('[AdminAuthContext] Admin session restored successfully');
+        } else {
+          console.log('[AdminAuthContext] User is not an admin');
         }
       } catch (error) {
-        console.error("[AdminAuthContext] Auth check failed:", error);
+        // No valid refresh token or user is not admin - stay logged out
+        console.log('[AdminAuthContext] No active admin session to restore');
         setAdminToken(null);
       } finally {
-        console.log("[AdminAuthContext] Auth check complete, setting loading to false");
         setIsLoading(false);
       }
     };
 
-    checkAuth();
-  }, []);
+    // Only attempt restore if we don't already have admin data
+    if (!admin) {
+      restoreSession();
+    } else {
+      setIsLoading(false);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Run only once on mount
 
   const login = async (email: string, password: string) => {
     console.log("[AdminAuthContext] Login attempt for:", email);
@@ -72,11 +82,14 @@ export const AdminAuthProvider: React.FC<{ children: React.ReactNode }> = ({
       } else {
         throw new Error(response.message || "Login failed");
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("[AdminAuthContext] Login error:", error);
-      throw new Error(
-        error.response?.data?.message || error.message || "Login failed"
-      );
+      const errorMessage = error instanceof Error && 'response' in error
+        ? (error as { response?: { data?: { message?: string } } }).response?.data?.message
+        : error instanceof Error 
+        ? error.message 
+        : "Login failed";
+      throw new Error(errorMessage || "Login failed");
     }
   };
 

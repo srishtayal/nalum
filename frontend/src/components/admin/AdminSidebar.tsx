@@ -1,4 +1,4 @@
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
   LayoutDashboard,
   Users,
@@ -7,12 +7,17 @@ import {
   FileText,
   Ban,
   LogOut,
+  Key,
 } from "lucide-react";
-import { useAdminAuth } from "../../context/AdminAuthContext";
+import { useAuth } from "../../context/AuthContext";
 
+/**
+ * Simplified AdminSidebar - uses main AuthContext
+ */
 const AdminSidebar = () => {
   const location = useLocation();
-  const { logout, admin } = useAdminAuth();
+  const navigate = useNavigate();
+  const { logout, user } = useAuth();
 
   const menuItems = [
     {
@@ -24,6 +29,11 @@ const AdminSidebar = () => {
       name: "Verification Queue",
       path: "/admin-panel/verifications",
       icon: CheckCircle,
+    },
+    {
+      name: "Verification Codes",
+      path: "/admin-panel/codes",
+      icon: Key,
     },
     {
       name: "User Management",
@@ -49,6 +59,7 @@ const AdminSidebar = () => {
 
   const handleLogout = async () => {
     await logout();
+    navigate('/login');
   };
 
   return (
@@ -56,7 +67,10 @@ const AdminSidebar = () => {
       {/* Logo/Brand */}
       <div className="p-6 border-b border-gray-800">
         <h1 className="text-2xl font-bold">Nalum Admin</h1>
-        <p className="text-sm text-gray-400 mt-1">{admin?.name}</p>
+        <p className="text-sm text-gray-400 mt-1">{user?.name}</p>
+        <span className="inline-block mt-2 px-2 py-1 bg-blue-600 text-white text-xs font-semibold rounded">
+          ADMIN
+        </span>
       </div>
 
       {/* Menu Items */}
