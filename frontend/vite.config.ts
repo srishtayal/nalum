@@ -7,6 +7,7 @@ import { componentTagger } from "lovable-tagger";
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '');
   return {
+    envPrefix: "API_",
     server: {
       host: "::",
       port: 5173,
@@ -15,20 +16,20 @@ export default defineConfig(({ mode }) => {
       },
       proxy: {
         '/api': {
-          target: mode === 'production' ? env.VITE_API_URL_PROD : env.VITE_API_URL_DEV,
+          target: mode === 'production' ? env.API_URL_PROD : env.API_URL_DEV,
           changeOrigin: true,
           rewrite: (path) => path.replace(/^\/api/, ''),
         },
         '/auth': {
-          target: mode === 'production' ? env.VITE_API_URL_PROD : env.VITE_API_URL_DEV,
+          target: mode === 'production' ? env.API_URL_PROD : env.API_URL_DEV,
           changeOrigin: true,
         },
         '/parser/parse': {
-          target: mode === 'production' ? env.VITE_API_URL_PROD : env.VITE_API_URL_DEV,
+          target: mode === 'production' ? env.API_URL_PROD : env.API_URL_DEV,
           changeOrigin: true,
         },
         '/profile': {
-          target: mode === 'production' ? env.VITE_API_URL_PROD : env.VITE_API_URL_DEV,
+          target: mode === 'production' ? env.API_URL_PROD : env.API_URL_DEV,
           changeOrigin: true,
         },
       },

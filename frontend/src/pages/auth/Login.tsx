@@ -3,7 +3,14 @@ import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Eye, EyeOff, Mail, Lock } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Eye, EyeOff, Mail, Lock, Briefcase } from "lucide-react";
 import { toast } from "sonner";
 import nsutLogo from "@/assets/nsut-logo.svg";
 import nsutCampusHero from "@/assets/nsut-campus-hero.png";
@@ -15,6 +22,7 @@ const Login = () => {
   const [formData, setFormData] = useState({
     email: "",
     password: "",
+    role: "student",
   });
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -57,6 +65,8 @@ const Login = () => {
       newErrors.email = "Email is required";
     } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
       newErrors.email = "Please enter a valid email address";
+    } else if (formData.role === "student" && !formData.email.endsWith("@nsut.ac.in")) {
+      newErrors.email = "Students must use their @nsut.ac.in email address";
     }
     if (!formData.password) {
       newErrors.password = "Password is required";
@@ -220,6 +230,23 @@ const Login = () => {
           {/* Form */}
           <form onSubmit={handleSubmit} className="mt-8 space-y-6">
             <div className="space-y-4 rounded-md">
+              {/* Role */}
+              <div className="space-y-2">
+                <Label htmlFor="role" className="text-base">I am a...</Label>
+                <div className="relative">
+                  <Briefcase className="absolute left-3 top-3 h-5 w-5 text-gray-400 z-10" />
+                  <Select onValueChange={(value) => handleInputChange("role", value)} defaultValue={formData.role}>
+                    <SelectTrigger id="role" className="pl-10 h-12 text-base">
+                      <SelectValue placeholder="Select your role" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="student">Student</SelectItem>
+                      <SelectItem value="alumni">Alumni</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
               {/* Email */}
               <div className="space-y-2">
                 <Label htmlFor="email" className="text-base">Email Address</Label>
@@ -228,7 +255,7 @@ const Login = () => {
                   <Input
                     id="email"
                     type="email"
-                    placeholder="your.email@example.com"
+                    placeholder={formData.role === "student" ? "Your student email ending with @nsut.ac.in" : "your.email@example.com"}
                     value={formData.email}
                     onChange={(e) => handleInputChange("email", e.target.value)}
                     className={`pl-10 h-12 text-base ${errors.email ? "border-red-500" : ""}`}
