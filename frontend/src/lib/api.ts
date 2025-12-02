@@ -9,10 +9,12 @@ export const setAuthToken = (token: string | null) => {
 
 const api = axios.create({
   baseURL: BASE_URL,
+  timeout: 60000, // 60 seconds timeout for slow Render cold starts
 });
 
 const refreshApi = axios.create({
   baseURL: BASE_URL,
+  timeout: 60000, // 60 seconds timeout
 });
 
 api.interceptors.request.use((config) => {

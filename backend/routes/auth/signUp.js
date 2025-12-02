@@ -50,10 +50,21 @@ router.post("/",async (req,res) => {
     });
   }
   if(existingUser.data){
+    // If user exists but is not verified, allow them to resend OTP
+    if(!existingUser.data.is_verified){
+      return res.status(200).json({
+        err: false,
+        code: 200,
+        message: "Account exists but not verified. Please verify your email.",
+        needsVerification: true,
+        email: existingUser.data.email
+      });
+    }
+    // User exists and is verified
     return res.status(409).json({
       err: true,
       code: 409,
-      message: "User with this email already exists"
+      message: "User with this email already exists and is verified. Please login instead."
     });
   }
   

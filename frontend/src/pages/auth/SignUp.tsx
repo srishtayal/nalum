@@ -85,7 +85,18 @@ const Signup = () => {
 
     setIsLoading(true);
     try {
-      await api.post('/auth/sign-up', formData);
+      const response = await api.post('/auth/sign-up', formData);
+      
+      // Check if user exists but needs verification
+      if(response.data.needsVerification){
+        toast({ 
+          title: "Account already exists", 
+          description: "Please verify your email to continue. Redirecting to verification page..."
+        });
+        navigate("/otp-verification", { state: { email: formData.email } });
+        return;
+      }
+      
       toast({ title: "Registration successful! Please verify your email." });
       navigate("/otp-verification", { state: { email: formData.email } });
     } catch (error: unknown) {
@@ -98,10 +109,10 @@ const Signup = () => {
             description: "This email is already registered but not verified.",
             variant: "destructive",
           });
-        } else if (errorCode === "USER_ALREADY_EXISTS") {
+        } else if (errorCode === "USER_ALREADY_EXISTS" || error.response?.status === 409) {
            toast({
             title: "User already exists",
-            description: "This email is already registered. Please sign in.",
+            description: "This email is already registered and verified. Please sign in instead.",
             variant: "destructive",
           });
         } else {

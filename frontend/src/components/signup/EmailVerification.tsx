@@ -17,6 +17,7 @@ const EmailVerification = ({ email, onEmailChange, onVerified }: EmailVerificati
   const [isOtpSent, setIsOtpSent] = useState(false);
   const [otp, setOtp] = useState("");
   const [isVerificationDisabled, setIsVerificationDisabled] = useState(false);
+  const [isSendingOtp, setIsSendingOtp] = useState(false);
   const [timer, setTimer] = useState(0);
 
   useEffect(() => {
@@ -44,17 +45,28 @@ const EmailVerification = ({ email, onEmailChange, onVerified }: EmailVerificati
         toast({ title: "Please enter your email", variant: "destructive" });
         return;
       }
+      
+      setIsSendingOtp(true);
       await api.post('/auth/send-otp', { email });
-      toast({ title: "OTP sent to your email!" });
+      toast({ 
+        title: "OTP sent successfully!", 
+        description: "Please check your email inbox (and spam folder)"
+      });
       setIsOtpSent(true);
       setIsVerificationDisabled(true);
       setTimer(60);
     } catch (error: unknown) {
       if (axios.isAxiosError(error)) {
-        toast({ title: error.response?.data?.message || "An error occurred", variant: "destructive" });
+        toast({ 
+          title: error.response?.data?.message || "Failed to send OTP", 
+          description: "Please try again or contact support if the issue persists",
+          variant: "destructive" 
+        });
       } else {
         toast({ title: "An error occurred", variant: "destructive" });
       }
+    } finally {
+      setIsSendingOtp(false);
     }
   };
 
@@ -87,23 +99,39 @@ const EmailVerification = ({ email, onEmailChange, onVerified }: EmailVerificati
             placeholder="your.email@example.com"
             value={email}
             onChange={(e) => onEmailChange(e.target.value)}
-            disabled={isOtpSent}
-            className="flex-1 h-12"
+            disabled={true}
+            readOnly={true}
+            className="flex-1 h-12 bg-gray-50 cursor-not-allowed"
           />
           <Button
             onClick={sendOtp}
-            disabled={isVerificationDisabled}
-            className="bg-nsut-maroon hover:bg-nsut-maroon/90 text-white font-semibold px-6"
+            disabled={isVerificationDisabled || isSendingOtp}
+            className="bg-nsut-maroon hover:bg-nsut-maroon/90 text-white font-semibold px-6 min-w-[120px]"
           >
-            {isVerificationDisabled ? `${timer}s` : "Send OTP"}
+            {isSendingOtp ? (
+              <span className="flex items-center gap-2">
+                <span className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></span>
+                Sending...
+              </span>
+            ) : isVerificationDisabled ? (
+              `${timer}s`
+            ) : (
+              "Send OTP"
+            )}
           </Button>
         </div>
+        <p className="text-xs text-gray-500 mt-1">
+          OTP will be sent to this email address
+        </p>
       </div>
       {isOtpSent && (
         <div className="space-y-4 animate-in fade-in slide-in-from-top-2 duration-300">
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
             <p className="text-sm text-blue-800">
-              We've sent a 6-digit verification code to your email. Please check your inbox and enter the code below.
+              ✉️ We've sent a 6-digit verification code to <strong>{email}</strong>. Please check your inbox (and spam folder) and enter the code below.
+            </p>
+            <p className="text-xs text-blue-600 mt-2">
+              ⏱️ Note: Email delivery may take 10-30 seconds depending on server load.
             </p>
           </div>
           <div className="space-y-2">
