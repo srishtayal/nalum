@@ -35,10 +35,11 @@ const VerificationQueue = () => {
   const [rejectReason, setRejectReason] = useState("");
   const [showRejectModal, setShowRejectModal] = useState(false);
 
+  import { BASE_URL } from "@/lib/constants";
   const fetchQueue = async () => {
     try {
       const response = await axios.get(
-        `${import.meta.env.VITE_API_URL}/admin/verification/queue`,
+        `${BASE_URL}/admin/verification/queue`,
         { withCredentials: true }
       );
       setQueue(response.data.data || []);
@@ -58,7 +59,7 @@ const VerificationQueue = () => {
     setActionLoading(userId);
     try {
       await axios.post(
-        `${import.meta.env.VITE_API_URL}/admin/verification/approve/${userId}`,
+        `${BASE_URL}/admin/verification/approve/${userId}`,
         {},
         { withCredentials: true }
       );
@@ -91,7 +92,7 @@ const VerificationQueue = () => {
     setActionLoading(selectedItem.user._id);
     try {
       await axios.post(
-        `${import.meta.env.VITE_API_URL}/admin/verification/reject/${selectedItem.user._id}`,
+        `${BASE_URL}/admin/verification/reject/${selectedItem.user._id}`,
         { reason: rejectReason },
         { withCredentials: true }
       );

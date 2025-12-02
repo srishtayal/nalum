@@ -25,12 +25,13 @@ export const AdminAuthProvider: React.FC<{ children: React.ReactNode }> = ({
   const [admin, setAdmin] = useState<Admin | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
+  import { BASE_URL } from "@/lib/constants";
   // Silent refresh on app load to restore session (similar to main AuthContext)
   useEffect(() => {
     const restoreSession = async () => {
       try {
         const response = await axios.post(
-          `${import.meta.env.VITE_API_URL}/auth/refresh`,
+          `${BASE_URL}/auth/refresh`,
           {},
           { withCredentials: true }
         );

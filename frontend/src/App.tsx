@@ -28,6 +28,7 @@ import Newsletters from './pages/admin/Newsletters';
 import BannedUsers from './pages/admin/BannedUsers';
 import CodeManagement from './pages/admin/CodeManagement';
 import NotableAlumni from './pages/stories/notableAlumni';
+import { startKeepAlive, stopKeepAlive } from '@/lib/keepAlive';
 
 const queryClient = new QueryClient();
 
@@ -173,6 +174,16 @@ function AppContent() {
 }
 
 function App() {
+	useEffect(() => {
+		// Start keep-alive when app mounts
+		startKeepAlive();
+		
+		// Cleanup on unmount
+		return () => {
+			stopKeepAlive();
+		};
+	}, []);
+
 	return (
 		<QueryClientProvider client={queryClient}>
 			<AuthProvider>

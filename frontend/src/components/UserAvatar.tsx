@@ -1,4 +1,5 @@
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { BASE_URL } from '@/lib/constants';
 
 interface UserAvatarProps {
   src?: string | null;
@@ -42,8 +43,7 @@ const UserAvatar = ({ src, name, size = 'md', className = '' }: UserAvatarProps)
 
   const initials = getInitials(name);
   const gradient = getColorFromName(name);
-  const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
-  const imageUrl = src ? `${baseUrl}${src}` : undefined;
+  const imageUrl = src ? `${BASE_URL}${src}` : undefined;
 
   return (
     <Avatar className={`${sizeClasses[size]} border-2 border-white shadow-md ${className}`}>

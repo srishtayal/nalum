@@ -9,26 +9,26 @@ export default defineConfig(({ mode }) => {
   return {
     server: {
       host: "::",
-      port: 8080,
+      port: 5173,
       hmr: {
-        clientPort: 8080,
+        clientPort: 5173,
       },
       proxy: {
         '/api': {
-          target: env.VITE_API_URL,
+          target: mode === 'production' ? env.VITE_API_URL_PROD : env.VITE_API_URL_DEV,
           changeOrigin: true,
           rewrite: (path) => path.replace(/^\/api/, ''),
         },
         '/auth': {
-          target: env.VITE_API_URL,
+          target: mode === 'production' ? env.VITE_API_URL_PROD : env.VITE_API_URL_DEV,
           changeOrigin: true,
         },
         '/parser/parse': {
-          target: env.VITE_API_URL,
+          target: mode === 'production' ? env.VITE_API_URL_PROD : env.VITE_API_URL_DEV,
           changeOrigin: true,
         },
         '/profile': {
-          target: env.VITE_API_URL,
+          target: mode === 'production' ? env.VITE_API_URL_PROD : env.VITE_API_URL_DEV,
           changeOrigin: true,
         },
       },

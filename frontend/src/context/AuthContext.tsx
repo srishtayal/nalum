@@ -1,6 +1,7 @@
 import { createContext, useState, useContext, ReactNode, useEffect } from "react";
 import { setAuthToken } from "../lib/api";
 import axios from "axios";
+import { BASE_URL } from "@/lib/constants";
 
 interface User {
   id: string;
@@ -49,7 +50,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const restoreSession = async () => {
       try {
         const response = await axios.post(
-          `${import.meta.env.VITE_API_URL}/auth/refresh`,
+          `${BASE_URL}/auth/refresh`,
           {},
           { withCredentials: true }
         );
@@ -97,7 +98,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     try {
       // Call logout endpoint to clear refresh token cookie on backend
       await axios.post(
-        `${import.meta.env.VITE_API_URL}/auth/logout`,
+        `${BASE_URL}/auth/logout`,
         {},
         { withCredentials: true }
       );
