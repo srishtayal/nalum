@@ -1,6 +1,14 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { GraduationCap, User, Calendar, Mail, Eye, Edit2, Users, AlertCircle } from "lucide-react";
+import { 
+  Menu, 
+  X, 
+  User, 
+  Users, 
+  Edit2, 
+  LogOut,
+  Home
+} from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { useEffect, useState } from "react";
 import api from "@/lib/api";
@@ -14,201 +22,155 @@ interface Profile {
   profile_picture?: string;
 }
 
-interface VerificationStatus {
-  verified_alumni: boolean;
-}
-
 const Dashboard = () => {
   const { email, logout, accessToken } = useAuth();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [verificationStatus, setVerificationStatus] = useState<VerificationStatus | null>(null);
+  const [menuOpen, setMenuOpen] = useState(false);
 
   useEffect(() => {
     const fetchProfile = async () => {
       try {
         const response = await api.get('/profile/me', {
-          headers: {
-            Authorization: `Bearer ${accessToken}`
-          }
+          headers: { Authorization: `Bearer ${accessToken}` }
         });
         setProfile(response.data.profile);
-        console.log('Profile data:', response.data);
       } catch (error) {
-        console.error('Error fetching profile data:', error);
+        console.error('Error fetching profile:', error);
       } finally {
         setIsLoading(false);
       }
     };
 
-    const fetchVerificationStatus = async () => {
-      try {
-        const response = await api.get('/alumni/status', {
-          headers: {
-            Authorization: `Bearer ${accessToken}`
-          }
-        });
-        setVerificationStatus(response.data);
-      } catch (error) {
-        console.error('Error fetching verification status:', error);
-      }
-    };
-
     if (accessToken) {
       fetchProfile();
-      fetchVerificationStatus();
     }
   }, [accessToken]);
 
+  const quickActions = [
+    {
+      to: "/",
+      icon: Home,
+      title: "Home Page",
+      desc: "Return to main site"
+    },
+    {
+      to: "/dashboard/profile",
+      icon: User,
+      title: "View Profile",
+      desc: "See your profile"
+    },
+    {
+      to: "/dashboard/update-profile",
+      icon: Edit2,
+      title: "Edit Profile",
+      desc: "Update information"
+    },
+    {
+      to: "/dashboard/alumni",
+      icon: Users,
+      title: "Alumni Directory",
+      desc: "Search alumni"
+    }
+  ];
+
   return (
-    <div className="min-h-screen bg-gray-50 pt-16">
-      {/* Header/Navbar */}
-      <div className="bg-white shadow-sm border-b">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <GraduationCap className="h-8 w-8 text-nsut-maroon" />
-            <h1 className="text-2xl font-serif font-bold text-gray-900">NALUM Dashboard</h1>
-          </div>
-          <div className="flex items-center gap-4">
-            <span className="text-sm text-gray-600 hidden md:block">{email}</span>
-            {!isLoading && profile && (
-              <UserAvatar 
-                src={profile.profile_picture} 
-                name={profile.user.name} 
-                size="md"
-              />
-            )}
-            <Button
-              onClick={logout}
-              variant="outline"
-              className="border-nsut-maroon text-nsut-maroon hover:bg-nsut-maroon hover:text-white"
-            >
-              Logout
-            </Button>
+    <div className="min-h-screen bg-gray-50">
+      {/* Top Navigation Bar */}
+      <nav className="bg-white border-b border-gray-200 sticky top-0 z-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between h-16">
+            <div className="flex items-center">
+              <button
+                onClick={() => setMenuOpen(!menuOpen)}
+                className="p-2 rounded-md text-gray-700 hover:bg-gray-100 lg:hidden"
+              >
+                {menuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+              </button>
+              <h1 className="ml-2 text-xl font-bold text-gray-900">NALUM Dashboard</h1>
+            </div>
+
+            <div className="flex items-center gap-3">
+              {!isLoading && profile && (
+                <UserAvatar 
+                  src={profile.profile_picture} 
+                  name={profile.user.name} 
+                  size="sm"
+                />
+              )}
+              <Button
+                onClick={logout}
+                variant="ghost"
+                size="sm"
+                className="text-red-600 hover:text-red-700 hover:bg-red-50"
+              >
+                <LogOut className="h-4 w-4 mr-2" />
+                Logout
+              </Button>
+            </div>
           </div>
         </div>
-      </div>
+      </nav>
+
+      {/* Mobile Menu */}
+      {menuOpen && (
+        <div className="lg:hidden bg-white border-b border-gray-200">
+          <div className="px-4 py-4 space-y-2">
+            {quickActions.map((action) => (
+              <Link
+                key={action.to}
+                to={action.to}
+                onClick={() => setMenuOpen(false)}
+                className="block px-4 py-2 rounded-lg hover:bg-gray-50 transition-colors"
+              >
+                <div className="flex items-center gap-3">
+                  <action.icon className="h-5 w-5 text-gray-600" />
+                  <span className="font-medium text-gray-900">{action.title}</span>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Main Content */}
-      <div className="container mx-auto px-4 py-12">
-        <div className="max-w-4xl mx-auto">
-          {/* Welcome Section */}
-          <div className="bg-white rounded-lg shadow-md p-8 mb-8">
-            <h2 className="text-3xl font-serif font-bold text-gray-900 mb-4">
-              Welcome to Your Dashboard! 🎉
-            </h2>
-            <p className="text-lg text-gray-600 mb-6">
-              Your profile has been successfully created. This is your personal dashboard where you can manage your alumni profile and connect with the NSUT community.
-            </p>
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-              <p className="text-sm text-blue-800">
-                <strong>Note:</strong> This dashboard is under development. More features and sections will be added soon!
-              </p>
-            </div>
-          </div>
-
-          {/* Quick Stats Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-            <div className="bg-white rounded-lg shadow-md p-6">
-              <div className="flex items-center gap-4">
-                <div className="bg-nsut-maroon/10 p-3 rounded-lg">
-                  <User className="h-6 w-6 text-nsut-maroon" />
-                </div>
-                <div>
-                  <p className="text-sm text-gray-600">Profile Status</p>
-                  <p className="text-xl font-bold text-gray-900">Complete</p>
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-white rounded-lg shadow-md p-6">
-              <div className="flex items-center gap-4">
-                <div className="bg-nsut-maroon/10 p-3 rounded-lg">
-                  <Calendar className="h-6 w-6 text-nsut-maroon" />
-                </div>
-                <div>
-                  <p className="text-sm text-gray-600">Events</p>
-                  <p className="text-xl font-bold text-gray-900">Coming Soon</p>
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-white rounded-lg shadow-md p-6">
-              <div className="flex items-center gap-4">
-                <div className="bg-nsut-maroon/10 p-3 rounded-lg">
-                  <Mail className="h-6 w-6 text-nsut-maroon" />
-                </div>
-                <div>
-                  <p className="text-sm text-gray-600">Messages</p>
-                  <p className="text-xl font-bold text-gray-900">0</p>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Quick Actions */}
-          <div className="bg-white rounded-lg shadow-md p-8">
-            <h3 className="text-xl font-bold text-gray-900 mb-4">Quick Actions</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <Button
-                variant="outline"
-                className="h-auto py-4 justify-start"
-                asChild
-              >
-                <Link to="/">
-                  <GraduationCap className="h-5 w-5 mr-3" />
-                  <div className="text-left">
-                    <p className="font-semibold">View Home Page</p>
-                    <p className="text-sm text-gray-500">Explore alumni resources</p>
-                  </div>
-                </Link>
-              </Button>
-              
-              <Button
-                variant="outline"
-                className="h-auto py-4 justify-start"
-                asChild
-              >
-                <Link to="/dashboard/profile">
-                  <Eye className="h-5 w-5 mr-3" />
-                  <div className="text-left">
-                    <p className="font-semibold">View Profile</p>
-                    <p className="text-sm text-gray-500">See your complete profile</p>
-                  </div>
-                </Link>
-              </Button>
-
-              <Button
-                variant="outline"
-                className="h-auto py-4 justify-start"
-                asChild
-              >
-                <Link to="/dashboard/update-profile">
-                  <Edit2 className="h-5 w-5 mr-3" />
-                  <div className="text-left">
-                    <p className="font-semibold">Edit Profile</p>
-                    <p className="text-sm text-gray-500">Update your information</p>
-                  </div>
-                </Link>
-              </Button>
-              
-              <Button
-                variant="outline"
-                className="h-auto py-4 justify-start"
-                asChild
-              >
-                <Link to="/dashboard/alumni">
-                  <Users className="h-5 w-5 mr-3" />
-                  <div className="text-left">
-                    <p className="font-semibold">Alumni Directory</p>
-                    <p className="text-sm text-gray-500">Search and connect with alumni</p>
-                  </div>
-                </Link>
-              </Button>
-            </div>
-          </div>
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Welcome Card */}
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-8">
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">
+            Welcome back, {profile?.user.name || 'User'}!
+          </h2>
+          <p className="text-gray-600">
+            Manage your profile and connect with the NSUT alumni community.
+          </p>
         </div>
-      </div>
+
+        {/* Quick Actions Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          {quickActions.map((action) => {
+            const Icon = action.icon;
+            return (
+              <Link
+                key={action.to}
+                to={action.to}
+                className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md hover:border-gray-300 transition-all group"
+              >
+                <div className="flex items-center justify-between mb-3">
+                  <div className="w-12 h-12 rounded-lg bg-gray-100 flex items-center justify-center group-hover:bg-nsut-maroon/10 transition-colors">
+                    <Icon className="h-6 w-6 text-gray-600 group-hover:text-nsut-maroon transition-colors" />
+                  </div>
+                </div>
+                <h3 className="text-lg font-semibold text-gray-900 mb-1">
+                  {action.title}
+                </h3>
+                <p className="text-sm text-gray-600">
+                  {action.desc}
+                </p>
+              </Link>
+            );
+          })}
+        </div>
+      </main>
     </div>
   );
 };

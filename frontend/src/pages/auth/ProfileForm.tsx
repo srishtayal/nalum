@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import ProfilePictureUpload from "@/components/profile/ProfilePictureUpload";
+import { POPULAR_COMPANIES, POPULAR_ROLES } from "@/lib/suggestions";
 import { 
   GraduationCap, 
   Briefcase, 
@@ -49,9 +50,13 @@ const ProfileForm = () => {
   // Form state - Essential Info
   const [branch, setBranch] = useState("");
   const [campus, setCampus] = useState("");
-  const [batch, setBatch] = useState("");
+  const [batch, setBatch] = useState("2025");
   const [currentCompany, setCurrentCompany] = useState("");
   const [currentRole, setCurrentRole] = useState("");
+  const [showCompanySuggestions, setShowCompanySuggestions] = useState(false);
+  const [showRoleSuggestions, setShowRoleSuggestions] = useState(false);
+  const [filteredCompanies, setFilteredCompanies] = useState<string[]>([]);
+  const [filteredRoles, setFilteredRoles] = useState<string[]>([]);
 
   // Form state - Social Media
   const [socialLinks, setSocialLinks] = useState<SocialLinks>({
@@ -120,6 +125,36 @@ const ProfileForm = () => {
     const updated = [...experience];
     updated[index][field] = value;
     setExperience(updated);
+  };
+
+  const updateSocialLink = (platform: keyof SocialLinks, value: string) => {
+    setSocialLinks({ ...socialLinks, [platform]: value });
+  };
+
+  const handleCompanyChange = (value: string) => {
+    setCurrentCompany(value);
+    if (value.length > 0) {
+      const filtered = POPULAR_COMPANIES.filter(company =>
+        company.toLowerCase().includes(value.toLowerCase())
+      ).slice(0, 5);
+      setFilteredCompanies(filtered);
+      setShowCompanySuggestions(filtered.length > 0);
+    } else {
+      setShowCompanySuggestions(false);
+    }
+  };
+
+  const handleRoleChange = (value: string) => {
+    setCurrentRole(value);
+    if (value.length > 0) {
+      const filtered = POPULAR_ROLES.filter(role =>
+        role.toLowerCase().includes(value.toLowerCase())
+      ).slice(0, 5);
+      setFilteredRoles(filtered);
+      setShowRoleSuggestions(filtered.length > 0);
+    } else {
+      setShowRoleSuggestions(false);
+    }
   };
 
   const nextStep = () => {
@@ -244,15 +279,23 @@ const ProfileForm = () => {
 
             <div className="space-y-2">
               <Label htmlFor="batch" className="text-base text-gray-900">
-                Batch/Year of Graduation <span className="text-red-500">*</span>
+                Year of Graduation <span className="text-red-500">*</span>
               </Label>
-              <Input
-                id="batch"
-                placeholder="e.g., 2020 or 2020-2024"
-                value={batch}
-                onChange={(e) => setBatch(e.target.value)}
-                className="h-12 text-base"
-              />
+              <Select value={batch} onValueChange={setBatch}>
+                <SelectTrigger className="h-12 text-base">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {Array.from({ length: 50 }, (_, i) => {
+                    const year = 2030 - i;
+                    return (
+                      <SelectItem key={year} value={year.toString()}>
+                        {year}
+                      </SelectItem>
+                    );
+                  })}
+                </SelectContent>
+              </Select>
             </div>
 
             <div className="space-y-2">
@@ -260,14 +303,34 @@ const ProfileForm = () => {
                 Current Company <span className="text-gray-400">(Optional)</span>
               </Label>
               <div className="relative">
-                <Briefcase className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
+                <Briefcase className="absolute left-3 top-3 h-5 w-5 text-gray-400 z-10" />
                 <Input
                   id="currentCompany"
-                  placeholder="e.g., Google, Microsoft, etc."
+                  placeholder="Start typing to see suggestions..."
                   value={currentCompany}
-                  onChange={(e) => setCurrentCompany(e.target.value)}
+                  onChange={(e) => handleCompanyChange(e.target.value)}
+                  onFocus={() => currentCompany && setShowCompanySuggestions(true)}
+                  onBlur={() => setTimeout(() => setShowCompanySuggestions(false), 200)}
                   className="pl-10 h-12 text-base"
+                  autoComplete="off"
                 />
+                {showCompanySuggestions && filteredCompanies.length > 0 && (
+                  <div className="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg max-h-60 overflow-auto">
+                    {filteredCompanies.map((company, index) => (
+                      <button
+                        key={index}
+                        type="button"
+                        className="w-full text-left px-4 py-2 hover:bg-gray-100 transition-colors text-sm"
+                        onClick={() => {
+                          setCurrentCompany(company);
+                          setShowCompanySuggestions(false);
+                        }}
+                      >
+                        {company}
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
 
@@ -275,13 +338,35 @@ const ProfileForm = () => {
               <Label htmlFor="currentRole" className="text-base text-gray-900">
                 Current Role <span className="text-gray-400">(Optional)</span>
               </Label>
-              <Input
-                id="currentRole"
-                placeholder="e.g., Software Engineer, Product Manager, etc."
-                value={currentRole}
-                onChange={(e) => setCurrentRole(e.target.value)}
-                className="h-12 text-base"
-              />
+              <div className="relative">
+                <Input
+                  id="currentRole"
+                  placeholder="Start typing to see suggestions..."
+                  value={currentRole}
+                  onChange={(e) => handleRoleChange(e.target.value)}
+                  onFocus={() => currentRole && setShowRoleSuggestions(true)}
+                  onBlur={() => setTimeout(() => setShowRoleSuggestions(false), 200)}
+                  className="h-12 text-base"
+                  autoComplete="off"
+                />
+                {showRoleSuggestions && filteredRoles.length > 0 && (
+                  <div className="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg max-h-60 overflow-auto">
+                    {filteredRoles.map((role, index) => (
+                      <button
+                        key={index}
+                        type="button"
+                        className="w-full text-left px-4 py-2 hover:bg-gray-100 transition-colors text-sm"
+                        onClick={() => {
+                          setCurrentRole(role);
+                          setShowRoleSuggestions(false);
+                        }}
+                      >
+                        {role}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         );

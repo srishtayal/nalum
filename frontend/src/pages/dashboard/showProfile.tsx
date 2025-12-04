@@ -83,10 +83,10 @@ const ShowProfile = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gray-50 pt-16 flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
-          <Loader2 className="h-12 w-12 animate-spin text-nsut-maroon mx-auto mb-4" />
-          <p className="text-gray-600">Loading your profile...</p>
+          <Loader2 className="h-12 w-12 animate-spin text-blue-500 mx-auto mb-4" />
+          <p className="text-gray-400">Loading your profile...</p>
         </div>
       </div>
     );
@@ -106,35 +106,14 @@ const ShowProfile = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 pt-16">
-      {/* Header/Navbar */}
-      <div className="bg-white shadow-sm border-b">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <GraduationCap className="h-8 w-8 text-nsut-maroon" />
-            <h1 className="text-2xl font-serif font-bold text-gray-900">NALUM Dashboard</h1>
-          </div>
-          <div className="flex items-center gap-4">
-            <span className="text-sm text-gray-600 hidden md:block">{profile.user.email}</span>
-            <UserAvatar src={profile.profile_picture} name={profile.user.name} size="md" />
-            <Button
-              onClick={logout}
-              variant="outline"
-              className="border-nsut-maroon text-nsut-maroon hover:bg-nsut-maroon hover:text-white"
-            >
-              Logout
-            </Button>
-          </div>
-        </div>
-      </div>
-
+    <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 text-gray-100">
       {/* Main Content */}
-      <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto">
         <div className="max-w-5xl mx-auto">
           {/* Back Button */}
           <Button
             variant="ghost"
-            className="mb-6"
+            className="mb-6 text-gray-400 hover:text-white hover:bg-white/10"
             onClick={() => navigate("/dashboard")}
           >
             <ArrowLeft className="h-4 w-4 mr-2" />
@@ -142,35 +121,36 @@ const ShowProfile = () => {
           </Button>
 
           {/* Profile Header */}
-          <Card className="mb-6">
-            <CardContent className="pt-6">
+          <div className="mb-6 rounded-xl border border-white/10 bg-white/5 backdrop-blur-md shadow-xl overflow-hidden">
+            <div className="p-6">
               <div className="flex flex-col md:flex-row items-center md:items-start gap-6">
                 <UserAvatar
                   src={profile.profile_picture}
                   name={profile.user.name}
                   size="xl"
+                  className="ring-4 ring-white/10"
                 />
                 <div className="flex-1 text-center md:text-left">
-                  <h2 className="text-3xl font-bold text-gray-900 mb-2">
+                  <h2 className="text-3xl font-bold text-white mb-2">
                     {profile.user.name}
                   </h2>
-                  <p className="text-gray-600 mb-1">{profile.user.email}</p>
+                  <p className="text-gray-400 mb-1">{profile.user.email}</p>
                   {profile.current_role && profile.current_company && (
-                    <p className="text-lg text-gray-700 mb-2">
+                    <p className="text-lg text-gray-300 mb-2">
                       {profile.current_role} at {profile.current_company}
                     </p>
                   )}
                   <div className="flex flex-wrap gap-2 justify-center md:justify-start mt-3">
-                    <Badge variant="secondary" className="bg-nsut-maroon/10 text-nsut-maroon">
+                    <Badge variant="secondary" className="bg-blue-500/10 text-blue-300 hover:bg-blue-500/20 border border-blue-500/20">
                       {profile.batch}
                     </Badge>
-                    <Badge variant="secondary">{profile.branch}</Badge>
-                    <Badge variant="secondary">{profile.campus}</Badge>
+                    <Badge variant="secondary" className="bg-white/5 text-gray-300 hover:bg-white/10 border border-white/10">{profile.branch}</Badge>
+                    <Badge variant="secondary" className="bg-white/5 text-gray-300 hover:bg-white/10 border border-white/10">{profile.campus}</Badge>
                   </div>
                 </div>
                 <Button
                   onClick={() => navigate("/dashboard/update-profile")}
-                  className="bg-nsut-maroon hover:bg-nsut-maroon/90"
+                  className="bg-blue-600 hover:bg-blue-500 text-white border border-blue-400/20"
                 >
                   <Edit className="h-4 w-4 mr-2" />
                   Edit Profile
@@ -179,12 +159,13 @@ const ShowProfile = () => {
 
               {/* Social Links */}
               {profile.social_media && (
-                <div className="mt-6 pt-6 border-t">
+                <div className="mt-6 pt-6 border-t border-white/10">
                   <div className="flex flex-wrap gap-3 justify-center md:justify-start">
                     {profile.social_media.linkedin && (
                       <Button
                         variant="outline"
                         size="sm"
+                        className="bg-white/5 border-white/10 text-gray-300 hover:bg-white/10 hover:text-white hover:border-white/20"
                         asChild
                       >
                         <a
@@ -201,6 +182,7 @@ const ShowProfile = () => {
                       <Button
                         variant="outline"
                         size="sm"
+                        className="bg-white/5 border-white/10 text-gray-300 hover:bg-white/10 hover:text-white hover:border-white/20"
                         asChild
                       >
                         <a
@@ -217,6 +199,7 @@ const ShowProfile = () => {
                       <Button
                         variant="outline"
                         size="sm"
+                        className="bg-white/5 border-white/10 text-gray-300 hover:bg-white/10 hover:text-white hover:border-white/20"
                         asChild
                       >
                         <a
@@ -233,6 +216,7 @@ const ShowProfile = () => {
                       <Button
                         variant="outline"
                         size="sm"
+                        className="bg-white/5 border-white/10 text-gray-300 hover:bg-white/10 hover:text-white hover:border-white/20"
                         asChild
                       >
                         <a
@@ -248,113 +232,101 @@ const ShowProfile = () => {
                   </div>
                 </div>
               )}
-            </CardContent>
-          </Card>
+            </div>
+          </div>
 
           {/* Content Grid */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Academic Information */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <GraduationCap className="h-5 w-5 text-nsut-maroon" />
-                  Academic Information
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
+            <div className="rounded-xl border border-white/10 bg-white/5 backdrop-blur-md shadow-xl p-6">
+              <div className="flex items-center gap-2 mb-6">
+                <GraduationCap className="h-5 w-5 text-blue-400" />
+                <h3 className="text-lg font-semibold text-white">Academic Information</h3>
+              </div>
+              <div className="space-y-4">
                 <div>
-                  <p className="text-sm text-gray-600">Batch</p>
-                  <p className="text-lg font-semibold">{profile.batch}</p>
+                  <p className="text-sm text-gray-400">Batch</p>
+                  <p className="text-lg font-semibold text-gray-200">{profile.batch}</p>
                 </div>
-                <Separator />
+                <Separator className="bg-white/10" />
                 <div>
-                  <p className="text-sm text-gray-600">Branch</p>
-                  <p className="text-lg font-semibold">{profile.branch}</p>
+                  <p className="text-sm text-gray-400">Branch</p>
+                  <p className="text-lg font-semibold text-gray-200">{profile.branch}</p>
                 </div>
-                <Separator />
+                <Separator className="bg-white/10" />
                 <div>
-                  <p className="text-sm text-gray-600">Campus</p>
-                  <p className="text-lg font-semibold">{profile.campus}</p>
+                  <p className="text-sm text-gray-400">Campus</p>
+                  <p className="text-lg font-semibold text-gray-200">{profile.campus}</p>
                 </div>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
 
             {/* Current Position */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Briefcase className="h-5 w-5 text-nsut-maroon" />
-                  Current Position
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
+            <div className="rounded-xl border border-white/10 bg-white/5 backdrop-blur-md shadow-xl p-6">
+              <div className="flex items-center gap-2 mb-6">
+                <Briefcase className="h-5 w-5 text-blue-400" />
+                <h3 className="text-lg font-semibold text-white">Current Position</h3>
+              </div>
+              <div className="space-y-4">
                 {profile.current_company || profile.current_role ? (
                   <>
                     {profile.current_role && (
                       <div>
-                        <p className="text-sm text-gray-600">Role</p>
-                        <p className="text-lg font-semibold">{profile.current_role}</p>
+                        <p className="text-sm text-gray-400">Role</p>
+                        <p className="text-lg font-semibold text-gray-200">{profile.current_role}</p>
                       </div>
                     )}
-                    {profile.current_company && profile.current_role && <Separator />}
+                    {profile.current_company && profile.current_role && <Separator className="bg-white/10" />}
                     {profile.current_company && (
                       <div>
-                        <p className="text-sm text-gray-600">Company</p>
-                        <p className="text-lg font-semibold">{profile.current_company}</p>
+                        <p className="text-sm text-gray-400">Company</p>
+                        <p className="text-lg font-semibold text-gray-200">{profile.current_company}</p>
                       </div>
                     )}
                   </>
                 ) : (
                   <p className="text-gray-500 italic">No current position specified</p>
                 )}
-              </CardContent>
-            </Card>
+              </div>
+            </div>
 
             {/* Skills */}
             {profile.skills && profile.skills.length > 0 && (
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <User className="h-5 w-5 text-nsut-maroon" />
-                    Skills
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex flex-wrap gap-2">
-                    {profile.skills.map((skill, index) => (
-                      <Badge key={index} variant="secondary">
-                        {skill}
-                      </Badge>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
+              <div className="rounded-xl border border-white/10 bg-white/5 backdrop-blur-md shadow-xl p-6">
+                <div className="flex items-center gap-2 mb-6">
+                  <User className="h-5 w-5 text-blue-400" />
+                  <h3 className="text-lg font-semibold text-white">Skills</h3>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {profile.skills.map((skill, index) => (
+                    <Badge key={index} variant="secondary" className="bg-white/5 text-gray-300 hover:bg-white/10 border border-white/10">
+                      {skill}
+                    </Badge>
+                  ))}
+                </div>
+              </div>
             )}
 
             {/* Experience */}
             {profile.experience && profile.experience.length > 0 && (
-              <Card className={profile.skills && profile.skills.length > 0 ? "" : "lg:col-span-2"}>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Briefcase className="h-5 w-5 text-nsut-maroon" />
-                    Experience
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    {profile.experience.map((exp, index) => (
-                      <div key={index}>
-                        {index > 0 && <Separator className="my-4" />}
-                        <div>
-                          <p className="font-semibold text-lg">{exp.role}</p>
-                          <p className="text-gray-700">{exp.company}</p>
-                          <p className="text-sm text-gray-500 mt-1">{exp.duration}</p>
-                        </div>
+              <div className={`rounded-xl border border-white/10 bg-white/5 backdrop-blur-md shadow-xl p-6 ${profile.skills && profile.skills.length > 0 ? "" : "lg:col-span-2"}`}>
+                <div className="flex items-center gap-2 mb-6">
+                  <Briefcase className="h-5 w-5 text-blue-400" />
+                  <h3 className="text-lg font-semibold text-white">Experience</h3>
+                </div>
+                <div className="space-y-4">
+                  {profile.experience.map((exp, index) => (
+                    <div key={index}>
+                      {index > 0 && <Separator className="my-4 bg-white/10" />}
+                      <div>
+                        <p className="font-semibold text-lg text-gray-200">{exp.role}</p>
+                        <p className="text-gray-400">{exp.company}</p>
+                        <p className="text-sm text-gray-500 mt-1">{exp.duration}</p>
                       </div>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
+                    </div>
+                  ))}
+                </div>
+              </div>
             )}
           </div>
         </div>

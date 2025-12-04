@@ -29,11 +29,11 @@ const UserAvatar = ({ src, name, size = 'md', className = '' }: UserAvatarProps)
   // Generate consistent color based on name
   const getColorFromName = (fullName: string) => {
     const colors = [
-      'from-[#800000] to-[#600000]', // Maroon
-      'from-[#8B0000] to-[#660000]', // Dark red
-      'from-[#900000] to-[#700000]', // Deep red
-      'from-[#7A0000] to-[#5A0000]', // Wine
-      'from-[#A00000] to-[#800000]', // Crimson
+      'from-blue-700/30 to-blue-900/30',
+      'from-slate-700/30 to-slate-900/30',
+      'from-indigo-700/30 to-indigo-900/30',
+      'from-purple-700/30 to-purple-900/30',
+      'from-cyan-700/30 to-cyan-900/30',
     ];
     
     // Simple hash function to get consistent color

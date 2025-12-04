@@ -12,7 +12,8 @@ import Login from '@/pages/auth/Login';
 import NotFound from '@/pages/NotFound';
 import OtpVerificationPage from '@/pages/auth/OtpVerificationPage';
 import ProfileForm from '@/pages/auth/ProfileForm';
-import Dashboard from '@/pages/dashboard/Dashboard';
+import DashboardLayout from '@/pages/dashboard/DashboardLayout';
+import DashboardHome from '@/pages/dashboard/DashboardHome';
 import ShowProfile from '@/pages/dashboard/showProfile';
 import UpdateProfile from '@/pages/dashboard/updateProfile';
 import AlumniDirectory from '@/pages/dashboard/alumniDirectory';
@@ -111,45 +112,19 @@ function AppContent() {
 				
 				{/* Protected Dashboard Routes - require verification */}
 				<Route 
-					path="/dashboard" 
 					element={
 						<ProtectedRoute>
 							<ProtectedVerificationRoute>
-								<Dashboard />
+								<DashboardLayout />
 							</ProtectedVerificationRoute>
 						</ProtectedRoute>
 					}
-				/>
-				<Route 
-					path="/dashboard/profile" 
-					element={
-						<ProtectedRoute>
-							<ProtectedVerificationRoute>
-								<ShowProfile />
-							</ProtectedVerificationRoute>
-						</ProtectedRoute>
-					}
-				/>
-				<Route 
-					path="/dashboard/update-profile" 
-					element={
-						<ProtectedRoute>
-							<ProtectedVerificationRoute>
-								<UpdateProfile />
-							</ProtectedVerificationRoute>
-						</ProtectedRoute>
-					}
-				/>
-				<Route 
-					path="/dashboard/alumni" 
-					element={
-						<ProtectedRoute>
-							<ProtectedVerificationRoute>
-								<AlumniDirectory />
-							</ProtectedVerificationRoute>
-						</ProtectedRoute>
-					}
-				/>
+				>
+					<Route path="/dashboard" element={<DashboardHome />} />
+					<Route path="/dashboard/profile" element={<ShowProfile />} />
+					<Route path="/dashboard/update-profile" element={<UpdateProfile />} />
+					<Route path="/dashboard/alumni" element={<AlumniDirectory />} />
+				</Route>
 
 				{/* Admin Panel Routes - Use main login, role-based access */}
 				<Route element={<AdminProtectedRoute />}>

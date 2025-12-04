@@ -225,45 +225,14 @@ const AlumniDirectory = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50 pt-16">
-      {/* Header/Navbar */}
-      <div className="bg-white shadow-sm border-b">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <GraduationCap className="h-8 w-8 text-nsut-maroon" />
-            <h1 className="text-2xl font-serif font-bold text-gray-900">
-              NALUM Dashboard
-            </h1>
-          </div>
-          <div className="flex items-center gap-4">
-            <span className="text-sm text-gray-600 hidden md:block">
-              {profile?.user.email}
-            </span>
-            {profile && (
-              <UserAvatar
-                src={profile.profile_picture}
-                name={profile.user.name}
-                size="md"
-              />
-            )}
-            <Button
-              onClick={logout}
-              variant="outline"
-              className="border-nsut-maroon text-nsut-maroon hover:bg-nsut-maroon hover:text-white"
-            >
-              Logout
-            </Button>
-          </div>
-        </div>
-      </div>
-
+    <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 text-gray-100">
       {/* Main Content */}
-      <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto">
         <div className="max-w-7xl mx-auto">
           {/* Back Button */}
           <Button
             variant="ghost"
-            className="mb-6"
+            className="mb-6 text-gray-400 hover:text-white hover:bg-white/10"
             onClick={() => navigate("/dashboard")}
           >
             <ArrowLeft className="h-4 w-4 mr-2" />
@@ -272,22 +241,22 @@ const AlumniDirectory = () => {
 
           {/* Header */}
           <div className="mb-8">
-            <h2 className="text-3xl font-bold text-gray-900 mb-2">
+            <h2 className="text-3xl font-bold text-white mb-2">
               Alumni Directory
             </h2>
-            <p className="text-gray-600">
+            <p className="text-gray-400">
               Connect with fellow NSUT alumni from across batches and branches
             </p>
           </div>
 
           {/* Search and Filter Section */}
-          <Card className="mb-6">
-            <CardContent className="pt-6">
+          <div className="mb-6 rounded-xl border border-white/10 bg-white/5 backdrop-blur-md shadow-xl overflow-hidden">
+            <div className="p-6">
               <div className="space-y-4">
                 {/* Search Bar */}
                 <div className="flex gap-2">
                   <div className="flex-1 relative">
-                    <Search className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
+                    <Search className="absolute left-3 top-3 h-5 w-5 text-gray-500" />
                     <Input
                       placeholder="Search by name..."
                       value={filters.name}
@@ -295,13 +264,13 @@ const AlumniDirectory = () => {
                       onKeyPress={(e) => {
                         if (e.key === "Enter") handleSearch();
                       }}
-                      className="pl-10"
+                      className="pl-10 bg-black/20 border-white/10 text-white placeholder:text-gray-500 focus:border-blue-500/50 focus:ring-blue-500/20"
                     />
                   </div>
                   <Button
                     onClick={() => setShowFilters(!showFilters)}
                     variant="outline"
-                    className="gap-2"
+                    className="gap-2 border-white/10 bg-white/5 text-gray-300 hover:bg-white/10 hover:text-white"
                   >
                     <Filter className="h-4 w-4" />
                     Filters
@@ -309,7 +278,7 @@ const AlumniDirectory = () => {
                       filters.branch ||
                       filters.campus ||
                       filters.skills.length > 0) && (
-                      <Badge variant="secondary" className="ml-1">
+                      <Badge variant="secondary" className="ml-1 bg-blue-500/20 text-blue-300">
                         {[
                           filters.batch,
                           filters.branch,
@@ -323,7 +292,7 @@ const AlumniDirectory = () => {
                     <Button 
                       onClick={handleClearResults} 
                       variant="outline"
-                      className="gap-2 border-nsut-maroon text-nsut-maroon hover:bg-nsut-maroon hover:text-white"
+                      className="gap-2 border-red-500/30 text-red-400 hover:bg-red-500/10 hover:text-red-300 bg-transparent"
                     >
                       <X className="h-4 w-4" />
                       Clear Results
@@ -331,7 +300,7 @@ const AlumniDirectory = () => {
                   ) : (
                     <Button 
                       onClick={handleSearch} 
-                      className="gap-2 bg-nsut-maroon hover:bg-nsut-maroon/90"
+                      className="gap-2 bg-blue-600 hover:bg-blue-500 text-white"
                     >
                       <Search className="h-4 w-4" />
                       Search
@@ -341,30 +310,31 @@ const AlumniDirectory = () => {
 
                 {/* Filter Panel */}
                 {showFilters && (
-                  <div className="border-t pt-4 space-y-4">
+                  <div className="border-t border-white/10 pt-4 space-y-4">
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                       {/* Batch Filter */}
                       <div className="space-y-2">
-                        <Label htmlFor="batch">Batch</Label>
+                        <Label htmlFor="batch" className="text-gray-300">Batch</Label>
                         <Input
                           id="batch"
                           placeholder="e.g., 2020"
                           value={filters.batch}
                           onChange={(e) => handleFilterChange("batch", e.target.value)}
+                          className="bg-black/20 border-white/10 text-white placeholder:text-gray-500 focus:border-blue-500/50 focus:ring-blue-500/20"
                         />
                       </div>
 
                       {/* Branch Filter */}
                       <div className="space-y-2">
-                        <Label htmlFor="branch">Branch</Label>
+                        <Label htmlFor="branch" className="text-gray-300">Branch</Label>
                         <Select
                           value={filters.branch}
                           onValueChange={(value) => handleFilterChange("branch", value)}
                         >
-                          <SelectTrigger>
+                          <SelectTrigger className="bg-black/20 border-white/10 text-white focus:ring-blue-500/20">
                             <SelectValue placeholder="All Branches" />
                           </SelectTrigger>
-                          <SelectContent>
+                          <SelectContent className="bg-slate-900 border-white/10 text-white">
                             {branches.map((branch) => (
                               <SelectItem key={branch} value={branch}>
                                 {branch}
@@ -377,7 +347,7 @@ const AlumniDirectory = () => {
                             variant="ghost"
                             size="sm"
                             onClick={() => handleFilterChange("branch", "")}
-                            className="text-xs h-6 px-2"
+                            className="text-xs h-6 px-2 text-gray-400 hover:text-white"
                           >
                             Clear
                           </Button>
@@ -386,15 +356,15 @@ const AlumniDirectory = () => {
 
                       {/* Campus Filter */}
                       <div className="space-y-2">
-                        <Label htmlFor="campus">Campus</Label>
+                        <Label htmlFor="campus" className="text-gray-300">Campus</Label>
                         <Select
                           value={filters.campus}
                           onValueChange={(value) => handleFilterChange("campus", value)}
                         >
-                          <SelectTrigger>
+                          <SelectTrigger className="bg-black/20 border-white/10 text-white focus:ring-blue-500/20">
                             <SelectValue placeholder="All Campuses" />
                           </SelectTrigger>
-                          <SelectContent>
+                          <SelectContent className="bg-slate-900 border-white/10 text-white">
                             <SelectItem value="Main Campus">Main Campus</SelectItem>
                             <SelectItem value="East Campus">East Campus</SelectItem>
                             <SelectItem value="West Campus">West Campus</SelectItem>
@@ -405,7 +375,7 @@ const AlumniDirectory = () => {
                             variant="ghost"
                             size="sm"
                             onClick={() => handleFilterChange("campus", "")}
-                            className="text-xs h-6 px-2"
+                            className="text-xs h-6 px-2 text-gray-400 hover:text-white"
                           >
                             Clear
                           </Button>
@@ -415,7 +385,7 @@ const AlumniDirectory = () => {
 
                     {/* Skills Filter */}
                     <div className="space-y-2">
-                      <Label htmlFor="skills">Skills</Label>
+                      <Label htmlFor="skills" className="text-gray-300">Skills</Label>
                       <div className="flex gap-2">
                         <Input
                           id="skills"
@@ -428,8 +398,9 @@ const AlumniDirectory = () => {
                               handleAddSkill();
                             }
                           }}
+                          className="bg-black/20 border-white/10 text-white placeholder:text-gray-500 focus:border-blue-500/50 focus:ring-blue-500/20"
                         />
-                        <Button type="button" onClick={handleAddSkill} variant="outline">
+                        <Button type="button" onClick={handleAddSkill} variant="outline" className="border-white/10 bg-white/5 text-gray-300 hover:bg-white/10 hover:text-white">
                           Add
                         </Button>
                       </div>
@@ -439,7 +410,7 @@ const AlumniDirectory = () => {
                             <Badge
                               key={index}
                               variant="secondary"
-                              className="gap-1 cursor-pointer hover:bg-gray-200"
+                              className="gap-1 cursor-pointer bg-white/10 text-gray-200 hover:bg-white/20 border border-white/10"
                               onClick={() => handleRemoveSkill(skill)}
                             >
                               {skill}
@@ -452,49 +423,46 @@ const AlumniDirectory = () => {
 
                     {/* Action Buttons */}
                     <div className="flex gap-2 justify-end">
-                      <Button variant="outline" onClick={handleClearResults}>
+                      <Button variant="outline" onClick={handleClearResults} className="border-white/10 bg-transparent text-gray-400 hover:bg-white/5 hover:text-white">
                         Clear Filters
                       </Button>
                     </div>
                   </div>
                 )}
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
 
           {/* Results */}
           {isLoading ? (
             <div className="flex items-center justify-center py-20">
               <div className="text-center">
-                <Loader2 className="h-12 w-12 animate-spin text-nsut-maroon mx-auto mb-4" />
-                <p className="text-gray-600">Searching alumni...</p>
+                <Loader2 className="h-12 w-12 animate-spin text-blue-500 mx-auto mb-4" />
+                <p className="text-gray-400">Searching alumni...</p>
               </div>
             </div>
           ) : !hasSearched ? (
-            <Card>
-              <CardContent className="py-20 text-center">
-                <GraduationCap className="h-20 w-20 text-nsut-maroon/20 mx-auto mb-6" />
-                <h3 className="text-2xl font-bold text-gray-900 mb-3">
+            <div className="rounded-xl border border-white/10 bg-white/5 backdrop-blur-md shadow-xl p-20 text-center">
+                <GraduationCap className="h-20 w-20 text-blue-500/30 mx-auto mb-6" />
+                <h3 className="text-2xl font-bold text-white mb-3">
                   Ready to Connect? 🎓
                 </h3>
-                <p className="text-gray-600 mb-2 text-lg">
+                <p className="text-gray-400 mb-2 text-lg">
                   Use the search bar and filters above to find alumni
                 </p>
                 <p className="text-gray-500 text-sm">
                   Search by name, batch, branch, campus, or skills
                 </p>
-              </CardContent>
-            </Card>
+            </div>
           ) : alumni.length === 0 ? (
-            <Card>
-              <CardContent className="py-20 text-center">
+            <div className="rounded-xl border border-white/10 bg-white/5 backdrop-blur-md shadow-xl p-20 text-center">
                 <div className="mb-6">
                   <div className="text-6xl mb-4">🔍</div>
                 </div>
-                <h3 className="text-2xl font-bold text-gray-900 mb-3">
+                <h3 className="text-2xl font-bold text-white mb-3">
                   Oops! No Alumni Found
                 </h3>
-                <p className="text-gray-600 mb-2">
+                <p className="text-gray-400 mb-2">
                   We couldn't find anyone matching these criteria
                 </p>
                 <p className="text-gray-500 text-sm mb-6">
@@ -503,34 +471,33 @@ const AlumniDirectory = () => {
                 <Button 
                   onClick={handleClearResults} 
                   variant="outline"
-                  className="border-nsut-maroon text-nsut-maroon hover:bg-nsut-maroon hover:text-white"
+                  className="border-blue-500/50 text-blue-400 hover:bg-blue-500/10 hover:text-blue-300 bg-transparent"
                 >
                   Clear All Filters
                 </Button>
-              </CardContent>
-            </Card>
+            </div>
           ) : (
             <>
               {/* Alumni Grid */}
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
                 {alumni.map((alumnus) => (
-                  <Card
+                  <div
                     key={alumnus._id}
-                    className="hover:shadow-lg transition-shadow cursor-pointer"
+                    className="group rounded-xl border border-white/10 bg-white/5 backdrop-blur-md hover:bg-white/10 transition-all duration-300 cursor-pointer p-6 hover:-translate-y-1 hover:shadow-2xl hover:shadow-blue-500/10 hover:border-blue-500/30"
                   >
-                    <CardContent className="pt-6">
                       <div className="flex items-start gap-4 mb-4">
                         <UserAvatar
                           src={alumnus.profile_picture}
                           name={alumnus.user.name}
                           size="lg"
+                          className="ring-2 ring-white/10 group-hover:ring-blue-500/40 transition-all"
                         />
                         <div className="flex-1 min-w-0">
-                          <h3 className="font-semibold text-lg text-gray-900 truncate">
+                          <h3 className="font-semibold text-lg text-white truncate group-hover:text-blue-300 transition-colors">
                             {alumnus.user.name}
                           </h3>
                           {alumnus.current_role && alumnus.current_company && (
-                            <p className="text-sm text-gray-600 truncate">
+                            <p className="text-sm text-gray-400 truncate">
                               {alumnus.current_role} at {alumnus.current_company}
                             </p>
                           )}
@@ -538,14 +505,14 @@ const AlumniDirectory = () => {
                       </div>
 
                       <div className="space-y-2 mb-4">
-                        <div className="flex items-center gap-2 text-sm text-gray-600">
-                          <GraduationCap className="h-4 w-4" />
+                        <div className="flex items-center gap-2 text-sm text-gray-400">
+                          <GraduationCap className="h-4 w-4 text-blue-400" />
                           <span>
                             {alumnus.branch} • {alumnus.batch}
                           </span>
                         </div>
-                        <div className="flex items-center gap-2 text-sm text-gray-600">
-                          <MapPin className="h-4 w-4" />
+                        <div className="flex items-center gap-2 text-sm text-gray-400">
+                          <MapPin className="h-4 w-4 text-blue-400" />
                           <span>{alumnus.campus}</span>
                         </div>
                       </div>
@@ -554,12 +521,12 @@ const AlumniDirectory = () => {
                         <div className="mb-4">
                           <div className="flex flex-wrap gap-1">
                             {alumnus.skills.slice(0, 3).map((skill, index) => (
-                              <Badge key={index} variant="secondary" className="text-xs">
+                              <Badge key={index} variant="secondary" className="text-xs bg-white/5 text-gray-300 border border-white/5">
                                 {skill}
                               </Badge>
                             ))}
                             {alumnus.skills.length > 3 && (
-                              <Badge variant="secondary" className="text-xs">
+                              <Badge variant="secondary" className="text-xs bg-white/5 text-gray-300 border border-white/5">
                                 +{alumnus.skills.length - 3} more
                               </Badge>
                             )}
@@ -570,7 +537,7 @@ const AlumniDirectory = () => {
                       <Button
                         variant="outline"
                         size="sm"
-                        className="w-full"
+                        className="w-full border-white/10 bg-white/5 text-gray-300 hover:bg-blue-600 hover:text-white hover:border-blue-600 transition-all duration-300"
                         onClick={() => {
                           window.location.href = `mailto:${alumnus.user.email}`;
                         }}
@@ -578,8 +545,7 @@ const AlumniDirectory = () => {
                         <Mail className="h-4 w-4 mr-2" />
                         Contact
                       </Button>
-                    </CardContent>
-                  </Card>
+                  </div>
                 ))}
               </div>
 
@@ -591,6 +557,7 @@ const AlumniDirectory = () => {
                     size="sm"
                     onClick={() => handlePageChange(currentPage - 1)}
                     disabled={currentPage === 1}
+                    className="bg-transparent border-white/10 text-gray-400 hover:text-white hover:bg-white/10"
                   >
                     <ChevronLeft className="h-4 w-4" />
                     Previous
@@ -611,8 +578,8 @@ const AlumniDirectory = () => {
                             onClick={() => handlePageChange(page)}
                             className={
                               currentPage === page
-                                ? "bg-nsut-maroon hover:bg-nsut-maroon/90"
-                                : ""
+                                ? "bg-blue-600 hover:bg-blue-500 text-white border-transparent"
+                                : "bg-transparent border-white/10 text-gray-400 hover:text-white hover:bg-white/10"
                             }
                           >
                             {page}
@@ -620,7 +587,7 @@ const AlumniDirectory = () => {
                         );
                       } else if (page === currentPage - 2 || page === currentPage + 2) {
                         return (
-                          <span key={page} className="px-2">
+                          <span key={page} className="px-2 text-gray-500">
                             ...
                           </span>
                         );
@@ -633,6 +600,7 @@ const AlumniDirectory = () => {
                     size="sm"
                     onClick={() => handlePageChange(currentPage + 1)}
                     disabled={currentPage === totalPages}
+                    className="bg-transparent border-white/10 text-gray-400 hover:text-white hover:bg-white/10"
                   >
                     Next
                     <ChevronRight className="h-4 w-4" />

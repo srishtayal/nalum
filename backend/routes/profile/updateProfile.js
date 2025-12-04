@@ -36,7 +36,7 @@ router.put("/", protect, async (req, res) => {
 
     // Validate campus enum if provided
     if (campus) {
-      const validCampuses = ["Dwarka", "East Campus", "Ambedkar Institute"];
+      const validCampuses = ["Main Campus", "West Campus", "East Campus"];
       if (!validCampuses.includes(campus)) {
         return res
           .status(400)

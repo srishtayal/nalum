@@ -54,7 +54,7 @@ const EmailVerification = ({ email, onEmailChange, onVerified }: EmailVerificati
       });
       setIsOtpSent(true);
       setIsVerificationDisabled(true);
-      setTimer(60);
+      setTimer(60); // 1 minute = 60 seconds
     } catch (error: unknown) {
       if (axios.isAxiosError(error)) {
         toast({ 
@@ -106,7 +106,9 @@ const EmailVerification = ({ email, onEmailChange, onVerified }: EmailVerificati
           <Button
             onClick={sendOtp}
             disabled={isVerificationDisabled || isSendingOtp}
-            className="bg-nsut-maroon hover:bg-nsut-maroon/90 text-white font-semibold px-6 min-w-[120px]"
+            className={`bg-nsut-maroon hover:bg-nsut-maroon/90 text-white font-semibold px-6 min-w-[140px] transition-all duration-200 ${
+              isVerificationDisabled ? 'opacity-50 cursor-not-allowed' : 'opacity-100'
+            }`}
           >
             {isSendingOtp ? (
               <span className="flex items-center gap-2">
@@ -114,7 +116,12 @@ const EmailVerification = ({ email, onEmailChange, onVerified }: EmailVerificati
                 Sending...
               </span>
             ) : isVerificationDisabled ? (
-              `${timer}s`
+              <span className="flex items-center gap-1.5">
+                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                {Math.floor(timer / 60)}:{String(timer % 60).padStart(2, '0')}
+              </span>
             ) : (
               "Send OTP"
             )}

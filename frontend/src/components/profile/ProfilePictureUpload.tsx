@@ -3,11 +3,11 @@ import { Camera, X, Upload, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import Cropper from 'react-easy-crop';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 
 interface ProfilePictureUploadProps {
   currentImage?: string;
-  onImageChange: (file: File | null) => void;
+  onImageSelect?: (file: File | null) => void; // Changed from onImageChange
   userName?: string;
 }
 
@@ -18,7 +18,7 @@ interface Area {
   height: number;
 }
 
-const ProfilePictureUpload = ({ currentImage, onImageChange, userName = "User" }: ProfilePictureUploadProps) => {
+const ProfilePictureUpload = ({ currentImage, onImageSelect, userName = "User" }: ProfilePictureUploadProps) => {
   const [preview, setPreview] = useState<string | null>(currentImage || null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [showCropModal, setShowCropModal] = useState(false);
@@ -47,72 +47,82 @@ const ProfilePictureUpload = ({ currentImage, onImageChange, userName = "User" }
   const createCroppedImage = async (imageSrc: string, pixelCrop: Area): Promise<File> => {
     return new Promise((resolve, reject) => {
       const image = new Image();
-      image.src = imageSrc;
+      image.crossOrigin = 'anonymous'; // Handle CORS
       
       image.onload = () => {
-        const canvas = document.createElement('canvas');
-        const ctx = canvas.getContext('2d');
-        
-        if (!ctx) {
-          reject(new Error('Failed to get canvas context'));
-          return;
+        try {
+          const canvas = document.createElement('canvas');
+          const ctx = canvas.getContext('2d');
+          
+          if (!ctx) {
+            reject(new Error('Failed to get canvas context'));
+            return;
+          }
+
+          // Set canvas size to the cropped area (square)
+          canvas.width = pixelCrop.width;
+          canvas.height = pixelCrop.height;
+
+          // Draw the cropped image
+          ctx.drawImage(
+            image,
+            pixelCrop.x,
+            pixelCrop.y,
+            pixelCrop.width,
+            pixelCrop.height,
+            0,
+            0,
+            pixelCrop.width,
+            pixelCrop.height
+          );
+
+          // Resize to 800x800 if larger
+          const finalCanvas = document.createElement('canvas');
+          const finalCtx = finalCanvas.getContext('2d');
+          
+          if (!finalCtx) {
+            reject(new Error('Failed to get final canvas context'));
+            return;
+          }
+
+          const targetSize = 800;
+          const scale = Math.min(targetSize / pixelCrop.width, targetSize / pixelCrop.height, 1);
+          const finalWidth = Math.round(pixelCrop.width * scale);
+          const finalHeight = Math.round(pixelCrop.height * scale);
+
+          finalCanvas.width = finalWidth;
+          finalCanvas.height = finalHeight;
+          finalCtx.drawImage(canvas, 0, 0, finalWidth, finalHeight);
+
+          // Convert to blob and then to file
+          finalCanvas.toBlob(
+            (blob) => {
+              if (blob) {
+                const croppedFile = new File(
+                  [blob],
+                  originalFile?.name || 'profile-picture.jpg',
+                  { type: 'image/jpeg', lastModified: Date.now() }
+                );
+                resolve(croppedFile);
+              } else {
+                reject(new Error('Canvas to Blob conversion failed'));
+              }
+            },
+            'image/jpeg',
+            0.85 // Quality: 85%
+          );
+        } catch (error) {
+          reject(error);
         }
-
-        // Set canvas size to the cropped area (square)
-        canvas.width = pixelCrop.width;
-        canvas.height = pixelCrop.height;
-
-        // Draw the cropped image
-        ctx.drawImage(
-          image,
-          pixelCrop.x,
-          pixelCrop.y,
-          pixelCrop.width,
-          pixelCrop.height,
-          0,
-          0,
-          pixelCrop.width,
-          pixelCrop.height
-        );
-
-        // Resize to 800x800 if larger
-        const finalCanvas = document.createElement('canvas');
-        const finalCtx = finalCanvas.getContext('2d');
-        
-        if (!finalCtx) {
-          reject(new Error('Failed to get final canvas context'));
-          return;
-        }
-
-        const targetSize = 800;
-        const scale = Math.min(targetSize / pixelCrop.width, targetSize / pixelCrop.height, 1);
-        const finalWidth = pixelCrop.width * scale;
-        const finalHeight = pixelCrop.height * scale;
-
-        finalCanvas.width = finalWidth;
-        finalCanvas.height = finalHeight;
-        finalCtx.drawImage(canvas, 0, 0, finalWidth, finalHeight);
-
-        // Convert to blob and then to file
-        finalCanvas.toBlob(
-          (blob) => {
-            if (blob) {
-              const croppedFile = new File(
-                [blob],
-                originalFile?.name || 'profile-picture.jpg',
-                { type: 'image/jpeg', lastModified: Date.now() }
-              );
-              resolve(croppedFile);
-            } else {
-              reject(new Error('Canvas to Blob conversion failed'));
-            }
-          },
-          'image/jpeg',
-          0.85 // Quality: 85%
-        );
       };
 
-      image.onerror = () => reject(new Error('Image load failed'));
+      image.onerror = (error) => {
+        console.error('Image load error:', error);
+        reject(new Error('Image load failed'));
+      };
+      
+      // Set src after setting up event handlers
+      image.src = imageSrc;
     });
   };
 
@@ -144,14 +154,21 @@ const ProfilePictureUpload = ({ currentImage, onImageChange, userName = "User" }
   };
 
   const handleCropConfirm = async () => {
-    if (!imageToCrop || !croppedAreaPixels) return;
+    if (!imageToCrop || !croppedAreaPixels) {
+      alert('No image or crop area selected');
+      return;
+    }
 
     setIsProcessing(true);
     setShowCropModal(false);
 
     try {
+      console.log('Starting crop with area:', croppedAreaPixels);
+      
       // Create cropped image
       const croppedFile = await createCroppedImage(imageToCrop, croppedAreaPixels);
+      
+      console.log('Cropped file created:', croppedFile.name, croppedFile.size, 'bytes');
       
       // Create preview
       const reader = new FileReader();
@@ -161,7 +178,7 @@ const ProfilePictureUpload = ({ currentImage, onImageChange, userName = "User" }
       reader.readAsDataURL(croppedFile);
 
       // Pass cropped file to parent
-      onImageChange(croppedFile);
+      onImageSelect?.(croppedFile);
       
       // Reset crop state
       setImageToCrop(null);
@@ -169,7 +186,7 @@ const ProfilePictureUpload = ({ currentImage, onImageChange, userName = "User" }
       setZoom(1);
     } catch (error) {
       console.error('Error cropping image:', error);
-      alert('Failed to crop image. Please try again.');
+      alert(`Failed to crop image: ${error instanceof Error ? error.message : 'Unknown error'}`);
     } finally {
       setIsProcessing(false);
     }
@@ -187,7 +204,7 @@ const ProfilePictureUpload = ({ currentImage, onImageChange, userName = "User" }
 
   const handleRemove = () => {
     setPreview(null);
-    onImageChange(null);
+    onImageSelect?.(null);
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
@@ -213,7 +230,7 @@ const ProfilePictureUpload = ({ currentImage, onImageChange, userName = "User" }
             type="button"
             onClick={handleClick}
             disabled={isProcessing}
-            className="absolute bottom-0 right-0 bg-[#800000] hover:bg-[#600000] text-white rounded-full p-2 shadow-lg transition-colors disabled:opacity-50"
+            className="absolute bottom-0 right-0 bg-blue-600/50 hover:bg-blue-500/70 text-white rounded-full p-2 shadow-lg transition-colors disabled:opacity-50 border border-blue-400/30 backdrop-blur-sm"
           >
             {isProcessing ? (
               <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
@@ -239,7 +256,7 @@ const ProfilePictureUpload = ({ currentImage, onImageChange, userName = "User" }
             size="sm"
             onClick={handleClick}
             disabled={isProcessing}
-            className="gap-2"
+            className="gap-2 border-white/10 bg-white/5 text-gray-300 hover:bg-white/10 hover:text-white"
           >
             <Upload className="w-4 h-4" />
             {preview ? 'Change Photo' : 'Upload Photo'}
@@ -271,9 +288,9 @@ const ProfilePictureUpload = ({ currentImage, onImageChange, userName = "User" }
             <DialogTitle className="text-2xl font-bold text-gray-900">
               Crop Your Photo
             </DialogTitle>
-            <p className="text-sm text-gray-600 mt-2">
+            <DialogDescription className="text-sm text-gray-600 mt-2">
               Adjust the position and size to get the perfect square crop
-            </p>
+            </DialogDescription>
           </DialogHeader>
           
           <div className="relative h-[400px] bg-gray-100">
@@ -315,7 +332,7 @@ const ProfilePictureUpload = ({ currentImage, onImageChange, userName = "User" }
               type="button"
               variant="outline"
               onClick={handleCropCancel}
-              className="gap-2"
+              className="gap-2 border-white/10 bg-white/5 text-gray-300 hover:bg-white/10 hover:text-white"
             >
               <X className="w-4 h-4" />
               Cancel
@@ -323,7 +340,7 @@ const ProfilePictureUpload = ({ currentImage, onImageChange, userName = "User" }
             <Button
               type="button"
               onClick={handleCropConfirm}
-              className="gap-2 bg-[#800000] hover:bg-[#600000]"
+              className="gap-2 bg-blue-600 hover:bg-blue-500 text-white"
             >
               <Check className="w-4 h-4" />
               Crop & Save
