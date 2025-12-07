@@ -2,12 +2,20 @@
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
+interface SocialsData {
+  linkedin: string;
+  github: string;
+  portfolio: string;
+}
+
+type SocialsValue = SocialsData | File | null;
+
 interface SocialsProps {
   formData: {
-    socials: { linkedin: string; github: string; portfolio: string };
+    socials: SocialsData;
     resume: File | null;
   };
-  handleChange: (field: string, value: any) => void;
+  handleChange: (field: string, value: SocialsValue) => void;
 }
 
 const Socials = ({ formData, handleChange }: SocialsProps) => {

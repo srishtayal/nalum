@@ -1,5 +1,4 @@
 import { Link, useLocation } from "react-router-dom";
-import { useEffect, useState } from "react";
 import { 
   Home, 
   Edit2, 
@@ -7,39 +6,14 @@ import {
   LogOut 
 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
+import { useProfile } from "@/context/ProfileContext";
 import { cn } from "@/lib/utils";
-import api from "@/lib/api";
 import UserAvatar from "@/components/UserAvatar";
 
-interface Profile {
-  user: {
-    name: string;
-    email: string;
-  };
-  profile_picture?: string;
-}
-
 const Sidebar = () => {
-  const { logout, accessToken } = useAuth();
+  const { logout } = useAuth();
   const location = useLocation();
-  const [profile, setProfile] = useState<Profile | null>(null);
-
-  useEffect(() => {
-    const fetchProfile = async () => {
-      try {
-        const response = await api.get('/profile/me', {
-          headers: { Authorization: `Bearer ${accessToken}` }
-        });
-        setProfile(response.data.profile);
-      } catch (error) {
-        console.error('Error fetching profile:', error);
-      }
-    };
-
-    if (accessToken) {
-      fetchProfile();
-    }
-  }, [accessToken]);
+  const { profile } = useProfile();
 
   const navItems = [
     {
@@ -68,7 +42,7 @@ const Sidebar = () => {
   };
 
   return (
-    <aside className="w-64 h-screen flex flex-col border-r border-white/20 bg-white/10 backdrop-blur-xl shadow-xl sticky top-0">
+    <aside className="w-64 h-screen flex flex-col border-r border-white/10 bg-slate-950/50 backdrop-blur-xl shadow-xl sticky top-0">
       <div className="p-6 border-b border-white/10">
         <h1 className="text-2xl font-bold text-white tracking-wider">
           NALUM

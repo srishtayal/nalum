@@ -57,7 +57,7 @@ const Signup = () => {
   }, [accessToken, navigate]);
   const [unverifiedEmail, setUnverifiedEmail] = useState(false);
 
-  const handleChange = (field: string, value: any) => {
+  const handleChange = (field: string, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 

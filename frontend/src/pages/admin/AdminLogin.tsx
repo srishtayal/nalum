@@ -20,8 +20,9 @@ const AdminLogin = () => {
     try {
       await login(email, password);
       navigate("/admin-panel/dashboard");
-    } catch (err: any) {
-      setError(err.message || "Login failed. Please try again.");
+    } catch (err) {
+      const error = err as Error;
+      setError(error.message || "Login failed. Please try again.");
     } finally {
       setIsLoading(false);
     }

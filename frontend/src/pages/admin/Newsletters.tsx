@@ -59,7 +59,8 @@ const Newsletters = () => {
       setTitle("");
       setDescription("");
       fetchNewsletters();
-    } catch (err: any) {
+    } catch (err) {
+      const error = err as Error;
       alert(err.response?.data?.message || "Failed to upload newsletter");
     } finally {
       setIsUploading(false);
@@ -75,7 +76,8 @@ const Newsletters = () => {
       await deleteNewsletter(id);
       setNewsletters(newsletters.filter((n) => n._id !== id));
       alert("Newsletter deleted");
-    } catch (err: any) {
+    } catch (err) {
+      const error = err as Error;
       alert(err.response?.data?.message || "Failed to delete");
     }
   };

@@ -33,7 +33,8 @@ const BannedUsers = () => {
       await unbanUser(userId);
       setBannedUsers(bannedUsers.filter((u) => u.user_id !== userId));
       alert("User unbanned successfully");
-    } catch (err: any) {
+    } catch (err) {
+      const error = err as Error;
       alert(err.response?.data?.message || "Failed to unban user");
     }
   };

@@ -6,11 +6,17 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { X } from "lucide-react";
 
+interface ExperienceItem {
+  role: string;
+  company: string;
+  duration: string;
+}
+
 interface ExperienceProps {
   formData: {
-    experiences: { role: string; company: string; duration: string }[];
+    experiences: ExperienceItem[];
   };
-  handleChange: (field: string, value: any) => void;
+  handleChange: (field: string, value: ExperienceItem[]) => void;
 }
 
 const Experience = ({ formData, handleChange }: ExperienceProps) => {

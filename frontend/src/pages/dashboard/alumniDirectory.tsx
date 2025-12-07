@@ -104,7 +104,17 @@ const AlumniDirectory = () => {
     setIsLoading(true);
     setHasSearched(true);
     try {
-      const params: any = {
+      interface SearchParams {
+        page: number;
+        limit: number;
+        name?: string;
+        graduationYear?: string;
+        branch?: string;
+        campus?: string;
+        skills?: string;
+      }
+
+      const params: SearchParams = {
         page,
         limit: 12,
       };

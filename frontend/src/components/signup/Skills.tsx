@@ -10,7 +10,7 @@ interface SkillsProps {
   formData: {
     skills: string[];
   };
-  handleChange: (field: string, value: any) => void;
+  handleChange: (field: string, value: string[]) => void;
 }
 
 const Skills = ({ formData, handleChange }: SkillsProps) => {

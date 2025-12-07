@@ -9,7 +9,7 @@ import { AxiosRequestConfig } from 'axios';
 export const useAdminApi = () => {
   const { accessToken } = useAuth();
 
-  const get = async <T = any>(url: string, config?: AxiosRequestConfig) => {
+  const get = async <T = unknown>(url: string, config?: AxiosRequestConfig) => {
     return apiClient.get<T>(url, {
       ...config,
       headers: {
@@ -19,7 +19,7 @@ export const useAdminApi = () => {
     });
   };
 
-  const post = async <T = any>(url: string, data?: any, config?: AxiosRequestConfig) => {
+  const post = async <T = unknown>(url: string, data?: unknown, config?: AxiosRequestConfig) => {
     return apiClient.post<T>(url, data, {
       ...config,
       headers: {
@@ -29,7 +29,7 @@ export const useAdminApi = () => {
     });
   };
 
-  const put = async <T = any>(url: string, data?: any, config?: AxiosRequestConfig) => {
+  const put = async <T = unknown>(url: string, data?: unknown, config?: AxiosRequestConfig) => {
     return apiClient.put<T>(url, data, {
       ...config,
       headers: {
@@ -39,7 +39,7 @@ export const useAdminApi = () => {
     });
   };
 
-  const del = async <T = any>(url: string, config?: AxiosRequestConfig) => {
+  const del = async <T = unknown>(url: string, config?: AxiosRequestConfig) => {
     return apiClient.delete<T>(url, {
       ...config,
       headers: {

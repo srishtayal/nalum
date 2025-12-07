@@ -8,13 +8,34 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { X } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
 
+interface ProjectItem {
+  title: string;
+  description: string;
+  link: string;
+}
+
+interface PublicationItem {
+  title: string;
+  description: string;
+  journal: string;
+  date: string;
+}
+
+interface HonorItem {
+  title: string;
+  description: string;
+  duration: string;
+}
+
+type ContributionValue = ProjectItem[] | PublicationItem[] | HonorItem[];
+
 interface ContributionsProps {
   formData: {
-    projects: { title: string; description: string; link: string }[];
-    publications: { title: string; description: string; journal: string; date: string }[];
-    honours: { title: string; description: string; duration: string }[];
+    projects: ProjectItem[];
+    publications: PublicationItem[];
+    honours: HonorItem[];
   };
-  handleChange: (field: string, value: any) => void;
+  handleChange: (field: string, value: ContributionValue) => void;
 }
 
 const Contributions = ({ formData, handleChange }: ContributionsProps) => {

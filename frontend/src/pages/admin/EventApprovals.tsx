@@ -32,7 +32,8 @@ const EventApprovals = () => {
       await approveEvent(eventId);
       setEvents(events.filter((e) => e._id !== eventId));
       alert("Event approved!");
-    } catch (err: any) {
+    } catch (err) {
+      const error = err as Error;
       alert(err.response?.data?.message || "Failed to approve");
     }
   };
@@ -49,7 +50,8 @@ const EventApprovals = () => {
       setShowRejectModal(false);
       setRejectReason("");
       alert("Event rejected");
-    } catch (err: any) {
+    } catch (err) {
+      const error = err as Error;
       alert(err.response?.data?.message || "Failed to reject");
     }
   };

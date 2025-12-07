@@ -51,7 +51,8 @@ const UserManagement = () => {
       setShowBanModal(false);
       setBanReason("");
       fetchUsers();
-    } catch (err: any) {
+    } catch (err) {
+      const error = err as Error;
       alert(err.response?.data?.message || "Failed to ban user");
     }
   };

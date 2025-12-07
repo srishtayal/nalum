@@ -6,11 +6,17 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { X } from "lucide-react";
 
+interface EducationItem {
+  degree: string;
+  institution: string;
+  duration: string;
+}
+
 interface EducationProps {
   formData: {
-    educations: { degree: string; institution: string; duration: string }[];
+    educations: EducationItem[];
   };
-  handleChange: (field: string, value: any) => void;
+  handleChange: (field: string, value: EducationItem[]) => void;
 }
 
 const Education = ({ formData, handleChange }: EducationProps) => {

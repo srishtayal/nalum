@@ -1,8 +1,16 @@
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { GraduationCap, Bell, ArrowRight, Calendar, Mail } from 'lucide-react';
+import { GraduationCap, Bell, ArrowRight, Calendar, Mail, LucideIcon } from 'lucide-react';
 
-const NewsCard = ({ article }: { article: any }) => (
+interface NewsArticle {
+  icon: LucideIcon;
+  badge?: string;
+  headline: string;
+  date?: string;
+  description: string;
+}
+
+const NewsCard = ({ article }: { article: NewsArticle }) => (
   <div className="group h-full">
     <div className="relative bg-white rounded-xl border-2 border-gray-100 hover:border-nsut-maroon/30 transition-all duration-300 overflow-hidden h-full flex flex-col">
       {/* Accent line */}
