@@ -25,7 +25,7 @@ exports.uploadCv = async (req, res) => {
 
 exports.updateProfile = async (req, res) => {
   try {
-    const userId = req.user.id;
+    const userId = req.user.user_id;
     const profileData = req.body;
 
     const user = await User.findByIdAndUpdate(userId, { profile: profileData, profileCompleted: true }, { new: true });
@@ -43,7 +43,7 @@ exports.updateProfile = async (req, res) => {
 
 exports.getProfileStatus = async (req, res) => {
   try {
-    const userId = req.user.id;
+    const userId = req.user.user_id;
     const user = await User.findById(userId);
 
     if (!user) {

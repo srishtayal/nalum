@@ -3,7 +3,8 @@ import {
   Home, 
   Edit2, 
   Users, 
-  LogOut 
+  LogOut,
+  MessageSquare
 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { useProfile } from "@/context/ProfileContext";
@@ -31,6 +32,11 @@ const Sidebar = () => {
       to: "/dashboard/alumni",
       icon: Users,
       label: "Directory",
+    },
+    {
+      to: "/dashboard/chat",
+      icon: MessageSquare,
+      label: "Messages",
     },
   ];
 

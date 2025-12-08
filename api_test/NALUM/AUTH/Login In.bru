@@ -1,0 +1,23 @@
+meta {
+  name: Login In
+  type: http
+  seq: 1
+}
+
+post {
+  url: http://localhost:5000/auth/sign-in
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "email":"testuser1@nsut.ac.in",
+    "password":"testpass"
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

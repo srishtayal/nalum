@@ -1,8 +1,11 @@
 require("dotenv").config();
 console.log("Starting backend server...");
 const express = require("express");
+const http = require("http");
 
 const app = express();
+const server = http.createServer(app);
+
 const authRoutes = require("./routes/auth/index.js");
 const cors = require("cors");
 const helmet = require("helmet");
@@ -12,9 +15,11 @@ const profileRoutes = require("./routes/profile/index.js");
 const pdfParser = require("./routes/parser.js");
 const alumniRoutes = require("./routes/alumni.js");
 const adminRoutes = require("./routes/admin/index.js");
+const chatRoutes = require("./routes/chat/index.js");
 const { checkBanned } = require("./middleware/checkBanned.js");
 const morgan = require("morgan");
-
+const redisConfig = require("./config/redis.config.js");
+const { initializeSocket } = require("./sockets/chatSocket.js");
 app.use(morgan("dev"));
 app.use(cors({
   origin: ['https://nalum.vercel.app', 'http://localhost:8080', 'http://localhost:5173'],
@@ -29,12 +34,27 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
 dbConnect();
+// connect to redis server (must be done before Socket.io initialization)
+redisConfig.connectRedis().then(() => {
+  console.log('Redis initialization complete');
+  
+  // Initialize Socket.io for chat after Redis is ready
+  initializeSocket(server).then(() => {
+    console.log('Socket.io initialization complete');
+  }).catch(err => {
+    console.error('Socket.io initialization failed:', err);
+  });
+}).catch(err => {
+  console.error('Redis initialization failed:', err);
+  console.log('Continuing without Redis (some features may not work)');
+});
 
 // Apply checkBanned middleware to protected routes (not to auth or admin routes)
 app.use("/auth", authRoutes);
 app.use("/profile", checkBanned, profileRoutes);
 app.use("/parser", checkBanned, pdfParser);
 app.use("/alumni", checkBanned, alumniRoutes);
+app.use("/chat", checkBanned,chatRoutes);
 
 // Admin routes (no checkBanned needed)
 app.use("/admin", adminRoutes);
@@ -49,6 +69,7 @@ app.get("/health", (req, res) => {
 
 // listening to port
 const port = process.env.PORT || 5000;
-app.listen(port, () => {
+server.listen(port, () => {
   console.log(`Server is running on port ${port}`);
+  console.log(`Socket.io is running on port ${port}`);
 });

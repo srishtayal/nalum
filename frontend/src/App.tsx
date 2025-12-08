@@ -18,6 +18,7 @@ import ShowProfile from '@/pages/dashboard/showProfile';
 import UpdateProfile from '@/pages/dashboard/updateProfile';
 import AlumniDirectory from '@/pages/dashboard/alumniDirectory';
 import VerifyAlumni from '@/pages/dashboard/verifyAlumni';
+import { ChatPage } from '@/pages/dashboard/chat/ChatPage';
 import Root from '@/pages/Root';
 import SignUp from '@/pages/auth/SignUp';
 import AdminProtectedRoute from './components/admin/AdminProtectedRoute';
@@ -124,6 +125,7 @@ function AppContent() {
 					<Route path="/dashboard/profile" element={<ShowProfile />} />
 					<Route path="/dashboard/update-profile" element={<UpdateProfile />} />
 					<Route path="/dashboard/alumni" element={<AlumniDirectory />} />
+					<Route path="/dashboard/chat" element={<ChatPage />} />
 				</Route>
 
 				{/* Admin Panel Routes - Use main login, role-based access */}
