@@ -67,23 +67,23 @@ export const MessageInput = ({
   };
 
   return (
-    <div className="p-4 border-t">
-      <div className="flex gap-2">
+    <div className="p-3 border-t border-white/10 bg-black/20 backdrop-blur-md">
+      <div className="flex gap-2 items-end">
         <Textarea
           value={message}
           onChange={handleInputChange}
           onKeyDown={handleKeyDown}
           placeholder="Type a message..."
-          className="min-h-[60px] max-h-[120px] resize-none"
+          className="min-h-[44px] max-h-[120px] resize-none bg-white/5 border-white/10 focus:bg-white/10 backdrop-blur-sm rounded-lg transition-all shadow-sm text-sm text-white placeholder:text-gray-400"
           disabled={disabled}
         />
         <Button
           onClick={handleSend}
           disabled={!message.trim() || disabled}
           size="icon"
-          className="h-[60px] w-[60px]"
+          className="h-[44px] w-[44px] rounded-lg shadow-sm transition-all hover:scale-105 shrink-0 bg-indigo-600 hover:bg-indigo-700 text-white border border-white/10"
         >
-          <Send className="h-5 w-5" />
+          <Send className="h-4 w-4" />
         </Button>
       </div>
     </div>

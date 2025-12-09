@@ -8,34 +8,61 @@ interface MessageBubbleProps {
   onDelete: (messageId: string) => void;
 }
 
+/**
+ * MessageBubble Component
+ * 
+ * Displays a single message in the chat conversation.
+ * 
+ * Features:
+ * - Differentiates between "Own" (sent by current user) and "Other" (received) messages.
+ * - Supports system messages with a distinct style.
+ * - Displays read status and timestamp.
+ * - Allows message deletion for the sender.
+ */
 export const MessageBubble = ({ message, isOwn, onDelete }: MessageBubbleProps) => {
+  // Handle system messages
+  if (message.messageType === 'system') {
+    return (
+      <div className="flex justify-center my-4 animate-in fade-in zoom-in-95 duration-300">
+        <span className="px-3 py-1 text-xs font-medium text-gray-400 bg-white/5 rounded-full border border-white/10">
+          {message.content}
+        </span>
+      </div>
+    );
+  }
+
+  // Calculate read status from readBy array or fallback
+  const isRead = message.readBy?.length > 0 || message.readAt;
+
   return (
-    <div className={`flex ${isOwn ? "justify-end" : "justify-start"} group`}>
-      <div className={`max-w-[70%] ${isOwn ? "items-end" : "items-start"} flex flex-col gap-1`}>
+    <div className={`flex ${isOwn ? "justify-end" : "justify-start"} group animate-in fade-in slide-in-from-bottom-2 duration-300`}>
+      <div className={`max-w-[85%] sm:max-w-[75%] ${isOwn ? "items-end" : "items-start"} flex flex-col gap-1`}>
+        {/* Message Content Bubble */}
         <div
-          className={`rounded-lg px-4 py-2 ${
+          className={`rounded-2xl px-4 py-2.5 shadow-sm border text-sm backdrop-blur-sm ${
             isOwn
-              ? "bg-primary text-primary-foreground"
-              : "bg-muted"
+              ? "bg-indigo-600 text-white border-indigo-500/50 rounded-br-none"
+              : "bg-white/10 text-gray-100 border-white/10 rounded-bl-none"
           }`}
         >
-          <p className="whitespace-pre-wrap break-words">{message.content}</p>
+          <p className="whitespace-pre-wrap break-words leading-relaxed">{message.content}</p>
         </div>
         
-        <div className="flex items-center gap-2 px-2">
-          <span className="text-xs text-muted-foreground">
+        {/* Message Metadata (Time, Status, Actions) */}
+        <div className="flex items-center gap-2 px-1">
+          <span className="text-[10px] text-gray-400 font-medium">
             {format(new Date(message.createdAt), "HH:mm")}
           </span>
           
-          {isOwn && message.readAt && (
-            <span className="text-xs text-muted-foreground">Read</span>
+          {isOwn && isRead && (
+            <span className="text-[10px] text-gray-400 font-medium">Read</span>
           )}
           
           {isOwn && (
             <Button
               variant="ghost"
               size="icon"
-              className="h-5 w-5 opacity-0 group-hover:opacity-100 transition-opacity"
+              className="h-4 w-4 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-500/20 hover:text-red-400 text-gray-400"
               onClick={() => onDelete(message._id)}
             >
               <Trash2 className="h-3 w-3" />

@@ -7,6 +7,12 @@ import { UserCheck, UserX, Inbox } from "lucide-react";
 import { useChatContext } from "@/context/ChatContext";
 import { useConnections } from "@/hooks/useConnections";
 
+/**
+ * ConnectionRequests Component
+ * 
+ * Displays a list of incoming connection requests for the current user.
+ * Allows users to accept or reject requests, updating the connection status.
+ */
 export const ConnectionRequests = () => {
   const { pendingRequests, isLoadingConnections } = useChatContext();
   const { respondToRequest } = useConnections();
@@ -20,64 +26,73 @@ export const ConnectionRequests = () => {
   };
 
   return (
-    <Card className="p-4">
+    <div className="p-4 h-full flex flex-col bg-transparent">
+      {/* Header Section */}
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-lg font-semibold flex items-center gap-2">
-          <Inbox className="h-5 w-5" />
+        <h3 className="text-lg font-bold flex items-center gap-2 text-gray-100">
+          <Inbox className="h-5 w-5 text-indigo-400" />
           Connection Requests
         </h3>
         {pendingRequests.length > 0 && (
-          <Badge variant="default">{pendingRequests.length}</Badge>
+          <Badge variant="default" className="bg-indigo-600 hover:bg-indigo-700">{pendingRequests.length}</Badge>
         )}
       </div>
 
-      <ScrollArea className="max-h-[400px]">
+      <ScrollArea className="flex-1 -mx-2 px-2">
         {isLoadingConnections ? (
-          <div className="text-center text-muted-foreground py-8">Loading...</div>
+          <div className="text-center text-gray-400 py-8">Loading...</div>
         ) : pendingRequests.length === 0 ? (
-          <div className="text-center text-muted-foreground py-8">
-            No pending requests
+          <div className="text-center text-gray-500 py-12 flex flex-col items-center gap-2">
+            <div className="h-12 w-12 rounded-full bg-white/5 flex items-center justify-center border border-white/5">
+              <Inbox className="h-6 w-6 opacity-40" />
+            </div>
+            <p>No pending requests</p>
           </div>
         ) : (
           <div className="space-y-3">
             {pendingRequests.map((request: any) => (
               <div
                 key={request._id}
-                className="flex items-center gap-3 p-3 rounded-lg border bg-card"
+                className="flex items-center gap-3 p-3 rounded-xl border border-white/10 bg-white/5 hover:bg-white/10 transition-all backdrop-blur-sm shadow-sm"
               >
-                <Avatar>
-                  <AvatarFallback>
+                <Avatar className="border border-white/10">
+                  <AvatarFallback className="bg-indigo-500/20 text-indigo-200">
                     {request.requester?.name?.charAt(0).toUpperCase() || "U"}
                   </AvatarFallback>
                 </Avatar>
                 
                 <div className="flex-1 min-w-0">
-                  <p className="font-medium truncate">
+                  <p className="font-semibold text-sm truncate text-gray-200">
                     {request.requester?.name || "Unknown User"}
                   </p>
-                  <p className="text-sm text-muted-foreground truncate">
+                  <p className="text-xs text-gray-400 truncate">
                     {request.requester?.email}
                   </p>
+                  {request.requestMessage && (
+                    <p className="text-xs text-gray-400/80 italic mt-1 line-clamp-2 bg-white/5 p-1.5 rounded-md border border-white/5">
+                      "{request.requestMessage}"
+                    </p>
+                  )}
                 </div>
                 
-                <div className="flex gap-2">
+                <div className="flex gap-1 flex-col sm:flex-row">
                   <Button 
                     size="sm" 
-                    variant="default"
+                    className="h-7 text-xs bg-indigo-600 hover:bg-indigo-700 text-white border border-white/10"
                     onClick={() => handleAccept(request._id)}
                     disabled={respondToRequest.isPending}
                   >
-                    <UserCheck className="h-4 w-4 mr-1" />
+                    <UserCheck className="h-3 w-3 mr-1" />
                     Accept
                   </Button>
                   <Button 
                     size="sm" 
-                    variant="outline"
+                    variant="ghost"
+                    className="h-7 text-xs hover:bg-red-500/20 hover:text-red-400 text-gray-400"
                     onClick={() => handleReject(request._id)}
                     disabled={respondToRequest.isPending}
                   >
-                    <UserX className="h-4 w-4 mr-1" />
-                    Reject
+                    <UserX className="h-3 w-3" />
                   </Button>
                 </div>
               </div>
@@ -85,6 +100,6 @@ export const ConnectionRequests = () => {
           </div>
         )}
       </ScrollArea>
-    </Card>
+    </div>
   );
 };

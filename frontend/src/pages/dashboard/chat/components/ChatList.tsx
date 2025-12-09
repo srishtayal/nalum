@@ -16,23 +16,31 @@ interface ChatListProps {
   selectedConversationId: string | null;
 }
 
+/**
+ * ChatList Component
+ * 
+ * Displays a list of active conversations and accepted connections.
+ * It merges existing conversations with connections that don't have a conversation yet,
+ * allowing users to start chatting immediately with any connection.
+ */
 export const ChatList = ({ onSelectConversation, selectedConversationId }: ChatListProps) => {
   const { isConnected, connections } = useChatContext();
   const { conversations, isLoading } = useConversations();
   const { user } = useAuth();
   const [searchQuery, setSearchQuery] = useState("");
 
-  // Get accepted connections
+  // Filter for only accepted connections to show in the chat list
   const acceptedConnections = connections.filter((conn: any) => conn.status === 'accepted');
 
-  // Create a map of conversations by participant ID for quick lookup
+  // Create a map for O(1) lookup of existing conversations by participant ID
   const conversationMap = new Map(
     conversations.map((conv: any) => [conv.otherParticipant?._id, conv])
   );
 
-  // Merge conversations with connections (show connections even without messages)
+  // Combine connections and conversations into a single list
+  // If a conversation exists, use it. If not, create a placeholder from the connection.
   const allChats = acceptedConnections.map((connection: any) => {
-    // Determine who the other user is (not the current user)
+    // Determine the other user (not the current user)
     const otherUser = connection.requester._id === user?.id
       ? connection.recipient 
       : connection.requester;
@@ -43,7 +51,7 @@ export const ChatList = ({ onSelectConversation, selectedConversationId }: ChatL
       return existingConversation;
     }
     
-    // Return connection as a "conversation" placeholder
+    // Return connection as a "virtual" conversation
     return {
       _id: `connection-${connection._id}`,
       isConnectionOnly: true,
@@ -59,76 +67,84 @@ export const ChatList = ({ onSelectConversation, selectedConversationId }: ChatL
   );
 
   return (
-    <Card className="w-full md:w-80 h-full flex flex-col">
-      <div className="p-4 border-b space-y-3">
+    <div className="w-full h-full flex flex-col bg-transparent">
+      {/* Header with Search */}
+      <div className="p-3 border-b border-white/10 space-y-3 bg-black/20">
         <div className="flex items-center justify-between">
-          <h2 className="text-xl font-bold">Messages</h2>
+          <h2 className="text-lg font-semibold text-gray-100">
+            Messages
+          </h2>
           <div className="flex items-center gap-2">
-            <Badge variant={isConnected ? "default" : "destructive"} className="text-xs">
+            <Badge 
+              variant="outline" 
+              className={`text-[10px] h-5 px-2 ${isConnected ? "text-green-400 border-green-500/30 bg-green-500/10" : "text-gray-400 border-gray-600"} backdrop-blur-sm`}
+            >
               {isConnected ? "Online" : "Offline"}
             </Badge>
           </div>
         </div>
         
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-3.5 w-3.5 text-gray-400" />
           <Input
-            placeholder="Search conversations..."
+            placeholder="Search..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-9"
+            className="pl-9 h-9 text-sm bg-white/5 border-white/10 focus:bg-white/10 transition-all text-gray-200 placeholder:text-gray-500"
           />
         </div>
       </div>
 
+      {/* Chat List Area */}
       <ScrollArea className="flex-1">
         {isLoading ? (
-          <div className="p-4 text-center text-muted-foreground">Loading...</div>
+          <div className="p-4 text-center text-sm text-gray-400">Loading...</div>
         ) : filteredChats.length === 0 ? (
-          <div className="p-4 text-center text-muted-foreground space-y-2">
-            <MessageSquare className="h-12 w-12 mx-auto opacity-20" />
-            <p>No connections yet</p>
-            <p className="text-xs">Go to "Find" tab to connect with alumni</p>
+          <div className="p-8 text-center text-gray-500 space-y-2">
+            <MessageSquare className="h-10 w-10 mx-auto opacity-20" />
+            <p className="text-sm">No connections yet</p>
           </div>
         ) : (
-          <div className="divide-y">
+          <div className="divide-y divide-white/5">
             {filteredChats.map((chat: any) => (
               <button
                 key={chat._id}
                 onClick={() => onSelectConversation(chat)}
-                className={`w-full p-4 text-left hover:bg-accent transition-colors ${
-                  selectedConversationId === chat._id ? "bg-accent" : ""
+                className={`w-full p-3 text-left transition-all hover:bg-white/5 ${
+                  selectedConversationId === chat._id 
+                    ? "bg-white/10 border-l-2 border-indigo-500" 
+                    : "border-l-2 border-transparent"
                 }`}
               >
                 <div className="flex items-start gap-3">
-                  <Avatar>
-                    <AvatarFallback>
+                  <Avatar className="h-10 w-10 border border-white/10 shadow-sm">
+                    <AvatarFallback className="bg-white/10 text-gray-300 text-sm">
                       {chat.otherParticipant?.name?.charAt(0).toUpperCase() || "U"}
                     </AvatarFallback>
                   </Avatar>
                   
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between gap-2">
-                      <p className="font-semibold truncate">
+                      <p className="font-medium text-sm truncate text-gray-200">
                         {chat.otherParticipant?.name || "Unknown User"}
                       </p>
                       {chat.lastMessage?.createdAt && (
-                        <span className="text-xs text-muted-foreground">
+                        <span className="text-[10px] text-gray-500">
                           {format(new Date(chat.lastMessage.createdAt), "MMM d")}
                         </span>
                       )}
                     </div>
                     
-                    <div className="flex items-center justify-between gap-2">
-                      <p className="text-sm text-muted-foreground truncate">
+                    <div className="flex items-center justify-between gap-2 mt-0.5">
+                      <p className="text-xs text-gray-400 truncate max-w-[140px]">
                         {chat.isConnectionOnly ? (
-                          <span className="italic">Click to start chatting</span>
+                          <span className="italic opacity-70">Start chatting</span>
                         ) : (
-                          chat.lastMessage?.content || "No messages yet"
+                          chat.lastMessage?.content || "No messages"
                         )}
                       </p>
                       {chat.unreadCount > 0 && (
-                        <Badge variant="default" className="text-xs">
+                        <Badge variant="default" className="h-4 min-w-[16px] p-0 flex items-center justify-center text-[10px] bg-indigo-600 hover:bg-indigo-700">
                           {chat.unreadCount}
                         </Badge>
                       )}
@@ -140,6 +156,6 @@ export const ChatList = ({ onSelectConversation, selectedConversationId }: ChatL
           </div>
         )}
       </ScrollArea>
-    </Card>
+    </div>
   );
 };
