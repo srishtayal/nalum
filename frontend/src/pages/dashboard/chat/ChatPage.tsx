@@ -22,7 +22,7 @@ const ChatPageContent = () => {
   const [selectedConversation, setSelectedConversation] = useState<any>(null);
 
   return (
-    <div className="h-[calc(100vh-4rem)] p-2 md:p-4 bg-transparent">
+    <div className="h-full p-2 md:p-4 bg-transparent">
       <div className="h-full max-w-7xl mx-auto">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 h-full">
           {/* Left Sidebar - Glass Panel */}

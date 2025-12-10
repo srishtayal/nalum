@@ -12,6 +12,7 @@ import { useMessages } from "@/hooks/useMessages";
 import { useConversations } from "@/hooks/useConversations";
 import { useAuth } from "@/context/AuthContext";
 import { useQueryClient } from "@tanstack/react-query";
+import UserAvatar from "@/components/UserAvatar";
 
 interface ChatWindowProps {
   conversation: any;
@@ -139,11 +140,12 @@ export const ChatWindow = ({ conversation, onBack }: ChatWindowProps) => {
           <ArrowLeft className="h-5 w-5" />
         </Button>
         
-        <Avatar className="h-9 w-9 border border-white/10">
-          <AvatarFallback className="bg-indigo-500/20 text-indigo-200">
-            {conversation.otherParticipant?.name?.charAt(0).toUpperCase() || "U"}
-          </AvatarFallback>
-        </Avatar>
+        <UserAvatar
+          name={conversation.otherParticipant?.name || "Unknown User"}
+          src={conversation.otherParticipant?.profilePicture}
+          className="h-9 w-9 border border-white/10"
+          size="sm"
+        />
         
         <div className="flex-1 min-w-0">
           <p className="font-semibold text-sm truncate text-gray-200">{conversation.otherParticipant?.name || "Unknown User"}</p>

@@ -142,20 +142,24 @@ export const ChatList = ({ onSelectConversation, selectedConversation }: ChatLis
             {filteredChats.map((chat: any) => {
               const isSelected = selectedConversation && (
                 selectedConversation._id === chat._id || 
-                (selectedConversation.otherParticipant?._id && chat.otherParticipant?._id && selectedConversation.otherParticipant._id === chat.otherParticipant._id)
+                (selectedConversation.otherParticipant?._id && chat.otherParticipant?._id && 
+                 selectedConversation.otherParticipant._id === chat.otherParticipant._id)
               );
 
               return (
               <button
                 key={chat._id}
                 onClick={() => onSelectConversation(chat)}
-                className={`w-full p-3 text-left transition-all hover:bg-white/5 group ${
+                className={`w-full p-3 text-left transition-all hover:bg-white/5 group relative ${
                   isSelected 
-                    ? "bg-white/10 border-l-2 border-indigo-500" 
-                    : "border-l-2 border-transparent"
+                    ? "bg-white/10" 
+                    : ""
                 }`}
               >
-                <div className="flex items-start gap-3">
+                {isSelected && (
+                  <div className="absolute left-0 top-0 bottom-0 w-1 bg-indigo-500" />
+                )}
+                <div className="flex items-start gap-3 pl-2">
                   <div className="relative">
                     <UserAvatar 
                       name={chat.otherParticipant?.name || "Unknown"}

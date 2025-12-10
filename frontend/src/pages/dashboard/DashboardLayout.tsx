@@ -1,8 +1,12 @@
-import { Outlet } from "react-router-dom";
+import { Outlet, useLocation } from "react-router-dom";
 import Sidebar from "./Sidebar";
 import { ProfileProvider } from "@/context/ProfileContext";
+import { cn } from "@/lib/utils";
 
 const DashboardLayout = () => {
+  const location = useLocation();
+  const isChatPage = location.pathname.startsWith("/dashboard/chat");
+
   return (
     <ProfileProvider>
       <div className="flex min-h-screen bg-slate-950 text-slate-100 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-slate-900 via-slate-950 to-black">
@@ -17,7 +21,10 @@ const DashboardLayout = () => {
 
         {/* Main Content Area */}
         <main className="flex-1 h-screen overflow-y-auto relative z-10">
-          <div className="relative p-8 max-w-7xl mx-auto">
+          <div className={cn(
+            "relative mx-auto transition-all duration-300",
+            isChatPage ? "p-0 max-w-full h-full" : "p-8 max-w-7xl"
+          )}>
             <Outlet />
           </div>
         </main>
