@@ -1,0 +1,8 @@
+# Uploads directory for newsletters
+# Files uploaded here should not be committed to git
+*.pdf
+*.doc
+*.docx
+
+# Keep directory structure
+!.gitkeep

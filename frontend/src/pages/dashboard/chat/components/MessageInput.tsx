@@ -1,0 +1,91 @@
+import { useState, useRef, useEffect } from "react";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import { Send } from "lucide-react";
+import { useChatContext } from "@/context/ChatContext";
+import { useTypingIndicator } from "@/hooks/useTypingIndicator";
+
+interface MessageInputProps {
+  onSendMessage: (content: string) => void;
+  disabled?: boolean;
+  conversationId: string;
+  receiverId: string;
+}
+
+export const MessageInput = ({
+  onSendMessage,
+  disabled,
+  conversationId,
+  receiverId,
+}: MessageInputProps) => {
+  const [message, setMessage] = useState("");
+  const { socket } = useChatContext();
+  const { emitTyping } = useTypingIndicator(socket, conversationId);
+  const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setMessage(e.target.value);
+    
+    // Emit typing start
+    emitTyping(true, receiverId);
+    
+    // Clear existing timeout
+    if (typingTimeoutRef.current) {
+      clearTimeout(typingTimeoutRef.current);
+    }
+    
+    // Set timeout to emit typing stop
+    typingTimeoutRef.current = setTimeout(() => {
+      emitTyping(false, receiverId);
+    }, 2000);
+  };
+
+  useEffect(() => {
+    return () => {
+      if (typingTimeoutRef.current) {
+        clearTimeout(typingTimeoutRef.current);
+      }
+    };
+  }, []);
+
+  const handleSend = () => {
+    if (message.trim() && !disabled) {
+      onSendMessage(message.trim());
+      setMessage("");
+      emitTyping(false, receiverId);
+      if (typingTimeoutRef.current) {
+        clearTimeout(typingTimeoutRef.current);
+      }
+    }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      handleSend();
+    }
+  };
+
+  return (
+    <div className="p-3 border-t border-white/10 bg-black/20 backdrop-blur-md">
+      <div className="flex gap-2 items-end">
+        <Textarea
+          value={message}
+          onChange={handleInputChange}
+          onKeyDown={handleKeyDown}
+          placeholder="Type a message..."
+          className="min-h-[44px] max-h-[120px] resize-none bg-white/5 border-white/10 focus:bg-white/10 backdrop-blur-sm rounded-lg transition-all shadow-sm text-sm text-white placeholder:text-gray-400"
+          disabled={disabled}
+        />
+        <Button
+          onClick={handleSend}
+          disabled={!message.trim() || disabled}
+          size="icon"
+          className="h-[44px] w-[44px] rounded-lg shadow-sm transition-all hover:scale-105 shrink-0 bg-indigo-600 hover:bg-indigo-700 text-white border border-white/10"
+        >
+          <Send className="h-4 w-4" />
+        </Button>
+      </div>
+    </div>
+  );
+};

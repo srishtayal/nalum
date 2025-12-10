@@ -1,0 +1,238 @@
+const Connection = require('../../models/chat/connections.model');
+const User = require('../../models/user/user.model');
+require("dotenv").config();
+// Send connection request
+exports.sendConnectionRequest = async (req, res) => {
+  try {
+    const requesterId = req.user.user_id;
+    const { recipientId, requestMessage } = req.body;
+    if(process.NODE_ENV !== 'production') {
+      console.log(requesterId, recipientId,requestMessage);
+    }
+    if (!recipientId) {
+      return res.status(400).json({ error: 'Recipient ID is required' });
+    }
+
+    if (requesterId === recipientId) {
+      return res.status(400).json({ error: 'Cannot connect with yourself' });
+    }
+
+    // Check if recipient exists
+    const recipient = await User.findById(recipientId);
+    if (!recipient) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    // Check if connection already exists
+    const existingConnection = await Connection.findOne({
+      $or: [
+        { requester: requesterId, recipient: recipientId },
+        { requester: recipientId, recipient: requesterId }
+      ]
+    });
+
+    if (existingConnection) {
+      return res.status(400).json({ 
+        error: 'Connection request already exists',
+        status: existingConnection.status
+      });
+    }
+
+    // Create connection request
+    const connection = new Connection({
+      requester: requesterId,
+      recipient: recipientId,
+      requestMessage: requestMessage || null,
+      status: 'pending'
+    });
+
+    await connection.save();
+    await connection.populate(['requester', 'recipient'], 'name email profilePicture');
+
+    res.status(201).json({
+      message: 'Connection request sent successfully',
+      connection
+    });
+
+  } catch (error) {
+    console.error('Send connection request error:', error);
+    res.status(500).json({ error: 'Failed to send connection request' });
+  }
+};
+
+// Respond to connection request (accept/reject)
+exports.respondToConnection = async (req, res) => {
+  try {
+    const userId = req.user.user_id;
+    const { connectionId, action } = req.body;
+
+    if (!connectionId || !action) {
+      return res.status(400).json({ error: 'Connection ID and action are required' });
+    }
+
+    if (!['accept', 'reject', 'block'].includes(action)) {
+      return res.status(400).json({ error: 'Invalid action. Use "accept" or "reject or Block"' });
+    }
+
+    const connection = await Connection.findById(connectionId);
+
+    if (!connection) {
+      return res.status(404).json({ error: 'Connection request not found' });
+    }
+
+    // Verify user is the recipient
+    if (connection.recipient.toString() !== userId.toString()) {
+      return res.status(403).json({ error: 'Not authorized to respond to this request' });
+    }
+
+    if (connection.status !== 'pending') {
+      return res.status(400).json({ error: 'Connection request already processed' });
+    }
+
+    // Update connection status
+    if(action === 'accept') {
+      connection.status = 'accepted';
+    } else if (action === 'reject') {
+      connection.status = 'rejected';
+    } else if (action === 'block'){
+      connection.status = 'blocked';
+    }
+    connection.respondedAt = new Date();
+    await connection.save();
+
+    await connection.populate(['requester', 'recipient'], 'name email profilePicture');
+
+    res.json({
+      message: `Connection request ${action}ed successfully`,
+      connection
+    });
+
+  } catch (error) {
+    console.error('Respond to connection error:', error);
+    res.status(500).json({ error: 'Failed to respond to connection request' });
+  }
+};
+
+// Get all connections (accepted and pending)
+exports.getConnections = async (req, res) => {
+  try {
+    const userId = req.user.user_id;
+    const { status, page = 1, limit = 20 } = req.query;
+
+    const query = {
+      $or: [
+        { requester: userId },
+        { recipient: userId }
+      ]
+    };
+
+    if (status) {
+      query.status = status;
+    }
+
+    const skip = (page - 1) * limit;
+
+    const connections = await Connection.find(query)
+      .populate('requester', 'name email profilePicture')
+      .populate('recipient', 'name email profilePicture')
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(parseInt(limit));
+
+    const total = await Connection.countDocuments(query);
+
+    res.json({
+      success: true,
+      data: connections,
+      pagination: {
+        page: parseInt(page),
+        limit: parseInt(limit),
+        total,
+        pages: Math.ceil(total / limit)
+      }
+    });
+
+  } catch (error) {
+    console.error('Get connections error:', error);
+    res.status(500).json({ error: 'Failed to retrieve connections' });
+  }
+};
+
+// Get pending connection requests
+exports.getPendingRequests = async (req, res) => {
+  try {
+    const userId = req.user.user_id;
+
+    const pendingRequests = await Connection.find({
+      recipient: userId,
+      status: 'pending'
+    })
+      .populate('requester', 'name email profilePicture')
+      .sort({ createdAt: -1 });
+
+    res.json({ 
+      success: true,
+      data: pendingRequests 
+    });
+
+  } catch (error) {
+    console.error('Get pending requests error:', error);
+    res.status(500).json({ error: 'Failed to retrieve pending requests' });
+  }
+};
+
+// Remove connection
+exports.removeConnection = async (req, res) => {
+  try {
+    const userId = req.user.user_id;
+    const { connectionId } = req.params;
+
+    const connection = await Connection.findById(connectionId);
+
+    if (!connection) {
+      return res.status(404).json({ error: 'Connection not found' });
+    }
+
+    // Verify user is part of the connection
+    if (connection.requester.toString() !== userId.toString() && connection.recipient.toString() !== userId.toString()) {
+      return res.status(403).json({ error: 'Not authorized to remove this connection' });
+    }
+
+    await Connection.findByIdAndDelete(connectionId);
+
+    res.json({ message: 'Connection removed successfully' });
+
+  } catch (error) {
+    console.error('Remove connection error:', error);
+    res.status(500).json({ error: 'Failed to remove connection' });
+  }
+};
+
+// Block user
+exports.blockUser = async (req, res) => {
+  try {
+    const userId = req.user.user_id;
+    const { connectionId } = req.params;
+
+    const connection = await Connection.findById(connectionId);
+
+    if (!connection) {
+      return res.status(404).json({ error: 'Connection not found' });
+    }
+
+    // Verify user is part of the connection
+    if (connection.requester.toString() !== userId.toString() && connection.recipient.toString() !== userId.toString()) {
+      return res.status(403).json({ error: 'Not authorized to block this connection' });
+    }
+
+    connection.status = 'blocked';
+    connection.respondedAt = new Date();
+    await connection.save();
+
+    res.json({ message: 'User blocked successfully', connection });
+
+  } catch (error) {
+    console.error('Block user error:', error);
+    res.status(500).json({ error: 'Failed to block user' });
+  }
+};

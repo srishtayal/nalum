@@ -1,0 +1,24 @@
+meta {
+  name: Block Request
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{BASE_URL}}/chat/connections/:connectionId/block
+  body: none
+  auth: inherit
+}
+
+params:path {
+  connectionId: 6936cf60bd4bcd6c99880631
+}
+
+vars:pre-request {
+  connectionId: 6936cf60bd4bcd6c99880631
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

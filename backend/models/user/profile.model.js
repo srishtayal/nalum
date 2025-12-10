@@ -1,71 +1,63 @@
 const mongoose = require("mongoose");
 
-const profileSchema = new mongoose.Schema({
-  user: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "User",
-    required: true,
-    unique: true, 
-  },
-  skills: [String],
-  experience: [
-    {
-      role: String,
-      company: String,
-      duration: String,
-      description: String,
+// Simplified profile schema without complex duration tracking
+const profileSchema = new mongoose.Schema(
+  {
+    user: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+      unique: true,
     },
-  ],
-  education: [
-    {
-      degree: String,
-      institution: String,
-      duration: String,
+
+    // Required academic information
+    batch: {
+      type: String,
+      required: true,
     },
-  ],
-  honours: [
-    {
-      title: String,
-      awarding_body: String,
-      date: Date,
+    branch: {
+      type: String,
+      required: true,
     },
-  ],
-  projects: [
-    {
-      title: String,
-      description: String,
-      duration: String,
-      technologies: [String],
+    campus: {
+      type: String,
+      required: true,
+      enum: ["Main Campus", "East Campus", "West Campus"],
     },
-  ],
-  publications: [
-    {
-      title: String,
-      journal: String,
-      date: Date,
-      description: String,
+
+    // Optional current employment
+    current_company: {
+      type: String,
     },
-  ],
-  social_media: {
-    instagram: String,
-    facebook: String,
-    linkedin: String,
-    snapchat: String,
-    github: String,
+    current_role: {
+      type: String,
+    },
+
+    // Profile picture
+    profile_picture: {
+      type: String, // URL or file path
+    },
+
+    // Social media links (all optional)
+    social_media: {
+      linkedin: String,
+      github: String,
+      twitter: String,
+      personal_website: String,
+    },
+
+    // Optional skills and experience
+    skills: [String],
+
+    experience: [
+      {
+        company: String,
+        role: String,
+        duration: String, // Simplified to just store the string (e.g., "Jan 2020 - Dec 2022")
+      },
+    ],
   },
-  custom_cv: {
-    type: String, 
-    default: null,
-  },
-  status: {
-    type: String,
-    enum: ["open_for_work", "open_to_recruit", "open_to_provide_referral", "none"],
-    default: "none",
-  },
-  linkedin_auto_updates: {
-    type: Boolean,
-    default: false,
-  },
-}, { timestamps: true });
+  { timestamps: true }
+);
 
 module.exports = mongoose.model("Profile", profileSchema);

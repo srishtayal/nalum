@@ -1,0 +1,27 @@
+meta {
+  name: Accept/Reject Connectios
+  type: http
+  seq: 2
+}
+
+post {
+  url: http://localhost:5000/chat/connections/respond
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiNjkzNmM3NDkwNDhjYmExODgyYzhmYjM5IiwiZW1haWwiOiJ0ZXN0dXNlcjJAbnN1dC5hYy5pbiIsInNlc3Npb25faWQiOiI2OTM2Yzc2OTA0OGNiYTE4ODJjOGZiNTkiLCJpYXQiOjE3NjUyMDA3NTYsImV4cCI6MTc2NTIwMjU1Nn0.OyoooGSDkuDJE108Et-tWNKCj8do4mtrSRrzpPdy-0s
+}
+
+body:json {
+  {
+    "connectionId":"6936cf60bd4bcd6c99880631",
+    "action":"accept"
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

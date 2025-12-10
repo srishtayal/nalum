@@ -3,19 +3,27 @@ const router = express.Router();
 
 const signIn = require("./signIn");
 const signUp = require("./signUp");
-const verifyAccount = require("./verifyAccount");
-const verifyToken = require("./verifyToken");
-const updateToken = require("./updateToken");
+const refresh = require("./refresh"); 
 const revokeToken = require("./revokeToken");
+const logout = require("./logout");
 const forgetPassword = require("./forgetPassword");
 const resetPassword = require("./resetPassword");
+const sendVerificationLink = require("./sendVerificationLink");
+const sendOTP = require("./sendOTP");
+const verifyAccountUsingLink = require("./verifyAccountUsingLink");
+const verifyAccountUsingOTP = require("./verifyAccountUsingOTP");
+
+// define routes 
 
 router.use("/sign-in", signIn);
 router.use("/sign-up", signUp);
-router.use("/verify-account", verifyAccount);
-router.use("/verify-token", verifyToken);
-router.use("/update-token", updateToken);
+router.use("/refresh", refresh);
 router.use("/revoke-token", revokeToken);
+router.use("/logout", logout);
 router.use("/forget-password", forgetPassword);
 router.use("/reset-password", resetPassword);
+router.use("/send-verification-link", sendVerificationLink);
+router.use("/send-otp", sendOTP);
+router.use("/verify-account-link", verifyAccountUsingLink);
+router.use("/verify-account-otp", verifyAccountUsingOTP);
 module.exports = router;

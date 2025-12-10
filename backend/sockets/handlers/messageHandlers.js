@@ -1,0 +1,173 @@
+const Message = require('../../models/chat/messages.model');
+const Conversation = require('../../models/chat/conversations.model');
+const Connection = require('../../models/chat/connections.model');
+const redisClient = require('../../config/redis');
+
+async function handleSendMessage(io, socket, data) {
+  try {
+    const { conversationId, content } = data;
+    const userId = socket.userId;
+
+    // Validate content
+    if (!content || !content.trim()) {
+      return socket.emit('message:error', { error: 'Message content is required' });
+    }
+
+    if (content.length > 5000) {
+      return socket.emit('message:error', { error: 'Message too long (max 5000 characters)' });
+    }
+
+    // Rate limiting check (skip if Redis not available)
+    if (redisClient && redisClient.isOpen) {
+      try {
+        const rateKey = `ratelimit:message:${userId}`;
+        const messageCount = await redisClient.incr(rateKey);
+        
+        if (messageCount === 1) {
+          await redisClient.expire(rateKey, 60);
+        }
+        
+        if (messageCount > 50) {
+          return socket.emit('message:error', { error: 'Rate limit exceeded. Please wait.' });
+        }
+      } catch (error) {
+        console.warn('Rate limit check failed:', error.message);
+      }
+    }
+
+    // Verify conversation exists and user is participant
+    const conversation = await Conversation.findById(conversationId);
+    if (!conversation) {
+      return socket.emit('message:error', { error: 'Conversation not found' });
+    }
+
+    if (!conversation.participants.some(p => p.toString() === userId.toString())) {
+      return socket.emit('message:error', { error: 'Not authorized for this conversation' });
+    }
+
+    // Create message
+    const message = new Message({
+      conversation: conversationId,
+      sender: userId,
+      content: content.trim(),
+      messageType: 'text',
+      readBy: [{ user: userId, readAt: new Date() }]
+    });
+
+    await message.save();
+
+    // Update conversation last message
+    conversation.lastMessage = {
+      content: content.substring(0, 500),
+      sender: userId,
+      timestamp: new Date()
+    };
+    await conversation.save();
+
+    // Update Redis recent conversations cache
+    if (redisClient && redisClient.isOpen) {
+      try {
+        const timestamp = Date.now();
+        for (const participantId of conversation.participants) {
+          await redisClient.zAdd(`recent:chats:${participantId}`, {
+            score: timestamp,
+            value: conversationId.toString()
+          });
+        }
+
+        // Increment unread count for other participants
+        for (const participantId of conversation.participants) {
+          if (participantId.toString() !== userId) {
+            await redisClient.hIncrBy(`unread:${participantId}`, conversationId.toString(), 1);
+          }
+        }
+      } catch (error) {
+        console.warn('Redis cache update failed:', error.message);
+      }
+    }
+
+    // Populate message for response
+    await message.populate('sender', 'name email profilePicture');
+
+    // Emit to conversation room
+    io.to(`conversation:${conversationId}`).emit('message:new', {
+      conversationId,
+      message: message
+    });
+
+    // Emit to sender
+    socket.emit('message:sent', {
+      conversationId,
+      message: message
+    });
+
+  } catch (error) {
+    console.error('Send message error:', error);
+    socket.emit('message:error', { error: 'Failed to send message' });
+  }
+}
+
+async function handleMessageRead(io, socket, data) {
+  try {
+    const { conversationId, messageId } = data;
+    const userId = socket.userId;
+
+    // Verify conversation access
+    const conversation = await Conversation.findById(conversationId);
+    if (!conversation || !conversation.participants.some(p => p.toString() === userId)) {
+      return;
+    }
+
+    if (messageId) {
+      // Mark specific message as read
+      const message = await Message.findById(messageId);
+      if (message && message.conversation.toString() === conversationId) {
+        const alreadyRead = message.readBy.some(r => r.user.toString() === userId);
+        if (!alreadyRead) {
+          message.readBy.push({ user: userId, readAt: new Date() });
+          await message.save();
+        }
+      }
+    } else {
+      // Mark all messages in conversation as read
+      await Message.updateMany(
+        {
+          conversation: conversationId,
+          sender: { $ne: userId },
+          'readBy.user': { $ne: userId }
+        },
+        {
+          $push: { readBy: { user: userId, readAt: new Date() } }
+        }
+      );
+    }
+
+    // Update last read timestamp
+    conversation.lastReadBy.set(userId, new Date());
+    await conversation.save();
+
+    // Clear unread count in Redis
+    if (redisClient && redisClient.isOpen) {
+      try {
+        await redisClient.hDel(`unread:${userId}`, conversationId.toString());
+      } catch (error) {
+        console.warn('Redis update failed:', error.message);
+      }
+    }
+
+    // Notify other participants
+    io.to(`conversation:${conversationId}`).emit('message:read', {
+      conversationId,
+      userId,
+      messageId
+    });
+
+  } catch (error) {
+    console.error('Message read error:', error);
+  }
+}
+
+module.exports = {
+  handleSendMessage,
+  handleMessageRead
+};

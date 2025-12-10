@@ -6,7 +6,7 @@ const users = require("../../controllers/user.controller.js");
 const sessions = require("../../controllers/session.controller.js");
 
 router.post("/", async (req, res) => {
-  if (!req.body.email || !req.body.password || !req.body.fingerprint) {
+  if (!req.body.email || !req.body.password) {
     return res.status(401).json({
       err: true,
       code: 401,
@@ -14,7 +14,7 @@ router.post("/", async (req, res) => {
     });
   }
 
-  const { email, password, fingerprint } = req.body;
+  const { email, password } = req.body;
   let data = await users.findOne(email);
 
   if (data.error) {
@@ -30,7 +30,24 @@ router.post("/", async (req, res) => {
       message: "No User",
     });
   }
-
+  if (data.data.email_verified === false) {
+    return res.status(401).json({
+      err: true,
+      code: 401,
+      message: "Email not verified",
+    });
+  }
+  
+  // Check student verification timeout (30 days)
+  if (data.data.role === "student" && data.data.isStudentVerificationExpired()) {
+    return res.status(403).json({
+      err: true,
+      code: 403,
+      message: "Your email verification has expired. Please verify your @nsut.ac.in email again.",
+      verification_expired: true,
+    });
+  }
+  
   let matched;
 
   try {
@@ -47,11 +64,7 @@ router.post("/", async (req, res) => {
     });
   }
 
-  const sessionData = await sessions.create(
-    email,
-    fingerprint,
-    data.data._id
-  );
+  const sessionData = await sessions.getOrCreate(email, data.data._id);
 
   if (sessionData.error) {
     return res.status(500).json(sessionData);
@@ -61,13 +74,24 @@ router.post("/", async (req, res) => {
   res.cookie("refresh_token", refresh_token, {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
-    sameSite: "strict",
+    sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
     maxAge: 365 * 24 * 60 * 60 * 1000, // 1 year
   });
 
   return res.status(200).json({
     error: false,
-    data: rest,
+    data: {
+      ...rest,
+      user: {
+        id: data.data._id,
+        name: data.data.name,
+        email: data.data.email,
+        role: data.data.role,
+        email_verified: data.data.email_verified,
+        profileCompleted: data.data.profileCompleted,
+        verified_alumni: data.data.verified_alumni,
+      },
+    },
   });
 });
 

@@ -4,7 +4,7 @@ const router = express.Router();
 const sessions = require("../../controllers/session.controller.js");
 
 router.post("/", async (req, res) => {
-  if (!req.body.refresh_token || !req.body.fingerprint) {
+  if (!req.body.refresh_token) {
     return res.status(401).json({
       err: true,
       code: 400,
@@ -12,9 +12,9 @@ router.post("/", async (req, res) => {
     });
   }
 
-  const { refresh_token, fingerprint } = req.body;
+  const { refresh_token } = req.body;
 
-  let data = await sessions.delete(refresh_token, fingerprint);
+  let data = await sessions.delete(refresh_token);
 
   if (data.error) {
     return res.status(400).json(data);

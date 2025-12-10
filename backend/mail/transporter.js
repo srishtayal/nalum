@@ -2,11 +2,20 @@ const nodemailer = require("nodemailer");
 const mailConfig = require("../config/mail.config");
 
 const transporter = nodemailer.createTransport({
-  service: "gmail",
+  host: "smtp.gmail.com",
+  port: 587,
+  secure: false,
   auth: {
     user: mailConfig.EMAIL,
     pass: mailConfig.PASSWORD,
   },
+  tls: {
+    rejectUnauthorized: true,
+    minVersion: "TLSv1.2"
+  },
+  connectionTimeout: 60000, // 60 seconds
+  greetingTimeout: 30000,   // 30 seconds
+  socketTimeout: 60000,      // 60 seconds
 });
 
 exports.sendMail = async (recipient, subject, text, html) => {

@@ -20,7 +20,7 @@ const verificationTokenSchema = new mongoose.Schema(
     expires_at: {
       type: Date,
       required: true,
-      default: () => new Date(Date.now() + 1000 * 60 * 60 * 24), // 24 hours
+      default: () => new Date(Date.now() + 1000 * 60 * 60 * 1), // 1 hour
     },
   },
   { timestamps: true }
