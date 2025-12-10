@@ -6,26 +6,24 @@ export const useTypingIndicator = (socket: any, conversationId: string | null) =
   useEffect(() => {
     if (!socket || !conversationId) return;
 
-    const handleTypingStart = (data: { userId: string; conversationId: string }) => {
-      if (data.conversationId === conversationId && !typingUsers.includes(data.userId)) {
-        setTypingUsers((prev) => [...prev, data.userId]);
-      }
+    const handleTypingIndicator = (data: { userId: string; conversationId: string; isTyping: boolean }) => {
+      if (data.conversationId !== conversationId) return;
+
+      setTypingUsers((prev) => {
+        if (data.isTyping) {
+          return prev.includes(data.userId) ? prev : [...prev, data.userId];
+        } else {
+          return prev.filter((id) => id !== data.userId);
+        }
+      });
     };
 
-    const handleTypingStop = (data: { userId: string; conversationId: string }) => {
-      if (data.conversationId === conversationId) {
-        setTypingUsers((prev) => prev.filter((id) => id !== data.userId));
-      }
-    };
-
-    socket.on("typing:start", handleTypingStart);
-    socket.on("typing:stop", handleTypingStop);
+    socket.on("typing:indicator", handleTypingIndicator);
 
     return () => {
-      socket.off("typing:start", handleTypingStart);
-      socket.off("typing:stop", handleTypingStop);
+      socket.off("typing:indicator", handleTypingIndicator);
     };
-  }, [socket, conversationId, typingUsers]);
+  }, [socket, conversationId]);
 
   const emitTyping = (isTyping: boolean, receiverId: string) => {
     if (socket && conversationId) {

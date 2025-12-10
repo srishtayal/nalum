@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useCallback, useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -11,6 +11,7 @@ import { useChatContext } from "@/context/ChatContext";
 import { useMessages } from "@/hooks/useMessages";
 import { useConversations } from "@/hooks/useConversations";
 import { useAuth } from "@/context/AuthContext";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface ChatWindowProps {
   conversation: any;
@@ -29,17 +30,26 @@ interface ChatWindowProps {
  * - Scrolling to the latest message
  */
 export const ChatWindow = ({ conversation, onBack }: ChatWindowProps) => {
-  const { socket } = useChatContext();
+  const { socket, isConnected } = useChatContext();
   const { user } = useAuth();
   const { createConversation } = useConversations();
+  const queryClient = useQueryClient();
   
-  // For connection-only items, conversationId might not exist yet (it's virtual)
-  const conversationId = conversation.isConnectionOnly ? null : conversation._id;
+  // Track the real conversation ID locally to handle transitions from connection-only
+  const [activeConversationId, setActiveConversationId] = useState<string | null>(
+    conversation.isConnectionOnly ? null : conversation._id
+  );
+
+  // Sync with prop changes
+  useEffect(() => {
+    setActiveConversationId(conversation.isConnectionOnly ? null : conversation._id);
+  }, [conversation]);
   
   // Custom hook to manage message state and socket events
   const { messages, isLoading, sendMessage, deleteMessage } = useMessages(
-    conversationId,
-    socket
+    activeConversationId,
+    socket,
+    conversation.isConnectionOnly ? null : conversation.lastMessage
   );
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -50,24 +60,68 @@ export const ChatWindow = ({ conversation, onBack }: ChatWindowProps) => {
     }
   }, [messages]);
 
+  const markAsRead = useCallback(() => {
+    if (activeConversationId && socket && isConnected) {
+       // Only mark as read if the document is visible and focused
+       if (document.visibilityState === 'visible' && document.hasFocus()) {
+           socket.emit('message:read', { conversationId: activeConversationId });
+           
+           // Optimistically update conversations list to show as read (gray)
+           queryClient.setQueryData(["conversations"], (old: any[]) => {
+             if (!old) return old;
+             return old.map((c: any) => 
+               c._id === activeConversationId ? { ...c, unreadCount: 0 } : c
+             );
+           });
+       }
+    }
+  }, [activeConversationId, socket, isConnected, queryClient]);
+
+  // Mark messages as read when OPENING conversation (conversationId changes)
+  // and when window gains focus
+  useEffect(() => {
+    markAsRead();
+
+    const handleFocus = () => {
+        markAsRead();
+    };
+
+    window.addEventListener('focus', handleFocus);
+    document.addEventListener('visibilitychange', handleFocus);
+
+    return () => {
+        window.removeEventListener('focus', handleFocus);
+        document.removeEventListener('visibilitychange', handleFocus);
+    };
+  }, [activeConversationId, markAsRead]);
+
   const handleSendMessage = async (content: string) => {
-    let targetConversationId = conversationId;
+    let targetConversationId = activeConversationId;
     
     // If this is a connection-only (no conversation yet), create it on the backend first
-    if (conversation.isConnectionOnly) {
+    if (!targetConversationId) {
       try {
         const result = await createConversation.mutateAsync(conversation.otherParticipant._id);
-        targetConversationId = result.data._id;
+        // The mutation returns the conversation object directly
+        targetConversationId = result._id;
+        setActiveConversationId(targetConversationId); // Switch to real ID immediately
       } catch (error) {
         console.error('Failed to create conversation:', error);
         return;
       }
     }
     
+    const tempId = `temp-${Date.now()}`;
+
+    // Note: sendMessage internally uses mutation variables, but the useMessages hook
+    // must be observing the same conversationId for the optimistic update to be visible.
+    // By setting activeConversationId above, we trigger a re-render/hook update.
+    // However, since state updates are async, we pass targetConversationId here.
     sendMessage.mutate({
       content,
-      conversationId: targetConversationId,
+      conversationId: targetConversationId!,
       receiverId: conversation.otherParticipant._id,
+      tempId
     });
   };
 
@@ -107,7 +161,7 @@ export const ChatWindow = ({ conversation, onBack }: ChatWindowProps) => {
           <div className="text-center text-gray-400 pt-10 text-sm">Loading messages...</div>
         ) : messages.length === 0 ? (
           <div className="text-center text-gray-400 pt-10 px-4">
-            {conversation.isConnectionOnly ? (
+            {!activeConversationId ? (
               <div className="space-y-2">
                 <p className="font-medium text-sm text-gray-300">You're connected with {conversation.otherParticipant?.name}!</p>
                 <p className="text-xs">Send a message to start the conversation</p>
@@ -137,14 +191,15 @@ export const ChatWindow = ({ conversation, onBack }: ChatWindowProps) => {
       </ScrollArea>
 
       {/* Typing Indicator */}
-      {conversationId && <TypingIndicator conversationId={conversationId} />}
+      {activeConversationId && <TypingIndicator conversationId={activeConversationId} />}
 
       {/* Input */}
       <MessageInput
         onSendMessage={handleSendMessage}
         disabled={sendMessage.isPending || createConversation.isPending}
-        conversationId={conversationId || 'temp'}
+        conversationId={activeConversationId || 'temp'}
         receiverId={conversation.otherParticipant._id}
+        onInputFocus={markAsRead}
       />
     </div>
   );

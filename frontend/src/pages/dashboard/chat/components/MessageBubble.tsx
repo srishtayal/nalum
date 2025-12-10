@@ -31,8 +31,12 @@ export const MessageBubble = ({ message, isOwn, onDelete }: MessageBubbleProps) 
     );
   }
 
-  // Calculate read status from readBy array or fallback
-  const isRead = message.readBy?.length > 0 || message.readAt;
+  // Calculate read status: Check if anyone other than the sender is in the readBy array
+  const senderId = message.sender?._id || message.sender;
+  const isRead = message.readBy?.some((r: any) => {
+    const readerId = r.user?._id || r.user;
+    return readerId?.toString() !== senderId?.toString();
+  });
 
   return (
     <div className={`flex ${isOwn ? "justify-end" : "justify-start"} group animate-in fade-in slide-in-from-bottom-2 duration-300`}>
@@ -54,11 +58,15 @@ export const MessageBubble = ({ message, isOwn, onDelete }: MessageBubbleProps) 
             {format(new Date(message.createdAt), "HH:mm")}
           </span>
           
-          {isOwn && isRead && (
+          {message.isOptimistic && (
+             <span className="text-[10px] text-gray-400 font-medium italic">Sending...</span>
+          )}
+
+          {!message.isOptimistic && isOwn && isRead && (
             <span className="text-[10px] text-gray-400 font-medium">Read</span>
           )}
           
-          {isOwn && (
+          {isOwn && !message.isOptimistic && (
             <Button
               variant="ghost"
               size="icon"

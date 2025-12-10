@@ -18,7 +18,7 @@ const VerificationCodeSchema = new mongoose.Schema(
       ref: "User",
       default: null,
     },
-    is_used: {
+  is_used: {
       type: Boolean,
       default: false,
     },

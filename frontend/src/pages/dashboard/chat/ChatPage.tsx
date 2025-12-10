@@ -50,7 +50,7 @@ const ChatPageContent = () => {
                 <TabsContent value="chats" className="flex-1 mt-0 overflow-hidden min-h-0">
                   <ChatList
                     onSelectConversation={setSelectedConversation}
-                    selectedConversationId={selectedConversation?._id}
+                    selectedConversation={selectedConversation}
                   />
                 </TabsContent>
 

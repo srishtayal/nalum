@@ -10,6 +10,7 @@ interface MessageInputProps {
   disabled?: boolean;
   conversationId: string;
   receiverId: string;
+  onInputFocus?: () => void;
 }
 
 export const MessageInput = ({
@@ -17,6 +18,7 @@ export const MessageInput = ({
   disabled,
   conversationId,
   receiverId,
+  onInputFocus,
 }: MessageInputProps) => {
   const [message, setMessage] = useState("");
   const { socket } = useChatContext();
@@ -73,6 +75,7 @@ export const MessageInput = ({
           value={message}
           onChange={handleInputChange}
           onKeyDown={handleKeyDown}
+          onFocus={onInputFocus}
           placeholder="Type a message..."
           className="min-h-[44px] max-h-[120px] resize-none bg-white/5 border-white/10 focus:bg-white/10 backdrop-blur-sm rounded-lg transition-all shadow-sm text-sm text-white placeholder:text-gray-400"
           disabled={disabled}

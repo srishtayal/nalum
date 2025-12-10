@@ -5,7 +5,7 @@ const redisClient = require('../../config/redis');
 
 async function handleSendMessage(io, socket, data) {
   try {
-    const { conversationId, content } = data;
+    const { conversationId, content, tempId } = data;
     const userId = socket.userId;
 
     // Validate content
@@ -88,6 +88,15 @@ async function handleSendMessage(io, socket, data) {
 
     // Populate message for response
     await message.populate('sender', 'name email profilePicture');
+    
+    // Notify all participants via their personal rooms (for chat list updates)
+    for (const participantId of conversation.participants) {
+      io.to(`user:${participantId}`).emit('conversation:update', {
+        conversationId,
+        lastMessage: message,
+        unreadCount: participantId.toString() === userId ? 0 : 1 // Simple increment hint, client should handle
+      });
+    }
 
     // Emit to conversation room
     io.to(`conversation:${conversationId}`).emit('message:new', {
@@ -98,7 +107,8 @@ async function handleSendMessage(io, socket, data) {
     // Emit to sender
     socket.emit('message:sent', {
       conversationId,
-      message: message
+      message: message,
+      tempId
     });
 
   } catch (error) {
