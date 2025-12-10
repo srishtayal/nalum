@@ -1,9 +1,10 @@
-import { useState, useRef, useCallback } from 'react';
+import { useState, useRef, useCallback, useEffect } from 'react';
 import { Camera, X, Upload, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import Cropper from 'react-easy-crop';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
+import { BASE_URL } from '@/lib/constants';
 
 interface ProfilePictureUploadProps {
   currentImage?: string;
@@ -27,7 +28,21 @@ const ProfilePictureUpload = ({ currentImage, onImageSelect, userName = "User" }
   const [zoom, setZoom] = useState(1);
   const [croppedAreaPixels, setCroppedAreaPixels] = useState<Area | null>(null);
   const [originalFile, setOriginalFile] = useState<File | null>(null);
+  const [pendingFile, setPendingFile] = useState<File | null>(null);
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Sync preview with currentImage prop when it changes
+  useEffect(() => {
+    console.log('ProfilePictureUpload: currentImage changed to:', currentImage);
+    if (currentImage) {
+      // Prepend BASE_URL if the currentImage is a relative path
+      const fullImageUrl = currentImage.startsWith('http') ? currentImage : `${BASE_URL}${currentImage}`;
+      setPreview(fullImageUrl);
+      setHasUnsavedChanges(false);
+      setPendingFile(null);
+    }
+  }, [currentImage]);
 
   // Get initials for fallback avatar
   const getInitials = (name: string) => {
@@ -177,8 +192,9 @@ const ProfilePictureUpload = ({ currentImage, onImageSelect, userName = "User" }
       };
       reader.readAsDataURL(croppedFile);
 
-      // Pass cropped file to parent
-      onImageSelect?.(croppedFile);
+      // Store the pending file instead of immediately passing to parent
+      setPendingFile(croppedFile);
+      setHasUnsavedChanges(true);
       
       // Reset crop state
       setImageToCrop(null);
@@ -202,8 +218,18 @@ const ProfilePictureUpload = ({ currentImage, onImageSelect, userName = "User" }
     }
   };
 
+  const handleSaveImage = () => {
+    if (pendingFile) {
+      onImageSelect?.(pendingFile);
+      setHasUnsavedChanges(false);
+      setPendingFile(null);
+    }
+  };
+
   const handleRemove = () => {
     setPreview(null);
+    setPendingFile(null);
+    setHasUnsavedChanges(false);
     onImageSelect?.(null);
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
@@ -213,6 +239,8 @@ const ProfilePictureUpload = ({ currentImage, onImageSelect, userName = "User" }
   const handleClick = () => {
     fileInputRef.current?.click();
   };
+
+  console.log('ProfilePictureUpload render - preview:', preview, 'currentImage:', currentImage);
 
   return (
     <>
@@ -224,20 +252,6 @@ const ProfilePictureUpload = ({ currentImage, onImageSelect, userName = "User" }
               {getInitials(userName)}
             </AvatarFallback>
           </Avatar>
-          
-          {/* Camera icon button */}
-          <button
-            type="button"
-            onClick={handleClick}
-            disabled={isProcessing}
-            className="absolute bottom-0 right-0 bg-blue-600/50 hover:bg-blue-500/70 text-white rounded-full p-2 shadow-lg transition-colors disabled:opacity-50 border border-blue-400/30 backdrop-blur-sm"
-          >
-            {isProcessing ? (
-              <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-            ) : (
-              <Camera className="w-5 h-5" />
-            )}
-          </button>
         </div>
 
         <input
@@ -249,20 +263,46 @@ const ProfilePictureUpload = ({ currentImage, onImageSelect, userName = "User" }
           aria-label="Upload profile picture"
         />
 
-        <div className="flex gap-2">
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={handleClick}
-            disabled={isProcessing}
-            className="gap-2 border-white/10 bg-white/5 text-gray-300 hover:bg-white/10 hover:text-white"
-          >
-            <Upload className="w-4 h-4" />
-            {preview ? 'Change Photo' : 'Upload Photo'}
-          </Button>
+        <div className="flex gap-2 flex-wrap justify-center">
+          {hasUnsavedChanges ? (
+            <>
+              <Button
+                type="button"
+                variant="default"
+                size="sm"
+                onClick={handleSaveImage}
+                className="gap-2 bg-green-600 hover:bg-green-700 text-white"
+              >
+                <Check className="w-4 h-4" />
+                Save Image
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={handleClick}
+                disabled={isProcessing}
+                className="gap-2 border-white/10 bg-white/5 text-gray-300 hover:bg-white/10 hover:text-white"
+              >
+                <Upload className="w-4 h-4" />
+                Change Photo
+              </Button>
+            </>
+          ) : (
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={handleClick}
+              disabled={isProcessing}
+              className="gap-2 border-white/10 bg-white/5 text-gray-300 hover:bg-white/10 hover:text-white"
+            >
+              <Upload className="w-4 h-4" />
+              {preview ? 'Change Photo' : 'Upload Photo'}
+            </Button>
+          )}
           
-          {preview && (
+          {preview && !hasUnsavedChanges && (
             <Button
               type="button"
               variant="ghost"

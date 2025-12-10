@@ -39,11 +39,14 @@ interface Experience {
 }
 
 const UpdateProfile = () => {
-  const { accessToken, logout } = useAuth();
+  const { accessToken, logout, user } = useAuth();
   const { profile: contextProfile, isLoading, refetchProfile } = useProfile();
   const navigate = useNavigate();
   const [isSaving, setIsSaving] = useState(false);
   const [profile, setProfile] = useState<Profile | null>(null);
+  
+  // Check if user is alumni
+  const isAlumni = user?.role === 'alumni';
 
   const [formData, setFormData] = useState({
     batch: "",
@@ -90,6 +93,32 @@ const UpdateProfile = () => {
   const [showExpRoleSuggestions, setShowExpRoleSuggestions] = useState<{
     [key: number]: boolean;
   }>({});
+
+  // Force re-render for dropdown positioning on scroll/resize
+  const [, setForceUpdate] = useState(0);
+
+  // Close dropdowns on scroll
+  useEffect(() => {
+    const handleScroll = () => {
+      setShowCompanySuggestions(false);
+      setShowRoleSuggestions(false);
+      setShowSkillSuggestions(false);
+      setShowExpCompanySuggestions({});
+      setShowExpRoleSuggestions({});
+    };
+
+    const handleResize = () => {
+      handleScroll();
+    };
+
+    window.addEventListener('scroll', handleScroll, true);
+    window.addEventListener('resize', handleResize);
+
+    return () => {
+      window.removeEventListener('scroll', handleScroll, true);
+      window.removeEventListener('resize', handleResize);
+    };
+  }, []);
 
   useEffect(() => {
     // Use context profile data instead of fetching again
@@ -472,14 +501,10 @@ const UpdateProfile = () => {
               <h3 className="text-lg font-semibold text-white mb-4">
                 Profile Picture
               </h3>
-              <div className="flex items-center gap-6">
-                <UserAvatar
-                  src={profile.profile_picture}
-                  name={profile.user.name}
-                  size="xl"
-                  className="ring-4 ring-white/10"
-                />
+              <div className="flex justify-center">
                 <ProfilePictureUpload
+                  currentImage={contextProfile?.profile_picture}
+                  userName={contextProfile?.user.name || "User"}
                   onImageSelect={(file) => setProfilePicture(file)}
                 />
               </div>
@@ -558,7 +583,8 @@ const UpdateProfile = () => {
               </div>
             </div>
 
-            {/* Current Position */}
+            {/* Current Position - Only visible for Alumni */}
+            {isAlumni && (
             <div className="rounded-xl border border-white/10 shadow-xl p-6">
               <div className="bg-white/5 backdrop-blur-md rounded-xl">
                 <h3 className="text-lg font-semibold text-white mb-4">
@@ -675,6 +701,7 @@ const UpdateProfile = () => {
                 </div>
               </div>
             </div>
+            )}
             {/* Social Media */}
             <div className="rounded-xl border border-white/10 bg-white/5 backdrop-blur-md shadow-xl p-6 overflow-visible">
               <h3 className="text-lg font-semibold text-white mb-4">
