@@ -151,9 +151,36 @@ const AlumniDirectory = () => {
     }
   };
 
+  // Auto-search with debounce when filters change
   useEffect(() => {
-    // Don't fetch on initial load
-  }, []);
+    // Check if any filter has a value
+    const hasAnyFilter = filters.name || filters.batch || filters.branch || filters.campus || filters.skills.length > 0;
+    
+    // If no filters, clear results and return to initial state
+    if (!hasAnyFilter) {
+      setAlumni([]);
+      setHasSearched(false);
+      setLastSearchedFilters({
+        name: "",
+        batch: "",
+        branch: "",
+        campus: "",
+        skills: [],
+      });
+      return;
+    }
+
+    // Debounce the search - wait 500ms after user stops typing
+    const timeoutId = setTimeout(() => {
+      setAlumni([]); // Clear previous results
+      setCurrentPage(1);
+      setLastSearchedFilters({ ...filters });
+      fetchAlumni(1);
+    }, 500);
+
+    // Cleanup function to cancel the timeout if filters change again
+    return () => clearTimeout(timeoutId);
+  }, [filters]);
 
   const handleFilterChange = (key: keyof Filters, value: string) => {
     setFilters((prev) => ({ ...prev, [key]: value }));
@@ -493,6 +520,7 @@ const AlumniDirectory = () => {
                 {alumni.map((alumnus) => (
                   <div
                     key={alumnus._id}
+                    onClick={() => navigate(`/dashboard/alumni/${alumnus.user._id}`)}
                     className="group rounded-xl border border-white/10 bg-white/5 backdrop-blur-md hover:bg-white/10 transition-all duration-300 cursor-pointer p-6 hover:-translate-y-1 hover:shadow-2xl hover:shadow-blue-500/10 hover:border-blue-500/30"
                   >
                       <div className="flex items-start gap-4 mb-4">
@@ -548,7 +576,8 @@ const AlumniDirectory = () => {
                         variant="outline"
                         size="sm"
                         className="w-full border-white/10 bg-white/5 text-gray-300 hover:bg-blue-600 hover:text-white hover:border-blue-600 transition-all duration-300"
-                        onClick={() => {
+                        onClick={(e) => {
+                          e.stopPropagation();
                           window.location.href = `mailto:${alumnus.user.email}`;
                         }}
                       >
