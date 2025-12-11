@@ -1,20 +1,40 @@
 import { Link, useLocation } from "react-router-dom";
-import { 
-  Home, 
-  Edit2, 
-  Users, 
+import { useState, useEffect } from "react";
+import {
+  Home,
+  Edit2,
+  Users,
   LogOut,
-  MessageSquare
+  MessageSquare,
+  UserPlus,
 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { useProfile } from "@/context/ProfileContext";
 import { cn } from "@/lib/utils";
 import UserAvatar from "@/components/UserAvatar";
+import api from "@/lib/api";
 
 const Sidebar = () => {
   const { logout } = useAuth();
   const location = useLocation();
   const { profile } = useProfile();
+  const [pendingCount, setPendingCount] = useState(0);
+
+  useEffect(() => {
+    const fetchPendingCount = async () => {
+      try {
+        const { data } = await api.get("/chat/connections/pending");
+        setPendingCount(data?.data?.length || 0);
+      } catch (error) {
+        console.error("Failed to fetch pending requests:", error);
+      }
+    };
+
+    fetchPendingCount();
+    // Refresh count every 30 seconds
+    const interval = setInterval(fetchPendingCount, 30000);
+    return () => clearInterval(interval);
+  }, []);
 
   const navItems = [
     {
@@ -34,6 +54,12 @@ const Sidebar = () => {
       label: "Directory",
     },
     {
+      to: "/dashboard/connections",
+      icon: UserPlus,
+      label: "Connections",
+      badge: pendingCount,
+    },
+    {
       to: "/dashboard/chat",
       icon: MessageSquare,
       label: "Messages",
@@ -50,9 +76,7 @@ const Sidebar = () => {
   return (
     <aside className="w-64 h-screen flex flex-col border-r border-white/10 bg-slate-950/50 backdrop-blur-xl shadow-xl sticky top-0">
       <div className="p-6 border-b border-white/10">
-        <h1 className="text-2xl font-bold text-white tracking-wider">
-          NALUM
-        </h1>
+        <h1 className="text-2xl font-bold text-white tracking-wider">NALUM</h1>
       </div>
 
       <nav className="flex-1 py-6 px-3 space-y-2">
@@ -61,17 +85,26 @@ const Sidebar = () => {
             key={item.to}
             to={item.to}
             className={cn(
-              "flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 group",
+              "flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 group relative",
               isActive(item.to, item.exact)
                 ? "bg-blue-500/20 text-blue-200 border border-blue-500/30 shadow-[0_0_15px_rgba(59,130,246,0.15)]"
                 : "text-gray-400 hover:bg-white/5 hover:text-white"
             )}
           >
-            <item.icon className={cn(
-              "h-5 w-5 transition-colors",
-              isActive(item.to, item.exact) ? "text-blue-300" : "text-gray-500 group-hover:text-white"
-            )} />
+            <item.icon
+              className={cn(
+                "h-5 w-5 transition-colors",
+                isActive(item.to, item.exact)
+                  ? "text-blue-300"
+                  : "text-gray-500 group-hover:text-white"
+              )}
+            />
             <span className="font-medium">{item.label}</span>
+            {item.badge && item.badge > 0 && (
+              <span className="absolute right-3 top-1/2 -translate-y-1/2 bg-red-500 text-white text-xs font-bold rounded-full min-w-[20px] h-5 flex items-center justify-center px-1.5">
+                {item.badge}
+              </span>
+            )}
           </Link>
         ))}
       </nav>
@@ -79,13 +112,13 @@ const Sidebar = () => {
       <div className="p-4 border-t border-white/10 space-y-4">
         {/* Profile Picture Link */}
         {profile && (
-          <Link 
+          <Link
             to="/dashboard/profile"
             className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-white/5 transition-colors group border border-transparent hover:border-white/10"
           >
-            <UserAvatar 
-              src={profile.profile_picture} 
-              name={profile.user.name} 
+            <UserAvatar
+              src={profile.profile_picture}
+              name={profile.user.name}
               size="sm"
               className="border-2 border-transparent group-hover:border-blue-400/50 transition-all"
             />
