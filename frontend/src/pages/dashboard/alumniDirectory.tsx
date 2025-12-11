@@ -239,15 +239,7 @@ const AlumniDirectory = () => {
       {/* Main Content */}
       <div className="container mx-auto">
         <div className="max-w-7xl mx-auto">
-          {/* Back Button */}
-          <Button
-            variant="ghost"
-            className="mb-6 text-gray-400 hover:text-white hover:bg-white/10"
-            onClick={() => navigate("/dashboard")}
-          >
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to Dashboard
-          </Button>
+
 
           {/* Header */}
           <div className="mb-8">
@@ -288,19 +280,19 @@ const AlumniDirectory = () => {
                       filters.branch ||
                       filters.campus ||
                       filters.skills.length > 0) && (
-                      <Badge variant="secondary" className="ml-1 bg-blue-500/20 text-blue-300">
-                        {[
-                          filters.batch,
-                          filters.branch,
-                          filters.campus,
-                          ...filters.skills,
-                        ].filter(Boolean).length}
-                      </Badge>
-                    )}
+                        <Badge variant="secondary" className="ml-1 bg-blue-500/20 text-blue-300">
+                          {[
+                            filters.batch,
+                            filters.branch,
+                            filters.campus,
+                            ...filters.skills,
+                          ].filter(Boolean).length}
+                        </Badge>
+                      )}
                   </Button>
                   {showClearButton ? (
-                    <Button 
-                      onClick={handleClearResults} 
+                    <Button
+                      onClick={handleClearResults}
                       variant="outline"
                       className="gap-2 border-red-500/30 text-red-400 hover:bg-red-500/10 hover:text-red-300 bg-transparent"
                     >
@@ -308,8 +300,8 @@ const AlumniDirectory = () => {
                       Clear Results
                     </Button>
                   ) : (
-                    <Button 
-                      onClick={handleSearch} 
+                    <Button
+                      onClick={handleSearch}
                       className="gap-2 bg-blue-600 hover:bg-blue-500 text-white"
                     >
                       <Search className="h-4 w-4" />
@@ -453,38 +445,38 @@ const AlumniDirectory = () => {
             </div>
           ) : !hasSearched ? (
             <div className="rounded-xl border border-white/10 bg-white/5 backdrop-blur-md shadow-xl p-20 text-center">
-                <GraduationCap className="h-20 w-20 text-blue-500/30 mx-auto mb-6" />
-                <h3 className="text-2xl font-bold text-white mb-3">
-                  Ready to Connect? 🎓
-                </h3>
-                <p className="text-gray-400 mb-2 text-lg">
-                  Use the search bar and filters above to find alumni
-                </p>
-                <p className="text-gray-500 text-sm">
-                  Search by name, batch, branch, campus, or skills
-                </p>
+              <GraduationCap className="h-20 w-20 text-blue-500/30 mx-auto mb-6" />
+              <h3 className="text-2xl font-bold text-white mb-3">
+                Ready to Connect? 🎓
+              </h3>
+              <p className="text-gray-400 mb-2 text-lg">
+                Use the search bar and filters above to find alumni
+              </p>
+              <p className="text-gray-500 text-sm">
+                Search by name, batch, branch, campus, or skills
+              </p>
             </div>
           ) : alumni.length === 0 ? (
             <div className="rounded-xl border border-white/10 bg-white/5 backdrop-blur-md shadow-xl p-20 text-center">
-                <div className="mb-6">
-                  <div className="text-6xl mb-4">🔍</div>
-                </div>
-                <h3 className="text-2xl font-bold text-white mb-3">
-                  Oops! No Alumni Found
-                </h3>
-                <p className="text-gray-400 mb-2">
-                  We couldn't find anyone matching these criteria
-                </p>
-                <p className="text-gray-500 text-sm mb-6">
-                  Try adjusting your filters or search with different parameters
-                </p>
-                <Button 
-                  onClick={handleClearResults} 
-                  variant="outline"
-                  className="border-blue-500/50 text-blue-400 hover:bg-blue-500/10 hover:text-blue-300 bg-transparent"
-                >
-                  Clear All Filters
-                </Button>
+              <div className="mb-6">
+                <div className="text-6xl mb-4">🔍</div>
+              </div>
+              <h3 className="text-2xl font-bold text-white mb-3">
+                Oops! No Alumni Found
+              </h3>
+              <p className="text-gray-400 mb-2">
+                We couldn't find anyone matching these criteria
+              </p>
+              <p className="text-gray-500 text-sm mb-6">
+                Try adjusting your filters or search with different parameters
+              </p>
+              <Button
+                onClick={handleClearResults}
+                variant="outline"
+                className="border-blue-500/50 text-blue-400 hover:bg-blue-500/10 hover:text-blue-300 bg-transparent"
+              >
+                Clear All Filters
+              </Button>
             </div>
           ) : (
             <>
@@ -495,66 +487,66 @@ const AlumniDirectory = () => {
                     key={alumnus._id}
                     className="group rounded-xl border border-white/10 bg-white/5 backdrop-blur-md hover:bg-white/10 transition-all duration-300 cursor-pointer p-6 hover:-translate-y-1 hover:shadow-2xl hover:shadow-blue-500/10 hover:border-blue-500/30"
                   >
-                      <div className="flex items-start gap-4 mb-4">
-                        <UserAvatar
-                          src={alumnus.profile_picture}
-                          name={alumnus.user.name}
-                          size="lg"
-                          className="ring-2 ring-white/10 group-hover:ring-blue-500/40 transition-all"
-                        />
-                        <div className="flex-1 min-w-0">
-                          <h3 className="font-semibold text-lg text-white truncate group-hover:text-blue-300 transition-colors">
-                            {alumnus.user.name}
-                          </h3>
-                          {alumnus.current_role && alumnus.current_company && (
-                            <p className="text-sm text-gray-400 truncate">
-                              {alumnus.current_role} at {alumnus.current_company}
-                            </p>
+                    <div className="flex items-start gap-4 mb-4">
+                      <UserAvatar
+                        src={alumnus.profile_picture}
+                        name={alumnus.user.name}
+                        size="lg"
+                        className="ring-2 ring-white/10 group-hover:ring-blue-500/40 transition-all"
+                      />
+                      <div className="flex-1 min-w-0">
+                        <h3 className="font-semibold text-lg text-white truncate group-hover:text-blue-300 transition-colors">
+                          {alumnus.user.name}
+                        </h3>
+                        {alumnus.current_role && alumnus.current_company && (
+                          <p className="text-sm text-gray-400 truncate">
+                            {alumnus.current_role} at {alumnus.current_company}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="space-y-2 mb-4">
+                      <div className="flex items-center gap-2 text-sm text-gray-400">
+                        <GraduationCap className="h-4 w-4 text-blue-400" />
+                        <span>
+                          {alumnus.branch} • {alumnus.batch}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2 text-sm text-gray-400">
+                        <MapPin className="h-4 w-4 text-blue-400" />
+                        <span>{alumnus.campus}</span>
+                      </div>
+                    </div>
+
+                    {alumnus.skills && alumnus.skills.length > 0 && (
+                      <div className="mb-4">
+                        <div className="flex flex-wrap gap-1">
+                          {alumnus.skills.slice(0, 3).map((skill, index) => (
+                            <Badge key={index} variant="secondary" className="text-xs bg-white/5 text-gray-300 border border-white/5">
+                              {skill}
+                            </Badge>
+                          ))}
+                          {alumnus.skills.length > 3 && (
+                            <Badge variant="secondary" className="text-xs bg-white/5 text-gray-300 border border-white/5">
+                              +{alumnus.skills.length - 3} more
+                            </Badge>
                           )}
                         </div>
                       </div>
+                    )}
 
-                      <div className="space-y-2 mb-4">
-                        <div className="flex items-center gap-2 text-sm text-gray-400">
-                          <GraduationCap className="h-4 w-4 text-blue-400" />
-                          <span>
-                            {alumnus.branch} • {alumnus.batch}
-                          </span>
-                        </div>
-                        <div className="flex items-center gap-2 text-sm text-gray-400">
-                          <MapPin className="h-4 w-4 text-blue-400" />
-                          <span>{alumnus.campus}</span>
-                        </div>
-                      </div>
-
-                      {alumnus.skills && alumnus.skills.length > 0 && (
-                        <div className="mb-4">
-                          <div className="flex flex-wrap gap-1">
-                            {alumnus.skills.slice(0, 3).map((skill, index) => (
-                              <Badge key={index} variant="secondary" className="text-xs bg-white/5 text-gray-300 border border-white/5">
-                                {skill}
-                              </Badge>
-                            ))}
-                            {alumnus.skills.length > 3 && (
-                              <Badge variant="secondary" className="text-xs bg-white/5 text-gray-300 border border-white/5">
-                                +{alumnus.skills.length - 3} more
-                              </Badge>
-                            )}
-                          </div>
-                        </div>
-                      )}
-
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="w-full border-white/10 bg-white/5 text-gray-300 hover:bg-blue-600 hover:text-white hover:border-blue-600 transition-all duration-300"
-                        onClick={() => {
-                          window.location.href = `mailto:${alumnus.user.email}`;
-                        }}
-                      >
-                        <Mail className="h-4 w-4 mr-2" />
-                        Contact
-                      </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="w-full border-white/10 bg-white/5 text-gray-300 hover:bg-blue-600 hover:text-white hover:border-blue-600 transition-all duration-300"
+                      onClick={() => {
+                        window.location.href = `mailto:${alumnus.user.email}`;
+                      }}
+                    >
+                      <Mail className="h-4 w-4 mr-2" />
+                      Contact
+                    </Button>
                   </div>
                 ))}
               </div>

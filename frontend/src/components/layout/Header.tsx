@@ -34,7 +34,7 @@ const Header = ({ setHeaderHeight }) => {
       "Planned Giving",
       "Donor Recognition",
     ],
-    Stories: ["Notable Alumni","Alumni Stories", "Giving Stories", "Campus News", "All Stories"],
+    Stories: ["Notable Alumni", "Alumni Stories", "Giving Stories", "Campus News", "All Stories"],
   };
 
   // --- Handle scroll effects and dynamic height ---
@@ -42,7 +42,7 @@ const Header = ({ setHeaderHeight }) => {
     const handleScroll = () => {
       setScrolled(window.scrollY > 200); // Increased scroll threshold
     };
-    
+
     const updateHeight = () => {
       if (headerRef.current) {
         setHeaderHeight(headerRef.current.offsetHeight);
@@ -51,7 +51,7 @@ const Header = ({ setHeaderHeight }) => {
 
     window.addEventListener("scroll", handleScroll);
     window.addEventListener("resize", updateHeight);
-    
+
     // Update height initially and after transitions
     updateHeight();
     const timer = setTimeout(updateHeight, 300); // Allow transition to finish
@@ -173,15 +173,14 @@ const Header = ({ setHeaderHeight }) => {
           box-shadow: 0 4px 12px rgba(184, 134, 11, 0.4);
         }
       `}</style>
-      <header 
-        ref={headerRef} 
+      <header
+        ref={headerRef}
         className="w-full fixed top-0 z-50"
       >
         {/* === TOP BAR === */}
         <div
-          className={`bg-nsut-maroon text-white transition-all duration-300 ${
-            scrolled ? "opacity-0 h-0 overflow-hidden" : "opacity-100 py-1"
-          }`}
+          className={`bg-nsut-maroon text-white transition-all duration-300 ${scrolled ? "opacity-0 h-0 overflow-hidden" : "opacity-100 py-1"
+            }`}
         >
           <div className="container mx-auto px-4 flex justify-between items-center border-b border-nsut-yellow/30">
             <a
@@ -213,9 +212,8 @@ const Header = ({ setHeaderHeight }) => {
 
         {/* === MAIN NAVBAR === */}
         <div
-          className={`bg-white shadow-md transition-all duration-300 ${
-            scrolled ? "py-4" : "py-10"
-          }`}
+          className={`bg-white shadow-md transition-all duration-300 ${scrolled ? "py-4" : "py-10"
+            }`}
         >
           <div className="container mx-auto px-4 flex justify-between items-center">
             <Link
@@ -239,8 +237,8 @@ const Header = ({ setHeaderHeight }) => {
                         to={`/${title
                           .toLowerCase()
                           .replace(/ & /g, "-")}/${link
-                          .toLowerCase()
-                          .replace(/ /g, "-")}`}
+                            .toLowerCase()
+                            .replace(/ /g, "-")}`}
                         className="dropdown-link block px-4 py-2 text-sm text-gray-700"
                       >
                         {link}
@@ -299,7 +297,7 @@ const Header = ({ setHeaderHeight }) => {
                 <span className="font-serif text-lg font-semibold text-nsut-maroon">
                   NALUM
                 </span>
-                <button 
+                <button
                   onClick={() => setIsMobileMenuOpen(false)}
                   className="hover:text-nsut-maroon transition-colors duration-200 hover:scale-110"
                   aria-label="Close mobile menu"
@@ -319,8 +317,8 @@ const Header = ({ setHeaderHeight }) => {
                         to={`/${title
                           .toLowerCase()
                           .replace(/ & /g, "-")}/${link
-                          .toLowerCase()
-                          .replace(/ /g, "-")}`}
+                            .toLowerCase()
+                            .replace(/ /g, "-")}`}
                         className="block pl-4 py-1 text-sm hover:bg-gradient-to-r hover:from-nsut-beige hover:to-transparent hover:pl-6 transition-all duration-200 rounded"
                       >
                         {link}
@@ -332,7 +330,7 @@ const Header = ({ setHeaderHeight }) => {
                 <Link to="/about" className="hover:text-nsut-maroon transition-colors duration-200 font-medium">
                   About
                 </Link>
-                <Link to="/login" className="hover:text-nsut-maroon transition-colors duration-200 font-medium">
+                <Link to="/login" className="bg-nsut-maroon text-white font-bold py-2 px-4 rounded hover:shadow-lg hover:scale-105 transition-all duration-300 text-center">
                   myNSUT Login
                 </Link>
                 <a

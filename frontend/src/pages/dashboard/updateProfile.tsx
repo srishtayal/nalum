@@ -479,15 +479,7 @@ const UpdateProfile = () => {
       {/* Main Content */}
       <div className="container mx-auto">
         <div className="max-w-4xl mx-auto">
-          {/* Back Button */}
-          <Button
-            variant="ghost"
-            className="mb-6 text-gray-400 hover:bg-white/10 hover:text-white"
-            onClick={() => navigate("/dashboard/profile")}
-          >
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to Profile
-          </Button>
+
 
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Profile Picture */}

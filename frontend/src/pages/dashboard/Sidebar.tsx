@@ -1,8 +1,8 @@
 import { Link, useLocation } from "react-router-dom";
-import { 
-  Home, 
-  Edit2, 
-  Users, 
+import {
+  Home,
+  Edit2,
+  Users,
   LogOut,
   MessageSquare
 } from "lucide-react";
@@ -12,7 +12,11 @@ import { cn } from "@/lib/utils";
 import UserAvatar from "@/components/UserAvatar";
 import nsutLogo from "@/assets/nsut-logo.svg";
 
-const Sidebar = () => {
+interface SidebarProps {
+  onNavigate?: () => void;
+}
+
+const Sidebar = ({ onNavigate }: SidebarProps) => {
   const { logout } = useAuth();
   const location = useLocation();
   const { profile } = useProfile();
@@ -59,13 +63,13 @@ const Sidebar = () => {
         "flex items-center border-b border-white/10",
         isChatPage ? "justify-center p-4" : "p-6"
       )}>
-                <img src={nsutLogo} alt="NALUM" className="h-8 w-8 flex-shrink-0" />
-                <h1 className={cn(
-                  "text-2xl font-bold text-white tracking-wider transition-all duration-300 ease-in-out",
-                  isChatPage ? "opacity-0 max-w-0 ml-0 overflow-hidden" : "opacity-100 max-w-full ml-3"
-                )}>
-                  NALUM
-                </h1>
+        <img src={nsutLogo} alt="NALUM" className="h-8 w-8 flex-shrink-0" />
+        <h1 className={cn(
+          "text-2xl font-bold text-white tracking-wider transition-all duration-300 ease-in-out",
+          isChatPage ? "opacity-0 max-w-0 ml-0 overflow-hidden" : "opacity-100 max-w-full ml-3"
+        )}>
+          NALUM
+        </h1>
       </div>
 
       <nav className="flex-1 py-6 px-3 space-y-2">
@@ -73,6 +77,7 @@ const Sidebar = () => {
           <Link
             key={item.to}
             to={item.to}
+            onClick={onNavigate}
             className={cn(
               "flex items-center transition-all duration-200 group rounded-lg border focus:outline-none",
               isActive(item.to, item.exact)
@@ -97,17 +102,18 @@ const Sidebar = () => {
       <div className="p-4 border-t border-white/10 space-y-4">
         {/* Profile Picture Link */}
         {profile && (
-          <Link 
+          <Link
             to="/dashboard/profile"
+            onClick={onNavigate}
             className={cn(
               "flex items-center rounded-lg hover:bg-white/5 transition-colors group border border-transparent hover:border-white/10",
               isChatPage ? "justify-center p-2" : "gap-3 px-4 py-3"
             )}
             title={isChatPage ? profile.user.name : undefined}
           >
-            <UserAvatar 
-              src={profile.profile_picture} 
-              name={profile.user.name} 
+            <UserAvatar
+              src={profile.profile_picture}
+              name={profile.user.name}
               size="sm"
               className="border-2 border-transparent group-hover:border-blue-400/50 transition-all flex-shrink-0"
             />
