@@ -44,6 +44,8 @@ const UpdateProfile = () => {
   const navigate = useNavigate();
   const [isSaving, setIsSaving] = useState(false);
   const [profile, setProfile] = useState<Profile | null>(null);
+  const [initialData, setInitialData] = useState<any>(null);
+  const [isDirty, setIsDirty] = useState(false);
 
   const [formData, setFormData] = useState({
     batch: "",
@@ -96,7 +98,7 @@ const UpdateProfile = () => {
     if (contextProfile) {
       setProfile(contextProfile);
 
-      setFormData({
+      const initialFormData = {
         batch: contextProfile.batch || "",
         branch: contextProfile.branch || "",
         campus: contextProfile.campus || "",
@@ -110,9 +112,18 @@ const UpdateProfile = () => {
         },
         skills: contextProfile.skills || [],
         experience: contextProfile.experience || [],
-      });
+      };
+      setFormData(initialFormData);
+      setInitialData(initialFormData);
     }
   }, [contextProfile]);
+
+  // Check for unsaved changes
+  useEffect(() => {
+    if (!initialData) return;
+    const isChanged = JSON.stringify(formData) !== JSON.stringify(initialData) || profilePicture !== null;
+    setIsDirty(isChanged);
+  }, [formData, initialData, profilePicture]);
 
   // Autocomplete handlers
   const handleCompanyChange = (value: string) => {
@@ -251,40 +262,40 @@ const UpdateProfile = () => {
     if (!dateStr || dateStr === "Present") {
       return new Date(); // Present = current date
     }
-    
+
     const [month, year] = dateStr.split(" ");
     if (!month || !year) return null;
-    
+
     const monthMap: { [key: string]: number } = {
       Jan: 0, Feb: 1, Mar: 2, Apr: 3, May: 4, Jun: 5,
       Jul: 6, Aug: 7, Sep: 8, Oct: 9, Nov: 10, Dec: 11,
     };
-    
+
     const monthNum = monthMap[month];
     if (monthNum === undefined) return null;
-    
+
     return new Date(parseInt(year), monthNum);
   };
 
   // Validate experience dates
   const validateExperience = (exp: Experience): string | null => {
     if (!exp.duration) return null;
-    
+
     const parts = exp.duration.split(" - ");
     if (parts.length !== 2) return null;
-    
+
     const [startStr, endStr] = parts;
     const startDate = parseExperienceDate(startStr);
     const endDate = parseExperienceDate(endStr);
-    
+
     if (!startDate || !endDate) {
       return "Invalid date format";
     }
-    
+
     if (endDate < startDate) {
       return "End date cannot be earlier than start date";
     }
-    
+
     return null;
   };
 
@@ -293,9 +304,9 @@ const UpdateProfile = () => {
     return [...experiences].sort((a, b) => {
       const aEndDate = parseExperienceDate(a.duration.split(" - ")[1] || "");
       const bEndDate = parseExperienceDate(b.duration.split(" - ")[1] || "");
-      
+
       if (!aEndDate || !bEndDate) return 0;
-      
+
       // Most recent first (descending order)
       return bEndDate.getTime() - aEndDate.getTime();
     });
@@ -422,6 +433,17 @@ const UpdateProfile = () => {
     }
   };
 
+  const handleDiscard = () => {
+    if (initialData) {
+      setFormData(initialData);
+      setProfilePicture(null);
+      setIsDirty(false);
+      toast.info("Changes Discarded", {
+        description: "Your unsaved changes have been reverted.",
+      });
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -452,19 +474,12 @@ const UpdateProfile = () => {
   }
 
   return (
-    <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 text-gray-100">
+    <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 text-foreground relative pb-24">
+
       {/* Main Content */}
       <div className="container mx-auto">
         <div className="max-w-4xl mx-auto">
-          {/* Back Button */}
-          <Button
-            variant="ghost"
-            className="mb-6 text-gray-400 hover:bg-white/10 hover:text-white"
-            onClick={() => navigate("/dashboard/profile")}
-          >
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to Profile
-          </Button>
+
 
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Profile Picture */}
@@ -806,7 +821,7 @@ const UpdateProfile = () => {
                     className="bg-blue-600 hover:bg-blue-500 text-white"
                   >
                     <Plus className="h-4 w-4" />
-                  </Button> 
+                  </Button>
                 </div>
                 {formData.skills.length > 0 && (
                   <div className="flex flex-wrap gap-2">
@@ -1245,8 +1260,8 @@ const UpdateProfile = () => {
             <div className="flex gap-4">
               <Button
                 type="submit"
-                className="flex-1 bg-blue-600 hover:bg-blue-500 text-white"
-                disabled={isSaving}
+                className="flex-1 bg-nsut-maroon hover:bg-red-900 text-white"
+                disabled={isSaving || !isDirty}
               >
                 {isSaving ? (
                   <>
@@ -1265,7 +1280,7 @@ const UpdateProfile = () => {
                 variant="outline"
                 onClick={() => navigate("/dashboard/profile")}
                 disabled={isSaving}
-                className="border-white/10 text-gray-300 hover:bg-white/5 hover:text-white bg-transparent"
+                className="border-input text-muted-foreground hover:bg-accent hover:text-accent-foreground bg-transparent"
               >
                 Cancel
               </Button>
@@ -1273,6 +1288,37 @@ const UpdateProfile = () => {
           </form>
         </div>
       </div>
+
+      {/* Unsaved Changes Popup */}
+      {isDirty && (
+        <div className="fixed bottom-8 left-1/2 transform -translate-x-1/2 z-50 animate-in slide-in-from-bottom-10 fade-in duration-300">
+          <div className="bg-foreground text-background px-6 py-4 rounded-full shadow-2xl flex items-center gap-6 border border-border">
+            <p className="font-medium">You have unsaved changes</p>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleDiscard}
+                className="hover:bg-background/20 hover:text-background text-background/80"
+              >
+                Discard
+              </Button>
+              <Button
+                size="sm"
+                onClick={handleSubmit}
+                disabled={isSaving}
+                className="bg-nsut-maroon hover:bg-red-900 text-white rounded-full px-6"
+              >
+                {isSaving ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  "Save"
+                )}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
