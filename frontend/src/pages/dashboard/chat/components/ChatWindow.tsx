@@ -13,6 +13,16 @@ import { useConversations } from "@/hooks/useConversations";
 import { useAuth } from "@/context/AuthContext";
 import { useQueryClient } from "@tanstack/react-query";
 import UserAvatar from "@/components/UserAvatar";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 interface ChatWindowProps {
   conversation: any;
@@ -35,17 +45,18 @@ export const ChatWindow = ({ conversation, onBack }: ChatWindowProps) => {
   const { user } = useAuth();
   const { createConversation } = useConversations();
   const queryClient = useQueryClient();
-  
+
   // Track the real conversation ID locally to handle transitions from connection-only
   const [activeConversationId, setActiveConversationId] = useState<string | null>(
     conversation.isConnectionOnly ? null : conversation._id
   );
+  const [messageToDelete, setMessageToDelete] = useState<string | null>(null);
 
   // Sync with prop changes
   useEffect(() => {
     setActiveConversationId(conversation.isConnectionOnly ? null : conversation._id);
   }, [conversation]);
-  
+
   // Custom hook to manage message state and socket events
   const { messages, isLoading, sendMessage, deleteMessage } = useMessages(
     activeConversationId,
@@ -63,18 +74,18 @@ export const ChatWindow = ({ conversation, onBack }: ChatWindowProps) => {
 
   const markAsRead = useCallback(() => {
     if (activeConversationId && socket && isConnected) {
-       // Only mark as read if the document is visible and focused
-       if (document.visibilityState === 'visible' && document.hasFocus()) {
-           socket.emit('message:read', { conversationId: activeConversationId });
-           
-           // Optimistically update conversations list to show as read (gray)
-           queryClient.setQueryData(["conversations"], (old: any[]) => {
-             if (!old) return old;
-             return old.map((c: any) => 
-               c._id === activeConversationId ? { ...c, unreadCount: 0 } : c
-             );
-           });
-       }
+      // Only mark as read if the document is visible and focused
+      if (document.visibilityState === 'visible' && document.hasFocus()) {
+        socket.emit('message:read', { conversationId: activeConversationId });
+
+        // Optimistically update conversations list to show as read (gray)
+        queryClient.setQueryData(["conversations"], (old: any[]) => {
+          if (!old) return old;
+          return old.map((c: any) =>
+            c._id === activeConversationId ? { ...c, unreadCount: 0 } : c
+          );
+        });
+      }
     }
   }, [activeConversationId, socket, isConnected, queryClient]);
 
@@ -84,21 +95,21 @@ export const ChatWindow = ({ conversation, onBack }: ChatWindowProps) => {
     markAsRead();
 
     const handleFocus = () => {
-        markAsRead();
+      markAsRead();
     };
 
     window.addEventListener('focus', handleFocus);
     document.addEventListener('visibilitychange', handleFocus);
 
     return () => {
-        window.removeEventListener('focus', handleFocus);
-        document.removeEventListener('visibilitychange', handleFocus);
+      window.removeEventListener('focus', handleFocus);
+      document.removeEventListener('visibilitychange', handleFocus);
     };
   }, [activeConversationId, markAsRead]);
 
   const handleSendMessage = async (content: string) => {
     let targetConversationId = activeConversationId;
-    
+
     // If this is a connection-only (no conversation yet), create it on the backend first
     if (!targetConversationId) {
       try {
@@ -111,7 +122,7 @@ export const ChatWindow = ({ conversation, onBack }: ChatWindowProps) => {
         return;
       }
     }
-    
+
     const tempId = `temp-${Date.now()}`;
 
     // Note: sendMessage internally uses mutation variables, but the useMessages hook
@@ -127,8 +138,13 @@ export const ChatWindow = ({ conversation, onBack }: ChatWindowProps) => {
   };
 
   const handleDeleteMessage = (messageId: string) => {
-    if (confirm("Delete this message?")) {
-      deleteMessage.mutate(messageId);
+    setMessageToDelete(messageId);
+  };
+
+  const confirmDelete = () => {
+    if (messageToDelete) {
+      deleteMessage.mutate(messageToDelete);
+      setMessageToDelete(null);
     }
   };
 
@@ -139,19 +155,19 @@ export const ChatWindow = ({ conversation, onBack }: ChatWindowProps) => {
         <Button variant="ghost" size="icon" onClick={onBack} className="md:hidden text-gray-300 hover:text-white hover:bg-white/10">
           <ArrowLeft className="h-5 w-5" />
         </Button>
-        
+
         <UserAvatar
           name={conversation.otherParticipant?.name || "Unknown User"}
           src={conversation.otherParticipant?.profilePicture}
           className="h-9 w-9 border border-white/10"
           size="sm"
         />
-        
+
         <div className="flex-1 min-w-0">
           <p className="font-semibold text-sm truncate text-gray-200">{conversation.otherParticipant?.name || "Unknown User"}</p>
           <p className="text-xs text-gray-400 truncate">{conversation.otherParticipant?.email}</p>
         </div>
-        
+
         <Button variant="ghost" size="icon" className="h-8 w-8 text-gray-400 hover:text-white hover:bg-white/10">
           <MoreVertical className="h-4 w-4" />
         </Button>
@@ -176,8 +192,8 @@ export const ChatWindow = ({ conversation, onBack }: ChatWindowProps) => {
           <div className="space-y-4">
             {messages.map((message: any) => {
               const senderId = message.sender?._id || message.sender || message.senderId;
-              const isOwn = senderId === user?.id;
-              
+              const isOwn = message.isOptimistic || senderId === user?.id;
+
               return (
                 <MessageBubble
                   key={message._id}
@@ -203,6 +219,21 @@ export const ChatWindow = ({ conversation, onBack }: ChatWindowProps) => {
         receiverId={conversation.otherParticipant._id}
         onInputFocus={markAsRead}
       />
+
+      <AlertDialog open={!!messageToDelete} onOpenChange={(open) => !open && setMessageToDelete(null)}>
+        <AlertDialogContent className="bg-slate-900 border-white/10 text-white">
+          <AlertDialogHeader>
+            <AlertDialogTitle>Unsend Message?</AlertDialogTitle>
+            <AlertDialogDescription className="text-gray-400">
+              This will remove the message for everyone in the chat. This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="bg-transparent border-white/10 text-white hover:bg-white/10 hover:text-white">Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDelete} className="bg-red-600 hover:bg-red-700 text-white border-none">Unsend</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };

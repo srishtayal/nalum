@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { Trash2 } from "lucide-react";
+import { Trash2, Check, CheckCheck } from "lucide-react";
 import { format } from "date-fns";
 
 interface MessageBubbleProps {
@@ -43,34 +43,39 @@ export const MessageBubble = ({ message, isOwn, onDelete }: MessageBubbleProps) 
       <div className={`max-w-[85%] sm:max-w-[75%] ${isOwn ? "items-end" : "items-start"} flex flex-col gap-1`}>
         {/* Message Content Bubble */}
         <div
-          className={`rounded-2xl px-4 py-2.5 shadow-sm border text-sm backdrop-blur-sm ${
-            isOwn
-              ? "bg-indigo-600 text-white border-indigo-500/50 rounded-br-none"
-              : "bg-white/10 text-gray-100 border-white/10 rounded-bl-none"
-          }`}
+          className={`rounded-2xl px-4 py-2.5 shadow-sm border text-sm backdrop-blur-sm ${isOwn
+            ? "bg-indigo-600 text-white border-indigo-500/50 rounded-br-none"
+            : "bg-white/10 text-gray-100 border-white/10 rounded-bl-none"
+            }`}
         >
           <p className="whitespace-pre-wrap break-words leading-relaxed">{message.content}</p>
         </div>
-        
+
         {/* Message Metadata (Time, Status, Actions) */}
-        <div className="flex items-center gap-2 px-1">
+        <div className="flex items-center gap-1 px-1 mt-0.5">
           <span className="text-[10px] text-gray-400 font-medium">
             {format(new Date(message.createdAt), "HH:mm")}
           </span>
-          
+
           {message.isOptimistic && (
-             <span className="text-[10px] text-gray-400 font-medium italic">Sending...</span>
+            <span className="text-[10px] text-gray-400 font-medium italic">Sending...</span>
           )}
 
-          {!message.isOptimistic && isOwn && isRead && (
-            <span className="text-[10px] text-gray-400 font-medium">Read</span>
+          {!message.isOptimistic && isOwn && (
+            <span className="ml-1 flex items-center min-w-[12px]" title={isRead ? "Read" : "Sent"}>
+              {isRead ? (
+                <CheckCheck className="h-3 w-3 text-blue-400" />
+              ) : (
+                <Check className="h-3 w-3 text-gray-400" />
+              )}
+            </span>
           )}
-          
+
           {isOwn && !message.isOptimistic && (
             <Button
               variant="ghost"
               size="icon"
-              className="h-4 w-4 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-500/20 hover:text-red-400 text-gray-400"
+              className="h-4 w-4 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-500/20 hover:text-red-400 text-gray-400 ml-1"
               onClick={() => onDelete(message._id)}
             >
               <Trash2 className="h-3 w-3" />
