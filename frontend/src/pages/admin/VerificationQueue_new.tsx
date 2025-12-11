@@ -8,6 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { CheckCircle, XCircle, User, Calendar, Mail, GraduationCap, Clock } from "lucide-react";
 import { toast } from "sonner";
 import axios from "axios";
+import { BASE_URL } from "@/lib/constants";
 
 interface VerificationQueueItem {
   _id: string;
@@ -35,7 +36,7 @@ const VerificationQueue = () => {
   const [rejectReason, setRejectReason] = useState("");
   const [showRejectModal, setShowRejectModal] = useState(false);
 
-  import { BASE_URL } from "@/lib/constants";
+  
   const fetchQueue = async () => {
     try {
       const response = await axios.get(
