@@ -6,6 +6,7 @@ import {
   Admin,
 } from "../lib/adminApi";
 import axios from "axios";
+import { BASE_URL } from "@/lib/constants";
 
 interface AdminAuthContextType {
   admin: Admin | null;
@@ -25,7 +26,6 @@ export const AdminAuthProvider: React.FC<{ children: React.ReactNode }> = ({
   const [admin, setAdmin] = useState<Admin | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  import { BASE_URL } from "@/lib/constants";
   // Silent refresh on app load to restore session (similar to main AuthContext)
   useEffect(() => {
     const restoreSession = async () => {

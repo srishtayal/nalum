@@ -11,7 +11,7 @@ import { useConnections } from "@/hooks/useConnections";
 
 /**
  * UserSearch Component
- * 
+ *
  * Allows users to search for alumni by name or email to send connection requests.
  * Uses a debounced search query (implicitly handled by user input speed/state)
  * and displays results in a scrollable list.
@@ -44,8 +44,8 @@ export const UserSearch = () => {
           <Search className="h-5 w-5 text-indigo-400" />
           Find Alumni
         </h3>
-        <Button 
-          variant="ghost" 
+        <Button
+          variant="ghost"
           size="sm"
           onClick={() => navigate("/dashboard/alumni")}
           className="text-xs text-gray-300 hover:text-white hover:bg-white/10"
@@ -88,37 +88,57 @@ export const UserSearch = () => {
           ) : query ? (
             <div className="space-y-2">
               {searchResults.map((user: any) => {
-                const isConnected = user.connectionStatus === 'accepted';
-                const isPending = user.connectionStatus === 'pending';
-                
+                const isConnected = user.connectionStatus === "accepted";
+                const isPending = user.connectionStatus === "pending";
+
                 return (
                   <div
                     key={user._id}
-                    className="flex items-center gap-3 p-3 rounded-xl border border-white/10 bg-white/5 hover:bg-white/10 transition-all backdrop-blur-sm shadow-sm"
+                    onClick={() => navigate(`/dashboard/alumni/${user._id}`)}
+                    className="flex items-center gap-3 p-3 rounded-xl border border-white/10 bg-white/5 hover:bg-white/10 transition-all backdrop-blur-sm shadow-sm cursor-pointer"
                   >
                     <Avatar className="border border-white/10">
                       <AvatarFallback className="bg-indigo-500/20 text-indigo-200">
                         {user.name?.charAt(0).toUpperCase() || "U"}
                       </AvatarFallback>
                     </Avatar>
-                    
+
                     <div className="flex-1 min-w-0">
-                      <p className="font-semibold text-sm truncate text-gray-200">{user.name || "Unknown User"}</p>
-                      <p className="text-xs text-gray-400 truncate">{user.email}</p>
+                      <p className="font-semibold text-sm truncate text-gray-200">
+                        {user.name || "Unknown User"}
+                      </p>
+                      <p className="text-xs text-gray-400 truncate">
+                        {user.email}
+                      </p>
                     </div>
-                    
+
                     {isConnected ? (
-                      <Button size="sm" variant="ghost" disabled className="text-green-400 bg-green-500/10">
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        disabled
+                        onClick={(e) => e.stopPropagation()}
+                        className="text-green-400 bg-green-500/10"
+                      >
                         Connected
                       </Button>
                     ) : isPending ? (
-                      <Button size="sm" variant="ghost" disabled className="text-amber-400 bg-amber-500/10">
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        disabled
+                        onClick={(e) => e.stopPropagation()}
+                        className="text-amber-400 bg-amber-500/10"
+                      >
                         Pending
                       </Button>
                     ) : (
                       <Button
                         size="sm"
-                        onClick={() => handleSendRequest(user._id)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleSendRequest(user._id);
+                        }}
                         disabled={sendRequest.isPending}
                         className="bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm border border-white/10"
                       >

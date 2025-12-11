@@ -4,18 +4,20 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { UserCheck, UserX, Inbox } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { useChatContext } from "@/context/ChatContext";
 import { useConnections } from "@/hooks/useConnections";
 
 /**
  * ConnectionRequests Component
- * 
+ *
  * Displays a list of incoming connection requests for the current user.
  * Allows users to accept or reject requests, updating the connection status.
  */
 export const ConnectionRequests = () => {
   const { pendingRequests, isLoadingConnections } = useChatContext();
   const { respondToRequest } = useConnections();
+  const navigate = useNavigate();
 
   const handleAccept = (connectionId: string) => {
     respondToRequest.mutate({ connectionId, accept: true });
@@ -34,7 +36,12 @@ export const ConnectionRequests = () => {
           Connection Requests
         </h3>
         {pendingRequests.length > 0 && (
-          <Badge variant="default" className="bg-indigo-600 hover:bg-indigo-700">{pendingRequests.length}</Badge>
+          <Badge
+            variant="default"
+            className="bg-indigo-600 hover:bg-indigo-700"
+          >
+            {pendingRequests.length}
+          </Badge>
         )}
       </div>
 
@@ -53,14 +60,17 @@ export const ConnectionRequests = () => {
             {pendingRequests.map((request: any) => (
               <div
                 key={request._id}
-                className="flex items-center gap-3 p-3 rounded-xl border border-white/10 bg-white/5 hover:bg-white/10 transition-all backdrop-blur-sm shadow-sm"
+                onClick={() =>
+                  navigate(`/dashboard/alumni/${request.requester?._id}`)
+                }
+                className="flex items-center gap-3 p-3 rounded-xl border border-white/10 bg-white/5 hover:bg-white/10 transition-all backdrop-blur-sm shadow-sm cursor-pointer"
               >
                 <Avatar className="border border-white/10">
                   <AvatarFallback className="bg-indigo-500/20 text-indigo-200">
                     {request.requester?.name?.charAt(0).toUpperCase() || "U"}
                   </AvatarFallback>
                 </Avatar>
-                
+
                 <div className="flex-1 min-w-0">
                   <p className="font-semibold text-sm truncate text-gray-200">
                     {request.requester?.name || "Unknown User"}
@@ -74,22 +84,28 @@ export const ConnectionRequests = () => {
                     </p>
                   )}
                 </div>
-                
+
                 <div className="flex gap-1 flex-col sm:flex-row">
-                  <Button 
-                    size="sm" 
+                  <Button
+                    size="sm"
                     className="h-7 text-xs bg-indigo-600 hover:bg-indigo-700 text-white border border-white/10"
-                    onClick={() => handleAccept(request._id)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleAccept(request._id);
+                    }}
                     disabled={respondToRequest.isPending}
                   >
                     <UserCheck className="h-3 w-3 mr-1" />
                     Accept
                   </Button>
-                  <Button 
-                    size="sm" 
+                  <Button
+                    size="sm"
                     variant="ghost"
                     className="h-7 text-xs hover:bg-red-500/20 hover:text-red-400 text-gray-400"
-                    onClick={() => handleReject(request._id)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleReject(request._id);
+                    }}
                     disabled={respondToRequest.isPending}
                   >
                     <UserX className="h-3 w-3" />

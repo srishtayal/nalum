@@ -16,6 +16,7 @@ import {
   ArrowLeft,
   Loader2,
   Mail,
+  UserPlus,
 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import api from "@/lib/api";
@@ -35,6 +36,7 @@ interface Profile {
   current_company?: string;
   current_role?: string;
   profile_picture?: string;
+  connectionStatus?: string;
   social_media?: {
     linkedin?: string;
     github?: string;
@@ -56,18 +58,54 @@ const ViewProfile = () => {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
+  const handleConnect = async (recipientId: string) => {
+    try {
+      await api.post(
+        "/chat/connections/request",
+        { recipientId },
+        { headers: { Authorization: `Bearer ${accessToken}` } }
+      );
+
+      // Refresh profile to update connection status
+      const response = await api.get(`/profile/user/${userId}`, {
+        headers: { Authorization: `Bearer ${accessToken}` },
+      });
+      setProfile(response.data.profile);
+
+      toast.success("Connection request sent!", {
+        style: {
+          background: "#10b981",
+          color: "white",
+          border: "2px solid #059669",
+        },
+      });
+    } catch (error: any) {
+      console.error("Error sending connection request:", error);
+      toast.error(
+        error.response?.data?.message || "Failed to send connection request",
+        {
+          style: {
+            background: "#800000",
+            color: "white",
+            border: "2px solid #FFD700",
+          },
+        }
+      );
+    }
+  };
+
   useEffect(() => {
     const fetchProfile = async () => {
       if (!userId) return;
-      
+
       try {
         const response = await api.get(`/profile/user/${userId}`, {
           headers: { Authorization: `Bearer ${accessToken}` },
         });
-        console.log('Fetched profile:', response.data.profile);
-        console.log('User role:', response.data.profile?.user?.role);
-        console.log('Current company:', response.data.profile?.current_company);
-        console.log('Current role:', response.data.profile?.current_role);
+        console.log("Fetched profile:", response.data.profile);
+        console.log("User role:", response.data.profile?.user?.role);
+        console.log("Current company:", response.data.profile?.current_company);
+        console.log("Current role:", response.data.profile?.current_role);
         setProfile(response.data.profile);
       } catch (error) {
         console.error("Error fetching profile:", error);
@@ -163,17 +201,42 @@ const ViewProfile = () => {
                   <MapPin className="h-5 w-5 text-blue-400" />
                   <span>{profile.campus}</span>
                 </div>
-                
-                {/* Contact Button */}
-                <Button
-                  onClick={() => {
-                    window.location.href = `mailto:${profile.user.email}`;
-                  }}
-                  className="bg-blue-600 hover:bg-blue-700 text-white"
-                >
-                  <Mail className="h-4 w-4 mr-2" />
-                  Contact
-                </Button>
+
+                {/* Connection Status Button */}
+                {profile.connectionStatus === "self" ? (
+                  <Button
+                    onClick={() => navigate("/dashboard/profile/edit")}
+                    className="bg-blue-600 hover:bg-blue-700 text-white"
+                  >
+                    Edit Profile
+                  </Button>
+                ) : profile.connectionStatus === "accepted" ? (
+                  <Button
+                    size="default"
+                    variant="ghost"
+                    disabled
+                    className="text-green-400 bg-green-500/10 cursor-not-allowed"
+                  >
+                    Connected
+                  </Button>
+                ) : profile.connectionStatus === "pending" ? (
+                  <Button
+                    size="default"
+                    variant="ghost"
+                    disabled
+                    className="text-amber-400 bg-amber-500/10 cursor-not-allowed"
+                  >
+                    Pending
+                  </Button>
+                ) : (
+                  <Button
+                    onClick={() => handleConnect(profile.user._id)}
+                    className="bg-indigo-600 hover:bg-indigo-700 text-white"
+                  >
+                    <UserPlus className="h-4 w-4 mr-2" />
+                    Connect
+                  </Button>
+                )}
               </div>
             </div>
           </div>
@@ -184,50 +247,67 @@ const ViewProfile = () => {
             <div className="rounded-xl border border-white/10 bg-white/5 backdrop-blur-md shadow-xl p-6">
               <div className="flex items-center gap-2 mb-6">
                 <GraduationCap className="h-5 w-5 text-blue-400" />
-                <h3 className="text-lg font-semibold text-white">Academic Information</h3>
+                <h3 className="text-lg font-semibold text-white">
+                  Academic Information
+                </h3>
               </div>
               <div className="space-y-4">
                 <div>
                   <p className="text-sm text-gray-400">Batch</p>
-                  <p className="text-lg font-semibold text-gray-200">{profile.batch}</p>
+                  <p className="text-lg font-semibold text-gray-200">
+                    {profile.batch}
+                  </p>
                 </div>
                 <Separator className="bg-white/10" />
                 <div>
                   <p className="text-sm text-gray-400">Branch</p>
-                  <p className="text-lg font-semibold text-gray-200">{profile.branch}</p>
+                  <p className="text-lg font-semibold text-gray-200">
+                    {profile.branch}
+                  </p>
                 </div>
                 <Separator className="bg-white/10" />
                 <div>
                   <p className="text-sm text-gray-400">Campus</p>
-                  <p className="text-lg font-semibold text-gray-200">{profile.campus}</p>
+                  <p className="text-lg font-semibold text-gray-200">
+                    {profile.campus}
+                  </p>
                 </div>
               </div>
             </div>
 
             {/* Current Position - Only for Alumni */}
-            {profile.user.role === 'alumni' && (profile.current_company || profile.current_role) && (
-            <div className="rounded-xl border border-white/10 bg-white/5 backdrop-blur-md shadow-xl p-6">
-              <div className="flex items-center gap-2 mb-6">
-                <Briefcase className="h-5 w-5 text-blue-400" />
-                <h3 className="text-lg font-semibold text-white">Current Position</h3>
-              </div>
-              <div className="space-y-4">
-                {profile.current_role && (
-                  <div>
-                    <p className="text-sm text-gray-400">Role</p>
-                    <p className="text-lg font-semibold text-gray-200">{profile.current_role}</p>
+            {profile.user.role === "alumni" &&
+              (profile.current_company || profile.current_role) && (
+                <div className="rounded-xl border border-white/10 bg-white/5 backdrop-blur-md shadow-xl p-6">
+                  <div className="flex items-center gap-2 mb-6">
+                    <Briefcase className="h-5 w-5 text-blue-400" />
+                    <h3 className="text-lg font-semibold text-white">
+                      Current Position
+                    </h3>
                   </div>
-                )}
-                {profile.current_company && profile.current_role && <Separator className="bg-white/10" />}
-                {profile.current_company && (
-                  <div>
-                    <p className="text-sm text-gray-400">Company</p>
-                    <p className="text-lg font-semibold text-gray-200">{profile.current_company}</p>
+                  <div className="space-y-4">
+                    {profile.current_role && (
+                      <div>
+                        <p className="text-sm text-gray-400">Role</p>
+                        <p className="text-lg font-semibold text-gray-200">
+                          {profile.current_role}
+                        </p>
+                      </div>
+                    )}
+                    {profile.current_company && profile.current_role && (
+                      <Separator className="bg-white/10" />
+                    )}
+                    {profile.current_company && (
+                      <div>
+                        <p className="text-sm text-gray-400">Company</p>
+                        <p className="text-lg font-semibold text-gray-200">
+                          {profile.current_company}
+                        </p>
+                      </div>
+                    )}
                   </div>
-                )}
-              </div>
-            </div>
-            )}
+                </div>
+              )}
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -343,7 +423,9 @@ const ViewProfile = () => {
                             {exp.role}
                           </h4>
                           <p className="text-blue-400 mb-2">{exp.company}</p>
-                          <p className="text-sm text-gray-400">{exp.duration}</p>
+                          <p className="text-sm text-gray-400">
+                            {exp.duration}
+                          </p>
                         </div>
                       </div>
                     ))}
