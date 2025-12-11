@@ -20,16 +20,17 @@ import { MessageSquare, Users, UserPlus } from "lucide-react";
  */
 const ChatPageContent = () => {
   const [selectedConversation, setSelectedConversation] = useState<any>(null);
+  const [activeTab, setActiveTab] = useState("chats");
 
   return (
-    <div className="h-[calc(100vh-4rem)] p-2 md:p-4 bg-transparent">
+    <div className="h-full p-2 md:p-4 bg-transparent">
       <div className="h-full max-w-7xl mx-auto">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 h-full">
           {/* Left Sidebar - Glass Panel */}
           {/* Hidden on mobile when a conversation is selected to show the chat window */}
           <div className={`${selectedConversation ? "hidden md:block" : "block"} md:col-span-1 h-full min-h-0`}>
             <div className="h-full flex flex-col bg-black/40 backdrop-blur-xl border border-white/10 shadow-2xl rounded-xl overflow-hidden">
-              <Tabs defaultValue="chats" className="h-full flex flex-col">
+              <Tabs value={activeTab} onValueChange={setActiveTab} className="h-full flex flex-col">
                 {/* Tabs Navigation */}
                 <TabsList className="grid w-full grid-cols-3 bg-white/5 p-1 m-2 rounded-lg border border-white/5">
                   <TabsTrigger value="chats" className="data-[state=active]:bg-white/10 data-[state=active]:text-white text-gray-400 rounded-md transition-all hover:text-gray-200">
@@ -50,7 +51,7 @@ const ChatPageContent = () => {
                 <TabsContent value="chats" className="flex-1 mt-0 overflow-hidden min-h-0">
                   <ChatList
                     onSelectConversation={setSelectedConversation}
-                    selectedConversationId={selectedConversation?._id}
+                    selectedConversation={selectedConversation}
                   />
                 </TabsContent>
 

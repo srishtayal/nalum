@@ -1,20 +1,30 @@
-import { useState } from "react";
-import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { useState, useMemo } from "react";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Search, MessageSquare } from "lucide-react";
+import { Search, MessageSquare, UserPlus, Menu } from "lucide-react";
 import { useChatContext } from "@/context/ChatContext";
 import { useConversations } from "@/hooks/useConversations";
 import { useAuth } from "@/context/AuthContext";
-import { format } from "date-fns";
+import { format, isToday, isYesterday, isThisWeek } from "date-fns";
+import UserAvatar from "@/components/UserAvatar";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { Button } from "@/components/ui/button";
+import Sidebar from "../../Sidebar";
 
 interface ChatListProps {
   onSelectConversation: (conversation: any) => void;
-  selectedConversationId: string | null;
+  selectedConversation: any | null;
 }
+
+const formatMessageDate = (dateString: string) => {
+  if (!dateString) return "";
+  const date = new Date(dateString);
+  if (isToday(date)) return format(date, "HH:mm");
+  if (isYesterday(date)) return "Yesterday";
+  if (isThisWeek(date)) return format(date, "eee");
+  return format(date, "MMM d");
+};
 
 /**
  * ChatList Component
@@ -23,67 +33,93 @@ interface ChatListProps {
  * It merges existing conversations with connections that don't have a conversation yet,
  * allowing users to start chatting immediately with any connection.
  */
-export const ChatList = ({ onSelectConversation, selectedConversationId }: ChatListProps) => {
+export const ChatList = ({ onSelectConversation, selectedConversation }: ChatListProps) => {
   const { isConnected, connections } = useChatContext();
   const { conversations, isLoading } = useConversations();
   const { user } = useAuth();
   const [searchQuery, setSearchQuery] = useState("");
 
   // Filter for only accepted connections to show in the chat list
-  const acceptedConnections = connections.filter((conn: any) => conn.status === 'accepted');
+  const acceptedConnections = useMemo(() =>
+    connections.filter((conn: any) => conn.status === 'accepted'),
+    [connections]);
+
+  if (!user) {
+    return <div className="p-4 text-center text-sm text-gray-400">Loading user data...</div>;
+  }
 
   // Create a map for O(1) lookup of existing conversations by participant ID
-  const conversationMap = new Map(
-    conversations.map((conv: any) => [conv.otherParticipant?._id, conv])
-  );
+  const conversationMap = useMemo(() =>
+    new Map(conversations.map((conv: any) => [conv.otherParticipant?._id, conv])),
+    [conversations]);
 
   // Combine connections and conversations into a single list
-  // If a conversation exists, use it. If not, create a placeholder from the connection.
-  const allChats = acceptedConnections.map((connection: any) => {
-    // Determine the other user (not the current user)
-    const otherUser = connection.requester._id === user?.id
-      ? connection.recipient 
-      : connection.requester;
-    
-    const existingConversation = conversationMap.get(otherUser._id);
-    
-    if (existingConversation) {
-      return existingConversation;
-    }
-    
-    // Return connection as a "virtual" conversation
-    return {
-      _id: `connection-${connection._id}`,
-      isConnectionOnly: true,
-      connectionId: connection._id,
-      otherParticipant: otherUser,
-      lastMessage: null,
-      unreadCount: 0,
-    };
-  });
+  const allChats = useMemo(() => {
+    return acceptedConnections.map((connection: any) => {
+      // Determine the other user (not the current user)
+      const currentUserId = user?.id || user?._id;
+      const otherUser = connection.requester._id === currentUserId
+        ? connection.recipient
+        : connection.requester;
 
-  const filteredChats = allChats.filter((chat: any) =>
-    chat.otherParticipant?.name?.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+      const existingConversation = conversationMap.get(otherUser._id);
+
+      if (existingConversation) {
+        return existingConversation;
+      }
+
+      // Return connection as a "virtual" conversation
+      return {
+        _id: `connection-${connection._id}`,
+        isConnectionOnly: true,
+        connectionId: connection._id,
+        otherParticipant: otherUser,
+        lastMessage: null,
+        unreadCount: 0,
+        // Use connection creation date as fallback for sorting
+        updatedAt: connection.updatedAt || connection.createdAt
+      };
+    }).sort((a: any, b: any) => {
+      const dateA = new Date(a.lastMessage?.timestamp || a.lastMessage?.createdAt || a.updatedAt || 0).getTime();
+      const dateB = new Date(b.lastMessage?.timestamp || b.lastMessage?.createdAt || b.updatedAt || 0).getTime();
+      return dateB - dateA;
+    });
+  }, [acceptedConnections, conversationMap, user]);
+
+  const filteredChats = useMemo(() =>
+    allChats.filter((chat: any) =>
+      chat.otherParticipant?.name?.toLowerCase().includes(searchQuery.toLowerCase())
+    ),
+    [allChats, searchQuery]);
 
   return (
     <div className="w-full h-full flex flex-col bg-transparent">
       {/* Header with Search */}
       <div className="p-3 border-b border-white/10 space-y-3 bg-black/20">
         <div className="flex items-center justify-between">
-          <h2 className="text-lg font-semibold text-gray-100">
+          <h2 className="text-lg font-semibold text-gray-100 flex items-center gap-2">
+            <Sheet>
+              <SheetTrigger asChild>
+                <Button variant="ghost" size="icon" className="md:hidden -ml-2 h-8 w-8 text-gray-400 hover:text-white">
+                  <Menu className="h-5 w-5" />
+                </Button>
+              </SheetTrigger>
+              <SheetContent side="left" className="p-0 bg-transparent border-none w-72">
+                <Sidebar />
+              </SheetContent>
+            </Sheet>
             Messages
           </h2>
           <div className="flex items-center gap-2">
-            <Badge 
-              variant="outline" 
+            <Badge
+              variant="outline"
               className={`text-[10px] h-5 px-2 ${isConnected ? "text-green-400 border-green-500/30 bg-green-500/10" : "text-gray-400 border-gray-600"} backdrop-blur-sm`}
             >
               {isConnected ? "Online" : "Offline"}
             </Badge>
           </div>
         </div>
-        
+
         <div className="relative">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-3.5 w-3.5 text-gray-400" />
           <Input
@@ -98,61 +134,93 @@ export const ChatList = ({ onSelectConversation, selectedConversationId }: ChatL
       {/* Chat List Area */}
       <ScrollArea className="flex-1">
         {isLoading ? (
-          <div className="p-4 text-center text-sm text-gray-400">Loading...</div>
+          <div className="p-4 text-center text-sm text-gray-400">Loading chats...</div>
         ) : filteredChats.length === 0 ? (
           <div className="p-8 text-center text-gray-500 space-y-2">
-            <MessageSquare className="h-10 w-10 mx-auto opacity-20" />
-            <p className="text-sm">No connections yet</p>
+            {searchQuery ? (
+              <>
+                <Search className="h-10 w-10 mx-auto opacity-20" />
+                <p className="text-sm">No results found</p>
+              </>
+            ) : (
+              <>
+                <UserPlus className="h-10 w-10 mx-auto opacity-20" />
+                <p className="text-sm">No connections yet</p>
+                <p className="text-xs opacity-60">Find alumni to connect with!</p>
+              </>
+            )}
           </div>
         ) : (
           <div className="divide-y divide-white/5">
-            {filteredChats.map((chat: any) => (
-              <button
-                key={chat._id}
-                onClick={() => onSelectConversation(chat)}
-                className={`w-full p-3 text-left transition-all hover:bg-white/5 ${
-                  selectedConversationId === chat._id 
-                    ? "bg-white/10 border-l-2 border-indigo-500" 
-                    : "border-l-2 border-transparent"
-                }`}
-              >
-                <div className="flex items-start gap-3">
-                  <Avatar className="h-10 w-10 border border-white/10 shadow-sm">
-                    <AvatarFallback className="bg-white/10 text-gray-300 text-sm">
-                      {chat.otherParticipant?.name?.charAt(0).toUpperCase() || "U"}
-                    </AvatarFallback>
-                  </Avatar>
-                  
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between gap-2">
-                      <p className="font-medium text-sm truncate text-gray-200">
-                        {chat.otherParticipant?.name || "Unknown User"}
-                      </p>
-                      {chat.lastMessage?.createdAt && (
-                        <span className="text-[10px] text-gray-500">
-                          {format(new Date(chat.lastMessage.createdAt), "MMM d")}
-                        </span>
-                      )}
+            {filteredChats.map((chat: any) => {
+              const isSelected = selectedConversation && (
+                selectedConversation._id === chat._id ||
+                (selectedConversation.otherParticipant?._id && chat.otherParticipant?._id &&
+                  selectedConversation.otherParticipant._id === chat.otherParticipant._id)
+              );
+
+              return (
+                <button
+                  key={chat._id}
+                  onClick={() => onSelectConversation(chat)}
+                  className={`w-full p-3 text-left transition-all hover:bg-white/5 group relative ${isSelected
+                    ? "bg-white/10"
+                    : ""
+                    }`}
+                >
+                  {isSelected && (
+                    <div className="absolute left-0 top-0 bottom-0 w-1 bg-indigo-500" />
+                  )}
+                  <div className="flex items-start gap-3 pl-2">
+                    <div className="relative">
+                      <UserAvatar
+                        name={chat.otherParticipant?.name || "Unknown"}
+                        src={chat.otherParticipant?.profilePicture}
+                        size="md"
+                        className={`border-opacity-20 ${isSelected ? 'border-indigo-400' : 'border-white'}`}
+                      />
+                      {/* Optional: Add online status indicator here if available */}
                     </div>
-                    
-                    <div className="flex items-center justify-between gap-2 mt-0.5">
-                      <p className="text-xs text-gray-400 truncate max-w-[140px]">
-                        {chat.isConnectionOnly ? (
-                          <span className="italic opacity-70">Start chatting</span>
-                        ) : (
-                          chat.lastMessage?.content || "No messages"
+
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between gap-2">
+                        <p className={`font-medium text-sm truncate ${isSelected ? "text-white" : "text-gray-200"}`}>
+                          {chat.otherParticipant?.name || "Unknown User"}
+                        </p>
+                        {chat.lastMessage?.createdAt && (
+                          <span className={`text-[10px] ${chat.unreadCount > 0 ? "text-indigo-400 font-medium" : "text-gray-500"}`}>
+                            {formatMessageDate(chat.lastMessage.createdAt)}
+                          </span>
                         )}
-                      </p>
-                      {chat.unreadCount > 0 && (
-                        <Badge variant="default" className="h-4 min-w-[16px] p-0 flex items-center justify-center text-[10px] bg-indigo-600 hover:bg-indigo-700">
-                          {chat.unreadCount}
-                        </Badge>
-                      )}
+                      </div>
+
+                      <div className="flex items-center justify-between gap-2 mt-0.5">
+                        <p className={`text-xs truncate max-w-[140px] ${chat.unreadCount > 0
+                          ? "text-white font-medium" // Changed from text-gray-100 to text-white
+                          : "text-gray-400"
+                          }`}>
+                          {chat.isConnectionOnly ? (
+                            <span className="italic opacity-70">Start chatting</span>
+                          ) : chat.unreadCount >= 4 ? (
+                            "4+ new messages"
+                          ) : (
+                            <>
+                              {chat.lastMessage?.sender === user?.id && <span className="opacity-70 mr-1">You:</span>}
+                              {chat.lastMessage?.content || "No messages"}
+                            </>
+                          )}
+                        </p>
+                        {chat.unreadCount > 0 && (
+                          <Badge variant="default" className="h-4 min-w-[16px] p-0 flex items-center justify-center text-[10px] bg-indigo-600 hover:bg-indigo-700 animate-in zoom-in duration-300">
+                            {chat.unreadCount}
+                          </Badge>
+                        )}
+                      </div>
                     </div>
                   </div>
-                </div>
-              </button>
-            ))}
+                </button>
+              )
+            })}
           </div>
         )}
       </ScrollArea>

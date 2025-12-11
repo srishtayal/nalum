@@ -13,8 +13,13 @@ import { useProfile } from "@/context/ProfileContext";
 import { cn } from "@/lib/utils";
 import UserAvatar from "@/components/UserAvatar";
 import api from "@/lib/api";
+import nsutLogo from "@/assets/nsut-logo.svg";
 
-const Sidebar = () => {
+interface SidebarProps {
+  onNavigate?: () => void;
+}
+
+const Sidebar = ({ onNavigate }: SidebarProps) => {
   const { logout } = useAuth();
   const location = useLocation();
   const { profile } = useProfile();
@@ -35,6 +40,8 @@ const Sidebar = () => {
     const interval = setInterval(fetchPendingCount, 30000);
     return () => clearInterval(interval);
   }, []);
+
+  const isChatPage = location.pathname.startsWith("/dashboard/chat");
 
   const navItems = [
     {
@@ -74,9 +81,21 @@ const Sidebar = () => {
   };
 
   return (
-    <aside className="w-64 h-screen flex flex-col border-r border-white/10 bg-slate-950/50 backdrop-blur-xl shadow-xl sticky top-0">
-      <div className="p-6 border-b border-white/10">
-        <h1 className="text-2xl font-bold text-white tracking-wider">NALUM</h1>
+    <aside className={cn(
+      "h-screen flex flex-col border-r border-white/10 bg-slate-950/50 backdrop-blur-xl shadow-xl sticky top-0 transition-all duration-300",
+      isChatPage ? "w-20" : "w-64"
+    )}>
+      <div className={cn(
+        "flex items-center border-b border-white/10",
+        isChatPage ? "justify-center p-4" : "p-6"
+      )}>
+        <img src={nsutLogo} alt="NALUM" className="h-8 w-8 flex-shrink-0" />
+        <h1 className={cn(
+          "text-2xl font-bold text-white tracking-wider transition-all duration-300 ease-in-out",
+          isChatPage ? "opacity-0 max-w-0 ml-0 overflow-hidden" : "opacity-100 max-w-full ml-3"
+        )}>
+          NALUM
+        </h1>
       </div>
 
       <nav className="flex-1 py-6 px-3 space-y-2">
@@ -84,27 +103,24 @@ const Sidebar = () => {
           <Link
             key={item.to}
             to={item.to}
+            onClick={onNavigate}
             className={cn(
-              "flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 group relative",
+              "flex items-center transition-all duration-200 group rounded-lg border focus:outline-none",
               isActive(item.to, item.exact)
-                ? "bg-blue-500/20 text-blue-200 border border-blue-500/30 shadow-[0_0_15px_rgba(59,130,246,0.15)]"
-                : "text-gray-400 hover:bg-white/5 hover:text-white"
+                ? "bg-blue-500/20 text-blue-200 border-blue-500/30 shadow-[0_0_15px_rgba(59,130,246,0.15)]"
+                : "border-transparent text-gray-400 hover:bg-white/5 hover:text-white",
+              isChatPage ? "justify-center px-2 py-3" : "px-4 py-3 gap-3"
             )}
+            title={isChatPage ? item.label : undefined}
           >
-            <item.icon
-              className={cn(
-                "h-5 w-5 transition-colors",
-                isActive(item.to, item.exact)
-                  ? "text-blue-300"
-                  : "text-gray-500 group-hover:text-white"
-              )}
-            />
-            <span className="font-medium">{item.label}</span>
-            {item.badge && item.badge > 0 && (
-              <span className="absolute right-3 top-1/2 -translate-y-1/2 bg-red-500 text-white text-xs font-bold rounded-full min-w-[20px] h-5 flex items-center justify-center px-1.5">
-                {item.badge}
-              </span>
-            )}
+            <item.icon className={cn(
+              "h-5 w-5 transition-colors flex-shrink-0",
+              isActive(item.to, item.exact) ? "text-blue-300" : "text-gray-500 group-hover:text-white"
+            )} />
+            <span className={cn(
+              "font-medium transition-all duration-300 ease-in-out",
+              isChatPage ? "opacity-0 max-w-0 overflow-hidden" : "opacity-100 max-w-full"
+            )}>{item.label}</span>
           </Link>
         ))}
       </nav>
@@ -114,15 +130,23 @@ const Sidebar = () => {
         {profile && (
           <Link
             to="/dashboard/profile"
-            className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-white/5 transition-colors group border border-transparent hover:border-white/10"
+            onClick={onNavigate}
+            className={cn(
+              "flex items-center rounded-lg hover:bg-white/5 transition-colors group border border-transparent hover:border-white/10",
+              isChatPage ? "justify-center p-2" : "gap-3 px-4 py-3"
+            )}
+            title={isChatPage ? profile.user.name : undefined}
           >
             <UserAvatar
               src={profile.profile_picture}
               name={profile.user.name}
               size="sm"
-              className="border-2 border-transparent group-hover:border-blue-400/50 transition-all"
+              className="border-2 border-transparent group-hover:border-blue-400/50 transition-all flex-shrink-0"
             />
-            <div className="flex flex-col min-w-0">
+            <div className={cn(
+              "flex flex-col min-w-0 transition-all duration-300 ease-in-out",
+              isChatPage ? "opacity-0 max-w-0 overflow-hidden" : "opacity-100 max-w-full"
+            )}>
               <span className="text-sm font-medium text-gray-200 group-hover:text-white truncate">
                 {profile.user.name}
               </span>
@@ -135,10 +159,17 @@ const Sidebar = () => {
 
         <button
           onClick={logout}
-          className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-gray-400 hover:bg-red-500/10 hover:text-red-400 transition-colors border border-transparent hover:border-red-500/20"
+          className={cn(
+            "w-full flex items-center rounded-lg text-gray-400 hover:bg-red-500/10 hover:text-red-400 transition-colors border border-transparent hover:border-red-500/20",
+            isChatPage ? "justify-center p-2" : "gap-3 px-4 py-3"
+          )}
+          title={isChatPage ? "Logout" : undefined}
         >
-          <LogOut className="h-5 w-5" />
-          <span className="font-medium">Logout</span>
+          <LogOut className="h-5 w-5 flex-shrink-0" />
+          <span className={cn(
+            "font-medium transition-all duration-300 ease-in-out",
+            isChatPage ? "opacity-0 max-w-0 overflow-hidden" : "opacity-100 max-w-full"
+          )}>Logout</span>
         </button>
       </div>
     </aside>

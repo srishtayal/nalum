@@ -54,15 +54,7 @@ const AlumniDirectory = () => {
       {/* Main Content */}
       <div className="container mx-auto">
         <div className="max-w-7xl mx-auto">
-          {/* Back Button */}
-          <Button
-            variant="ghost"
-            className="mb-6 text-gray-400 hover:text-white hover:bg-white/10"
-            onClick={() => navigate("/dashboard")}
-          >
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to Dashboard
-          </Button>
+
 
           {/* Header */}
           <div className="mb-8">
