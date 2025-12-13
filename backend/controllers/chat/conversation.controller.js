@@ -1,5 +1,6 @@
 const Conversation = require('../../models/chat/conversations.model');
 const Connection = require('../../models/chat/connections.model');
+const Message = require('../../models/chat/messages.model');
 const redisClient = require('../../config/redis');
 
 // Get all conversations
@@ -23,14 +24,12 @@ exports.getConversations = async (req, res) => {
     // Get unread counts and compute otherParticipant
     const conversationsWithUnread = await Promise.all(
       conversations.map(async (conv) => {
-        let unreadCount = 0;
-        try {
-          if (redisClient && redisClient.isOpen) {
-            unreadCount = await redisClient.hGet(`unread:${userId}`, conv._id.toString()) || 0;
-          }
-        } catch (error) {
-          console.warn('Redis read failed:', error.message);
-        }
+        // Count unread messages directly from MongoDB for accuracy
+        const unreadCount = await Message.countDocuments({
+          conversation: conv._id,
+          sender: { $ne: userId },
+          'readBy.user': { $ne: userId }
+        });
         
         // Find the other participant (not the current user)
         const otherParticipant = conv.participants.find(
@@ -40,7 +39,7 @@ exports.getConversations = async (req, res) => {
         return {
           ...conv.toObject(),
           otherParticipant,
-          unreadCount: parseInt(unreadCount)
+          unreadCount
         };
       })
     );
@@ -85,12 +84,16 @@ exports.getConversation = async (req, res) => {
       return res.status(403).json({ error: 'Not authorized to view this conversation' });
     }
 
-    const unreadCount = await redisClient?.hGet(`unread:${userId}`, conversationId) || 0;
+    const unreadCount = await Message.countDocuments({
+      conversation: conversationId,
+      sender: { $ne: userId },
+      'readBy.user': { $ne: userId }
+    });
 
     res.json({
       conversation: {
         ...conversation.toObject(),
-        unreadCount: parseInt(unreadCount)
+        unreadCount: unreadCount
       }
     });
 

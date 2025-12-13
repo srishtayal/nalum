@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { BRANCHES, CAMPUSES } from "@/constants/branches";
 import {
   Select,
   SelectContent,
@@ -44,9 +45,11 @@ const UpdateProfile = () => {
   const navigate = useNavigate();
   const [isSaving, setIsSaving] = useState(false);
   const [profile, setProfile] = useState<Profile | null>(null);
-  
+  const [initialData, setInitialData] = useState<any>(null);
+  const [isDirty, setIsDirty] = useState(false);
+
   // Check if user is alumni
-  const isAlumni = user?.role === 'alumni';
+  const isAlumni = user?.role === "alumni";
 
   const [formData, setFormData] = useState({
     batch: "",
@@ -97,26 +100,19 @@ const UpdateProfile = () => {
   // Force re-render for dropdown positioning on scroll/resize
   const [, setForceUpdate] = useState(0);
 
-  // Close dropdowns on scroll
+  // Update dropdown positions on scroll/resize (don't close them)
   useEffect(() => {
-    const handleScroll = () => {
-      setShowCompanySuggestions(false);
-      setShowRoleSuggestions(false);
-      setShowSkillSuggestions(false);
-      setShowExpCompanySuggestions({});
-      setShowExpRoleSuggestions({});
+    const handleScrollOrResize = () => {
+      // Trigger re-render to update dropdown positions
+      setForceUpdate((prev) => prev + 1);
     };
 
-    const handleResize = () => {
-      handleScroll();
-    };
-
-    window.addEventListener('scroll', handleScroll, true);
-    window.addEventListener('resize', handleResize);
+    window.addEventListener("scroll", handleScrollOrResize, true);
+    window.addEventListener("resize", handleScrollOrResize);
 
     return () => {
-      window.removeEventListener('scroll', handleScroll, true);
-      window.removeEventListener('resize', handleResize);
+      window.removeEventListener("scroll", handleScrollOrResize, true);
+      window.removeEventListener("resize", handleScrollOrResize);
     };
   }, []);
 
@@ -125,7 +121,7 @@ const UpdateProfile = () => {
     if (contextProfile) {
       setProfile(contextProfile);
 
-      setFormData({
+      const initialFormData = {
         batch: contextProfile.batch || "",
         branch: contextProfile.branch || "",
         campus: contextProfile.campus || "",
@@ -139,16 +135,25 @@ const UpdateProfile = () => {
         },
         skills: contextProfile.skills || [],
         experience: contextProfile.experience || [],
-      });
+      };
+      setFormData(initialFormData);
+      setInitialData(initialFormData);
     }
   }, [contextProfile]);
+
+  // Check for unsaved changes
+  useEffect(() => {
+    if (!initialData) return;
+    const isChanged = JSON.stringify(formData) !== JSON.stringify(initialData) || profilePicture !== null;
+    setIsDirty(isChanged);
+  }, [formData, initialData, profilePicture]);
 
   // Autocomplete handlers
   const handleCompanyChange = (value: string) => {
     handleInputChange("current_company", value);
     if (value.length > 0) {
       const filtered = POPULAR_COMPANIES.filter((company) =>
-        company.toLowerCase().includes(value.toLowerCase()),
+        company.toLowerCase().includes(value.toLowerCase())
       ).slice(0, 5);
       setFilteredCompanies(filtered);
       setShowCompanySuggestions(filtered.length > 0);
@@ -161,7 +166,7 @@ const UpdateProfile = () => {
     handleInputChange("current_role", value);
     if (value.length > 0) {
       const filtered = POPULAR_ROLES.filter((role) =>
-        role.toLowerCase().includes(value.toLowerCase()),
+        role.toLowerCase().includes(value.toLowerCase())
       ).slice(0, 5);
       setFilteredRoles(filtered);
       setShowRoleSuggestions(filtered.length > 0);
@@ -174,7 +179,7 @@ const UpdateProfile = () => {
     handleExperienceChange(index, "company", value);
     if (value.length > 0) {
       const filtered = POPULAR_COMPANIES.filter((company) =>
-        company.toLowerCase().includes(value.toLowerCase()),
+        company.toLowerCase().includes(value.toLowerCase())
       ).slice(0, 5);
       setExpCompanySuggestions((prev) => ({ ...prev, [index]: filtered }));
       setShowExpCompanySuggestions((prev) => ({
@@ -190,7 +195,7 @@ const UpdateProfile = () => {
     handleExperienceChange(index, "role", value);
     if (value.length > 0) {
       const filtered = POPULAR_ROLES.filter((role) =>
-        role.toLowerCase().includes(value.toLowerCase()),
+        role.toLowerCase().includes(value.toLowerCase())
       ).slice(0, 5);
       setExpRoleSuggestions((prev) => ({ ...prev, [index]: filtered }));
       setShowExpRoleSuggestions((prev) => ({
@@ -220,7 +225,7 @@ const UpdateProfile = () => {
     setNewSkill(value);
     if (value.length > 0) {
       const filtered = POPULAR_SKILLS.filter((skill) =>
-        skill.toLowerCase().includes(value.toLowerCase()),
+        skill.toLowerCase().includes(value.toLowerCase())
       ).slice(0, 8);
       setFilteredSkills(filtered);
       setShowSkillSuggestions(filtered.length > 0);
@@ -258,12 +263,12 @@ const UpdateProfile = () => {
   const handleExperienceChange = (
     index: number,
     field: keyof Experience,
-    value: string,
+    value: string
   ) => {
     setFormData((prev) => ({
       ...prev,
       experience: prev.experience.map((exp, i) =>
-        i === index ? { ...exp, [field]: value } : exp,
+        i === index ? { ...exp, [field]: value } : exp
       ),
     }));
   };
@@ -280,40 +285,50 @@ const UpdateProfile = () => {
     if (!dateStr || dateStr === "Present") {
       return new Date(); // Present = current date
     }
-    
+
     const [month, year] = dateStr.split(" ");
     if (!month || !year) return null;
-    
+
     const monthMap: { [key: string]: number } = {
-      Jan: 0, Feb: 1, Mar: 2, Apr: 3, May: 4, Jun: 5,
-      Jul: 6, Aug: 7, Sep: 8, Oct: 9, Nov: 10, Dec: 11,
+      Jan: 0,
+      Feb: 1,
+      Mar: 2,
+      Apr: 3,
+      May: 4,
+      Jun: 5,
+      Jul: 6,
+      Aug: 7,
+      Sep: 8,
+      Oct: 9,
+      Nov: 10,
+      Dec: 11,
     };
-    
+
     const monthNum = monthMap[month];
     if (monthNum === undefined) return null;
-    
+
     return new Date(parseInt(year), monthNum);
   };
 
   // Validate experience dates
   const validateExperience = (exp: Experience): string | null => {
     if (!exp.duration) return null;
-    
+
     const parts = exp.duration.split(" - ");
     if (parts.length !== 2) return null;
-    
+
     const [startStr, endStr] = parts;
     const startDate = parseExperienceDate(startStr);
     const endDate = parseExperienceDate(endStr);
-    
+
     if (!startDate || !endDate) {
       return "Invalid date format";
     }
-    
+
     if (endDate < startDate) {
       return "End date cannot be earlier than start date";
     }
-    
+
     return null;
   };
 
@@ -322,9 +337,9 @@ const UpdateProfile = () => {
     return [...experiences].sort((a, b) => {
       const aEndDate = parseExperienceDate(a.duration.split(" - ")[1] || "");
       const bEndDate = parseExperienceDate(b.duration.split(" - ")[1] || "");
-      
+
       if (!aEndDate || !bEndDate) return 0;
-      
+
       // Most recent first (descending order)
       return bEndDate.getTime() - aEndDate.getTime();
     });
@@ -378,7 +393,7 @@ const UpdateProfile = () => {
       if (formData.experience && formData.experience.length > 0) {
         // Filter out empty experience entries
         const filledExperiences = formData.experience.filter(
-          (exp) => exp.company || exp.role || exp.duration,
+          (exp) => exp.company || exp.role || exp.duration
         );
 
         // Validate each experience
@@ -451,6 +466,17 @@ const UpdateProfile = () => {
     }
   };
 
+  const handleDiscard = () => {
+    if (initialData) {
+      setFormData(initialData);
+      setProfilePicture(null);
+      setIsDirty(false);
+      toast.info("Changes Discarded", {
+        description: "Your unsaved changes have been reverted.",
+      });
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -481,19 +507,12 @@ const UpdateProfile = () => {
   }
 
   return (
-    <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 text-gray-100">
+    <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 text-foreground relative pb-24">
+
       {/* Main Content */}
       <div className="container mx-auto">
         <div className="max-w-4xl mx-auto">
-          {/* Back Button */}
-          <Button
-            variant="ghost"
-            className="mb-6 text-gray-400 hover:bg-white/10 hover:text-white"
-            onClick={() => navigate("/dashboard/profile")}
-          >
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to Profile
-          </Button>
+
 
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Profile Picture */}
@@ -523,60 +542,69 @@ const UpdateProfile = () => {
                     </Label>
                     <Input
                       id="batch"
+                      type="text"
                       value={formData.batch}
                       onChange={(e) =>
                         handleInputChange("batch", e.target.value)
                       }
                       placeholder="e.g., 2020"
                       readOnly
-                      className="bg-black/20 border-white/10 text-white placeholder:text-gray-500 focus:border-blue-500/50 focus:ring-blue-500/20"
                       disabled
+                      className="bg-black/20 border-white/10 text-white placeholder:text-gray-500 focus:border-blue-500/50 focus:ring-blue-500/20"
                     />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="branch" className="text-gray-300">
                       Branch *
                     </Label>
-                    <Input
-                      id="branch"
+                    <Select
                       value={formData.branch}
-                      onChange={(e) =>
-                        handleInputChange("branch", e.target.value)
+                      onValueChange={(value) =>
+                        handleInputChange("branch", value)
                       }
                       disabled
-                      readOnly
-                      placeholder="e.g., Computer Science"
-                      className="bg-black/20 border-white/10 text-white placeholder:text-gray-500 focus:border-blue-500/50 focus:ring-blue-500/20"
-                    />
+                    >
+                      <SelectTrigger className="bg-black/20 border-white/10 text-white focus:ring-blue-500/20 focus:border-blue-500/50 disabled:opacity-50 disabled:cursor-not-allowed">
+                        <SelectValue placeholder="Select branch" />
+                      </SelectTrigger>
+                      <SelectContent className="bg-white/5 backdrop-blur-xl border border-white/15 shadow-2xl">
+                        {BRANCHES.map((branch) => (
+                          <SelectItem
+                            key={branch}
+                            value={branch}
+                            className="text-white cursor-pointer rounded-md transition-all hover:bg-white/10 hover:backdrop-brightness-125 hover:!text-white focus:bg-white/10 focus:!text-white"
+                          >
+                            {branch}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="campus" className="text-gray-300">
                     Campus *
                   </Label>
-                  <Select value={formData.campus} disabled>
-                    <SelectTrigger className="bg-black/20 border-white/10 text-white focus:ring-blue-500/20 disabled:opacity-50 disabled:cursor-not-allowed">
+                  <Select
+                    value={formData.campus}
+                    onValueChange={(value) =>
+                      handleInputChange("campus", value)
+                    }
+                    disabled
+                  >
+                    <SelectTrigger className="bg-black/20 border-white/10 text-white focus:ring-blue-500/20 focus:border-blue-500/50 disabled:opacity-50 disabled:cursor-not-allowed">
                       <SelectValue placeholder="Select campus" />
                     </SelectTrigger>
                     <SelectContent className="bg-white/5 backdrop-blur-xl border border-white/15 shadow-2xl">
-                      <SelectItem
-                        value="Main Campus"
-                        className="text-white cursor-pointer rounded-md transition-all hover:bg-white/10 hover:backdrop-brightness-125 hover:!text-white focus:bg-white/10 focus:!text-white"
-                      >
-                        Main Campus
-                      </SelectItem>
-                      <SelectItem
-                        value="West Campus"
-                        className="text-white cursor-pointer rounded-md transition-all hover:bg-white/10 hover:backdrop-brightness-125 hover:!text-white focus:bg-white/10 focus:!text-white"
-                      >
-                        West Campus
-                      </SelectItem>
-                      <SelectItem
-                        value="East Campus"
-                        className="text-white cursor-pointer rounded-md transition-all hover:bg-white/10 hover:backdrop-brightness-125 hover:!text-white focus:bg-white/10 focus:!text-white"
-                      >
-                        East Campus
-                      </SelectItem>
+                      {CAMPUSES.map((campus) => (
+                        <SelectItem
+                          key={campus}
+                          value={campus}
+                          className="text-white cursor-pointer rounded-md transition-all hover:bg-white/10 hover:backdrop-brightness-125 hover:!text-white focus:bg-white/10 focus:!text-white"
+                        >
+                          {campus}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </div>
@@ -585,122 +613,128 @@ const UpdateProfile = () => {
 
             {/* Current Position - Only visible for Alumni */}
             {isAlumni && (
-            <div className="rounded-xl border border-white/10 shadow-xl p-6">
-              <div className="bg-white/5 backdrop-blur-md rounded-xl">
-                <h3 className="text-lg font-semibold text-white mb-4">
-                  Current Position
-                </h3>
-                <div className="space-y-4">
-                  <div className="space-y-2 relative">
-                    <Label htmlFor="current_role" className="text-gray-300">
-                      Current Role
-                    </Label>
-                    <Input
-                      ref={roleInputRef}
-                      id="current_role"
-                      value={formData.current_role}
-                      onChange={(e) => handleRoleChange(e.target.value)}
-                      onFocus={() =>
-                        formData.current_role && setShowRoleSuggestions(true)
-                      }
-                      onBlur={() =>
-                        setTimeout(() => setShowRoleSuggestions(false), 200)
-                      }
-                      placeholder="e.g., Software Engineer"
-                      className="bg-black/20 border-white/10 text-white placeholder:text-gray-500 focus:border-blue-500/50 focus:ring-blue-500/20"
-                      autoComplete="off"
-                    />
-                    {showRoleSuggestions &&
-                      filteredRoles.length > 0 &&
-                      createPortal(
-                        <div
-                          className="fixed z-[9999] bg-white/5 backdrop-blur-xl border border-white/15 rounded-md shadow-2xl max-h-60 overflow-auto"
-                          style={{
-                            left: roleInputRef.current?.getBoundingClientRect()
-                              .left,
-                            top:
-                              roleInputRef.current?.getBoundingClientRect()
-                                .bottom! + 4,
-                            width:
-                              roleInputRef.current?.getBoundingClientRect()
-                                .width,
-                          }}
-                        >
-                          {filteredRoles.map((role, index) => (
-                            <button
-                              key={index}
-                              type="button"
-                              className="w-full text-left px-4 py-2 text-white cursor-pointer rounded-md transition-all hover:bg-white/10 hover:backdrop-brightness-125 hover:!text-white focus:bg-white/10 focus:!text-white text-sm"
-                              onMouseDown={(e) => {
-                                e.preventDefault();
-                                handleInputChange("current_role", role);
-                                setShowRoleSuggestions(false);
-                              }}
-                            >
-                              {role}
-                            </button>
-                          ))}
-                        </div>,
-                        document.body,
-                      )}
-                  </div>
-                  <div className="space-y-2 relative">
-                    <Label htmlFor="current_company" className="text-gray-300">
-                      Current Company
-                    </Label>
-                    <Input
-                      ref={companyInputRef}
-                      id="current_company"
-                      value={formData.current_company}
-                      onChange={(e) => handleCompanyChange(e.target.value)}
-                      onFocus={() =>
-                        formData.current_company &&
-                        setShowCompanySuggestions(true)
-                      }
-                      onBlur={() =>
-                        setTimeout(() => setShowCompanySuggestions(false), 200)
-                      }
-                      placeholder="e.g., Google"
-                      className="bg-black/20 border-white/10 text-white placeholder:text-gray-500 focus:border-blue-500/50 focus:ring-blue-500/20"
-                      autoComplete="off"
-                    />
-                    {showCompanySuggestions &&
-                      filteredCompanies.length > 0 &&
-                      createPortal(
-                        <div
-                          className="fixed z-[9999] bg-white/5 backdrop-blur-xl border border-white/15 rounded-md shadow-2xl max-h-60 overflow-auto"
-                          style={{
-                            left: companyInputRef.current?.getBoundingClientRect()
-                              .left,
-                            top:
-                              companyInputRef.current?.getBoundingClientRect()
-                                .bottom! + 4,
-                            width:
-                              companyInputRef.current?.getBoundingClientRect()
-                                .width,
-                          }}
-                        >
-                          {filteredCompanies.map((company, index) => (
-                            <button
-                              key={index}
-                              type="button"
-                              className="w-full text-left px-4 py-2 text-white cursor-pointer rounded-md transition-all hover:bg-white/10 hover:backdrop-brightness-125 hover:!text-white focus:bg-white/10 focus:!text-white text-sm"
-                              onMouseDown={(e) => {
-                                e.preventDefault();
-                                handleInputChange("current_company", company);
-                                setShowCompanySuggestions(false);
-                              }}
-                            >
-                              {company}
-                            </button>
-                          ))}
-                        </div>,
-                        document.body,
-                      )}
+              <div className="rounded-xl border border-white/10 shadow-xl p-6">
+                <div className="bg-white/5 backdrop-blur-md rounded-xl">
+                  <h3 className="text-lg font-semibold text-white mb-4">
+                    Current Position
+                  </h3>
+                  <div className="space-y-4">
+                    <div className="space-y-2 relative">
+                      <Label htmlFor="current_role" className="text-gray-300">
+                        Current Role
+                      </Label>
+                      <Input
+                        ref={roleInputRef}
+                        id="current_role"
+                        value={formData.current_role}
+                        onChange={(e) => handleRoleChange(e.target.value)}
+                        onFocus={() =>
+                          formData.current_role && setShowRoleSuggestions(true)
+                        }
+                        onBlur={() =>
+                          setTimeout(() => setShowRoleSuggestions(false), 200)
+                        }
+                        placeholder="e.g., Software Engineer"
+                        className="bg-black/20 border-white/10 text-white placeholder:text-gray-500 focus:border-blue-500/50 focus:ring-blue-500/20"
+                        autoComplete="off"
+                      />
+                      {showRoleSuggestions &&
+                        filteredRoles.length > 0 &&
+                        createPortal(
+                          <div
+                            className="fixed z-[9999] bg-white/5 backdrop-blur-xl border border-white/15 rounded-md shadow-2xl max-h-60 overflow-auto"
+                            style={{
+                              left: roleInputRef.current?.getBoundingClientRect()
+                                .left,
+                              top:
+                                roleInputRef.current?.getBoundingClientRect()
+                                  .bottom! + 4,
+                              width:
+                                roleInputRef.current?.getBoundingClientRect()
+                                  .width,
+                            }}
+                          >
+                            {filteredRoles.map((role, index) => (
+                              <button
+                                key={index}
+                                type="button"
+                                className="w-full text-left px-4 py-2 text-white cursor-pointer rounded-md transition-all hover:bg-white/10 hover:backdrop-brightness-125 hover:!text-white focus:bg-white/10 focus:!text-white text-sm"
+                                onMouseDown={(e) => {
+                                  e.preventDefault();
+                                  handleInputChange("current_role", role);
+                                  setShowRoleSuggestions(false);
+                                }}
+                              >
+                                {role}
+                              </button>
+                            ))}
+                          </div>,
+                          document.body
+                        )}
+                    </div>
+                    <div className="space-y-2 relative">
+                      <Label
+                        htmlFor="current_company"
+                        className="text-gray-300"
+                      >
+                        Current Company
+                      </Label>
+                      <Input
+                        ref={companyInputRef}
+                        id="current_company"
+                        value={formData.current_company}
+                        onChange={(e) => handleCompanyChange(e.target.value)}
+                        onFocus={() =>
+                          formData.current_company &&
+                          setShowCompanySuggestions(true)
+                        }
+                        onBlur={() =>
+                          setTimeout(
+                            () => setShowCompanySuggestions(false),
+                            200
+                          )
+                        }
+                        placeholder="e.g., Google"
+                        className="bg-black/20 border-white/10 text-white placeholder:text-gray-500 focus:border-blue-500/50 focus:ring-blue-500/20"
+                        autoComplete="off"
+                      />
+                      {showCompanySuggestions &&
+                        filteredCompanies.length > 0 &&
+                        createPortal(
+                          <div
+                            className="fixed z-[9999] bg-white/5 backdrop-blur-xl border border-white/15 rounded-md shadow-2xl max-h-60 overflow-auto"
+                            style={{
+                              left: companyInputRef.current?.getBoundingClientRect()
+                                .left,
+                              top:
+                                companyInputRef.current?.getBoundingClientRect()
+                                  .bottom! + 4,
+                              width:
+                                companyInputRef.current?.getBoundingClientRect()
+                                  .width,
+                            }}
+                          >
+                            {filteredCompanies.map((company, index) => (
+                              <button
+                                key={index}
+                                type="button"
+                                className="w-full text-left px-4 py-2 text-white cursor-pointer rounded-md transition-all hover:bg-white/10 hover:backdrop-brightness-125 hover:!text-white focus:bg-white/10 focus:!text-white text-sm"
+                                onMouseDown={(e) => {
+                                  e.preventDefault();
+                                  handleInputChange("current_company", company);
+                                  setShowCompanySuggestions(false);
+                                }}
+                              >
+                                {company}
+                              </button>
+                            ))}
+                          </div>,
+                          document.body
+                        )}
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
             )}
             {/* Social Media */}
             <div className="rounded-xl border border-white/10 bg-white/5 backdrop-blur-md shadow-xl p-6 overflow-visible">
@@ -760,7 +794,7 @@ const UpdateProfile = () => {
                     onChange={(e) =>
                       handleSocialMediaChange(
                         "personal_website",
-                        e.target.value,
+                        e.target.value
                       )
                     }
                     placeholder="https://yourwebsite.com"
@@ -824,7 +858,7 @@ const UpdateProfile = () => {
                             </button>
                           ))}
                         </div>,
-                        document.body,
+                        document.body
                       )}
                   </div>
                   <Button
@@ -833,7 +867,7 @@ const UpdateProfile = () => {
                     className="bg-blue-600 hover:bg-blue-500 text-white"
                   >
                     <Plus className="h-4 w-4" />
-                  </Button> 
+                  </Button>
                 </div>
                 {formData.skills.length > 0 && (
                   <div className="flex flex-wrap gap-2">
@@ -920,7 +954,7 @@ const UpdateProfile = () => {
                                     ...prev,
                                     [index]: false,
                                   })),
-                                200,
+                                200
                               )
                             }
                             placeholder="Company name"
@@ -958,22 +992,22 @@ const UpdateProfile = () => {
                                         handleExperienceChange(
                                           index,
                                           "company",
-                                          company,
+                                          company
                                         );
                                         setShowExpCompanySuggestions(
                                           (prev) => ({
                                             ...prev,
                                             [index]: false,
-                                          }),
+                                          })
                                         );
                                       }}
                                     >
                                       {company}
                                     </button>
-                                  ),
+                                  )
                                 )}
                               </div>,
-                              document.body,
+                              document.body
                             )}
                         </div>
                         <div className="space-y-2 relative">
@@ -998,7 +1032,7 @@ const UpdateProfile = () => {
                                     ...prev,
                                     [index]: false,
                                   })),
-                                200,
+                                200
                               )
                             }
                             placeholder="Your role"
@@ -1034,7 +1068,7 @@ const UpdateProfile = () => {
                                       handleExperienceChange(
                                         index,
                                         "role",
-                                        role,
+                                        role
                                       );
                                       setShowExpRoleSuggestions((prev) => ({
                                         ...prev,
@@ -1046,7 +1080,7 @@ const UpdateProfile = () => {
                                   </button>
                                 ))}
                               </div>,
-                              document.body,
+                              document.body
                             )}
                         </div>
                         <div className="space-y-2">
@@ -1073,7 +1107,7 @@ const UpdateProfile = () => {
                                     handleExperienceChange(
                                       index,
                                       "duration",
-                                      end ? `${newStart} - ${end}` : newStart,
+                                      end ? `${newStart} - ${end}` : newStart
                                     );
                                   }}
                                 >
@@ -1121,7 +1155,7 @@ const UpdateProfile = () => {
                                     handleExperienceChange(
                                       index,
                                       "duration",
-                                      end ? `${newStart} - ${end}` : newStart,
+                                      end ? `${newStart} - ${end}` : newStart
                                     );
                                   }}
                                 >
@@ -1132,7 +1166,7 @@ const UpdateProfile = () => {
                                     <div className="grid grid-cols-3 gap-1 p-2 max-h-[240px] overflow-y-auto">
                                       {Array.from(
                                         { length: 30 },
-                                        (_, i) => new Date().getFullYear() - i,
+                                        (_, i) => new Date().getFullYear() - i
                                       ).map((y) => (
                                         <SelectItem
                                           key={y}
@@ -1172,7 +1206,10 @@ const UpdateProfile = () => {
                                     handleExperienceChange(
                                       index,
                                       "duration",
-                                      `${start || "Jan " + new Date().getFullYear()} - ${newEnd}`,
+                                      `${
+                                        start ||
+                                        "Jan " + new Date().getFullYear()
+                                      } - ${newEnd}`
                                     );
                                   }}
                                 >
@@ -1231,7 +1268,10 @@ const UpdateProfile = () => {
                                       handleExperienceChange(
                                         index,
                                         "duration",
-                                        `${start || "Jan " + new Date().getFullYear()} - ${newEnd}`,
+                                        `${
+                                          start ||
+                                          "Jan " + new Date().getFullYear()
+                                        } - ${newEnd}`
                                       );
                                     }}
                                   >
@@ -1242,8 +1282,7 @@ const UpdateProfile = () => {
                                       <div className="grid grid-cols-3 gap-1 p-2 max-h-[240px] overflow-y-auto">
                                         {Array.from(
                                           { length: 30 },
-                                          (_, i) =>
-                                            new Date().getFullYear() - i,
+                                          (_, i) => new Date().getFullYear() - i
                                         ).map((y) => (
                                           <SelectItem
                                             key={y}
@@ -1272,8 +1311,8 @@ const UpdateProfile = () => {
             <div className="flex gap-4">
               <Button
                 type="submit"
-                className="flex-1 bg-blue-600 hover:bg-blue-500 text-white"
-                disabled={isSaving}
+                className="flex-1 bg-nsut-maroon hover:bg-red-900 text-white"
+                disabled={isSaving || !isDirty}
               >
                 {isSaving ? (
                   <>
@@ -1292,7 +1331,7 @@ const UpdateProfile = () => {
                 variant="outline"
                 onClick={() => navigate("/dashboard/profile")}
                 disabled={isSaving}
-                className="border-white/10 text-gray-300 hover:bg-white/5 hover:text-white bg-transparent"
+                className="border-input text-muted-foreground hover:bg-accent hover:text-accent-foreground bg-transparent"
               >
                 Cancel
               </Button>
@@ -1300,6 +1339,37 @@ const UpdateProfile = () => {
           </form>
         </div>
       </div>
+
+      {/* Unsaved Changes Popup */}
+      {isDirty && (
+        <div className="fixed bottom-8 left-1/2 transform -translate-x-1/2 z-50 animate-in slide-in-from-bottom-10 fade-in duration-300">
+          <div className="bg-foreground text-background px-6 py-4 rounded-full shadow-2xl flex items-center gap-6 border border-border">
+            <p className="font-medium">You have unsaved changes</p>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleDiscard}
+                className="hover:bg-background/20 hover:text-background text-background/80"
+              >
+                Discard
+              </Button>
+              <Button
+                size="sm"
+                onClick={handleSubmit}
+                disabled={isSaving}
+                className="bg-nsut-maroon hover:bg-red-900 text-white rounded-full px-6"
+              >
+                {isSaving ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  "Save"
+                )}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

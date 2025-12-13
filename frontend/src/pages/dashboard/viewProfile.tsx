@@ -16,6 +16,7 @@ import {
   ArrowLeft,
   Loader2,
   Mail,
+  UserPlus,
 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import api from "@/lib/api";
@@ -35,6 +36,7 @@ interface Profile {
   current_company?: string;
   current_role?: string;
   profile_picture?: string;
+  connectionStatus?: string;
   social_media?: {
     linkedin?: string;
     github?: string;
@@ -56,18 +58,54 @@ const ViewProfile = () => {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
+  const handleConnect = async (recipientId: string) => {
+    try {
+      await api.post(
+        "/chat/connections/request",
+        { recipientId },
+        { headers: { Authorization: `Bearer ${accessToken}` } }
+      );
+
+      // Refresh profile to update connection status
+      const response = await api.get(`/profile/user/${userId}`, {
+        headers: { Authorization: `Bearer ${accessToken}` },
+      });
+      setProfile(response.data.profile);
+
+      toast.success("Connection request sent!", {
+        style: {
+          background: "#10b981",
+          color: "white",
+          border: "2px solid #059669",
+        },
+      });
+    } catch (error: any) {
+      console.error("Error sending connection request:", error);
+      toast.error(
+        error.response?.data?.message || "Failed to send connection request",
+        {
+          style: {
+            background: "#800000",
+            color: "white",
+            border: "2px solid #FFD700",
+          },
+        }
+      );
+    }
+  };
+
   useEffect(() => {
     const fetchProfile = async () => {
       if (!userId) return;
-      
+
       try {
         const response = await api.get(`/profile/user/${userId}`, {
           headers: { Authorization: `Bearer ${accessToken}` },
         });
-        console.log('Fetched profile:', response.data.profile);
-        console.log('User role:', response.data.profile?.user?.role);
-        console.log('Current company:', response.data.profile?.current_company);
-        console.log('Current role:', response.data.profile?.current_role);
+        console.log("Fetched profile:", response.data.profile);
+        console.log("User role:", response.data.profile?.user?.role);
+        console.log("Current company:", response.data.profile?.current_company);
+        console.log("Current role:", response.data.profile?.current_role);
         setProfile(response.data.profile);
       } catch (error) {
         console.error("Error fetching profile:", error);
@@ -163,195 +201,206 @@ const ViewProfile = () => {
                   <MapPin className="h-5 w-5 text-blue-400" />
                   <span>{profile.campus}</span>
                 </div>
-                
-                {/* Contact Button */}
-                <Button
-                  onClick={() => {
-                    window.location.href = `mailto:${profile.user.email}`;
-                  }}
-                  className="bg-blue-600 hover:bg-blue-700 text-white"
-                >
-                  <Mail className="h-4 w-4 mr-2" />
-                  Contact
-                </Button>
+
+                {/* Action Buttons */}
+                <div className="flex flex-wrap items-center justify-center md:justify-start gap-3">
+                  {/* Connection Status Button */}
+                  {profile.connectionStatus === "self" ? (
+                    <Button
+                      onClick={() => navigate("/dashboard/profile/edit")}
+                      className="bg-blue-600 hover:bg-blue-700 text-white"
+                    >
+                      Edit Profile
+                    </Button>
+                  ) : profile.connectionStatus === "accepted" ? (
+                    <Button
+                      size="default"
+                      variant="ghost"
+                      disabled
+                      className="text-green-400 bg-green-500/10 cursor-not-allowed"
+                    >
+                      Connected
+                    </Button>
+                  ) : profile.connectionStatus === "pending" ? (
+                    <Button
+                      size="default"
+                      variant="ghost"
+                      disabled
+                      className="text-amber-400 bg-amber-500/10 cursor-not-allowed"
+                    >
+                      Pending
+                    </Button>
+                  ) : (
+                    <Button
+                      onClick={() => handleConnect(profile.user._id)}
+                      className="bg-indigo-600 hover:bg-indigo-700 text-white"
+                    >
+                      <UserPlus className="h-4 w-4 mr-2" />
+                      Connect
+                    </Button>
+                  )}
+
+                  {/* Social Media Buttons */}
+                  {profile.social_media?.linkedin && (
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      className="bg-white/5 border-white/10 hover:bg-white/10"
+                      onClick={() => window.open(profile.social_media!.linkedin, "_blank")}
+                    >
+                      <Linkedin className="h-4 w-4 text-blue-400" />
+                    </Button>
+                  )}
+                  {profile.social_media?.github && (
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      className="bg-white/5 border-white/10 hover:bg-white/10"
+                      onClick={() => window.open(profile.social_media!.github, "_blank")}
+                    >
+                      <Github className="h-4 w-4 text-gray-300" />
+                    </Button>
+                  )}
+                  {profile.social_media?.twitter && (
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      className="bg-white/5 border-white/10 hover:bg-white/10"
+                      onClick={() => window.open(profile.social_media!.twitter, "_blank")}
+                    >
+                      <Twitter className="h-4 w-4 text-blue-400" />
+                    </Button>
+                  )}
+                  {profile.social_media?.personal_website && (
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      className="bg-white/5 border-white/10 hover:bg-white/10"
+                      onClick={() => window.open(profile.social_media!.personal_website, "_blank")}
+                    >
+                      <Globe className="h-4 w-4 text-blue-400" />
+                    </Button>
+                  )}
+                </div>
               </div>
             </div>
           </div>
 
-          {/* Academic Information and Current Position Grid */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+          {/* Academic Information and Current Position - Flexbox */}
+          <div className="flex flex-col lg:flex-row gap-6 mb-6">
             {/* Academic Information */}
-            <div className="rounded-xl border border-white/10 bg-white/5 backdrop-blur-md shadow-xl p-6">
+            <div className="flex-1 rounded-xl border border-white/10 bg-white/5 backdrop-blur-md shadow-xl p-6">
               <div className="flex items-center gap-2 mb-6">
                 <GraduationCap className="h-5 w-5 text-blue-400" />
-                <h3 className="text-lg font-semibold text-white">Academic Information</h3>
+                <h3 className="text-lg font-semibold text-white">
+                  Academic Information
+                </h3>
               </div>
               <div className="space-y-4">
                 <div>
                   <p className="text-sm text-gray-400">Batch</p>
-                  <p className="text-lg font-semibold text-gray-200">{profile.batch}</p>
+                  <p className="text-lg font-semibold text-gray-200">
+                    {profile.batch}
+                  </p>
                 </div>
                 <Separator className="bg-white/10" />
                 <div>
                   <p className="text-sm text-gray-400">Branch</p>
-                  <p className="text-lg font-semibold text-gray-200">{profile.branch}</p>
+                  <p className="text-lg font-semibold text-gray-200">
+                    {profile.branch}
+                  </p>
                 </div>
                 <Separator className="bg-white/10" />
                 <div>
                   <p className="text-sm text-gray-400">Campus</p>
-                  <p className="text-lg font-semibold text-gray-200">{profile.campus}</p>
+                  <p className="text-lg font-semibold text-gray-200">
+                    {profile.campus}
+                  </p>
                 </div>
               </div>
             </div>
 
             {/* Current Position - Only for Alumni */}
-            {profile.user.role === 'alumni' && (profile.current_company || profile.current_role) && (
-            <div className="rounded-xl border border-white/10 bg-white/5 backdrop-blur-md shadow-xl p-6">
-              <div className="flex items-center gap-2 mb-6">
-                <Briefcase className="h-5 w-5 text-blue-400" />
-                <h3 className="text-lg font-semibold text-white">Current Position</h3>
-              </div>
-              <div className="space-y-4">
-                {profile.current_role && (
-                  <div>
-                    <p className="text-sm text-gray-400">Role</p>
-                    <p className="text-lg font-semibold text-gray-200">{profile.current_role}</p>
+            {profile.user.role === "alumni" &&
+              (profile.current_company || profile.current_role) && (
+                <div className="flex-1 rounded-xl border border-white/10 bg-white/5 backdrop-blur-md shadow-xl p-6">
+                  <div className="flex items-center gap-2 mb-6">
+                    <Briefcase className="h-5 w-5 text-blue-400" />
+                    <h3 className="text-lg font-semibold text-white">
+                      Current Position
+                    </h3>
                   </div>
-                )}
-                {profile.current_company && profile.current_role && <Separator className="bg-white/10" />}
-                {profile.current_company && (
-                  <div>
-                    <p className="text-sm text-gray-400">Company</p>
-                    <p className="text-lg font-semibold text-gray-200">{profile.current_company}</p>
+                  <div className="space-y-4">
+                    {profile.current_role && (
+                      <div>
+                        <p className="text-sm text-gray-400">Role</p>
+                        <p className="text-lg font-semibold text-gray-200">
+                          {profile.current_role}
+                        </p>
+                      </div>
+                    )}
+                    {profile.current_company && profile.current_role && (
+                      <Separator className="bg-white/10" />
+                    )}
+                    {profile.current_company && (
+                      <div>
+                        <p className="text-sm text-gray-400">Company</p>
+                        <p className="text-lg font-semibold text-gray-200">
+                          {profile.current_company}
+                        </p>
+                      </div>
+                    )}
                   </div>
-                )}
-              </div>
-            </div>
-            )}
+                </div>
+              )}
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {/* Left Column - Social Media */}
-            <div className="lg:col-span-1 space-y-6">
-              {profile.social_media &&
-                (profile.social_media.linkedin ||
-                  profile.social_media.github ||
-                  profile.social_media.twitter ||
-                  profile.social_media.personal_website) && (
-                  <div className="rounded-xl border border-white/10 bg-white/5 backdrop-blur-md shadow-xl p-6">
-                    <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
-                      <Globe className="h-5 w-5 text-blue-400" />
-                      Social Media
-                    </h3>
-                    <div className="space-y-3">
-                      {profile.social_media.linkedin && (
-                        <a
-                          href={profile.social_media.linkedin}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="flex items-center gap-3 text-gray-300 hover:text-blue-400 transition-colors group"
-                        >
-                          <div className="p-2 rounded-lg bg-white/5 group-hover:bg-blue-500/10 transition-colors">
-                            <Linkedin className="h-5 w-5" />
-                          </div>
-                          <span className="text-sm truncate">LinkedIn</span>
-                        </a>
-                      )}
-                      {profile.social_media.github && (
-                        <a
-                          href={profile.social_media.github}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="flex items-center gap-3 text-gray-300 hover:text-blue-400 transition-colors group"
-                        >
-                          <div className="p-2 rounded-lg bg-white/5 group-hover:bg-blue-500/10 transition-colors">
-                            <Github className="h-5 w-5" />
-                          </div>
-                          <span className="text-sm truncate">GitHub</span>
-                        </a>
-                      )}
-                      {profile.social_media.twitter && (
-                        <a
-                          href={profile.social_media.twitter}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="flex items-center gap-3 text-gray-300 hover:text-blue-400 transition-colors group"
-                        >
-                          <div className="p-2 rounded-lg bg-white/5 group-hover:bg-blue-500/10 transition-colors">
-                            <Twitter className="h-5 w-5" />
-                          </div>
-                          <span className="text-sm truncate">Twitter</span>
-                        </a>
-                      )}
-                      {profile.social_media.personal_website && (
-                        <a
-                          href={profile.social_media.personal_website}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="flex items-center gap-3 text-gray-300 hover:text-blue-400 transition-colors group"
-                        >
-                          <div className="p-2 rounded-lg bg-white/5 group-hover:bg-blue-500/10 transition-colors">
-                            <Globe className="h-5 w-5" />
-                          </div>
-                          <span className="text-sm truncate">Website</span>
-                        </a>
-                      )}
+          {/* Experience - Full Width */}
+          {profile.experience && profile.experience.length > 0 && (
+            <div className="rounded-xl border border-white/10 bg-white/5 backdrop-blur-md shadow-xl p-6 mb-6">
+              <h3 className="text-lg font-semibold text-white mb-6">
+                Experience
+              </h3>
+              <div className="space-y-6">
+                {profile.experience.map((exp, index) => (
+                  <div key={index} className="relative pl-6 pb-6 last:pb-0">
+                    {/* Timeline line */}
+                    {index !== profile.experience!.length - 1 && (
+                      <div className="absolute left-[7px] top-6 bottom-0 w-px bg-gradient-to-b from-blue-500/50 to-transparent" />
+                    )}
+                    {/* Timeline dot */}
+                    <div className="absolute left-0 top-1.5 w-4 h-4 rounded-full bg-blue-500 ring-4 ring-blue-500/20" />
+
+                    <div className="bg-white/5 rounded-lg p-4 hover:bg-white/10 transition-colors">
+                      <h4 className="font-semibold text-white text-lg mb-1">
+                        {exp.role}
+                      </h4>
+                      <p className="text-blue-400 mb-2">{exp.company}</p>
+                      <p className="text-sm text-gray-400">{exp.duration}</p>
                     </div>
                   </div>
-                )}
-
-              {/* Skills */}
-              {profile.skills && profile.skills.length > 0 && (
-                <div className="rounded-xl border border-white/10 bg-white/5 backdrop-blur-md shadow-xl p-6">
-                  <h3 className="text-lg font-semibold text-white mb-4">
-                    Skills
-                  </h3>
-                  <div className="flex flex-wrap gap-2">
-                    {profile.skills.map((skill, index) => (
-                      <Badge
-                        key={index}
-                        variant="secondary"
-                        className="bg-white/5 text-gray-300 border border-white/10 hover:bg-white/10 transition-colors"
-                      >
-                        {skill}
-                      </Badge>
-                    ))}
-                  </div>
-                </div>
-              )}
+                ))}
+              </div>
             </div>
+          )}
 
-            {/* Right Column - Experience */}
-            <div className="lg:col-span-2">
-              {profile.experience && profile.experience.length > 0 && (
-                <div className="rounded-xl border border-white/10 bg-white/5 backdrop-blur-md shadow-xl p-6">
-                  <h3 className="text-lg font-semibold text-white mb-6">
-                    Experience
-                  </h3>
-                  <div className="space-y-6">
-                    {profile.experience.map((exp, index) => (
-                      <div key={index} className="relative pl-6 pb-6 last:pb-0">
-                        {/* Timeline line */}
-                        {index !== profile.experience!.length - 1 && (
-                          <div className="absolute left-[7px] top-6 bottom-0 w-px bg-gradient-to-b from-blue-500/50 to-transparent" />
-                        )}
-                        {/* Timeline dot */}
-                        <div className="absolute left-0 top-1.5 w-4 h-4 rounded-full bg-blue-500 ring-4 ring-blue-500/20" />
-
-                        <div className="bg-white/5 rounded-lg p-4 hover:bg-white/10 transition-colors">
-                          <h4 className="font-semibold text-white text-lg mb-1">
-                            {exp.role}
-                          </h4>
-                          <p className="text-blue-400 mb-2">{exp.company}</p>
-                          <p className="text-sm text-gray-400">{exp.duration}</p>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
+          {/* Skills - Full Width */}
+          {profile.skills && profile.skills.length > 0 && (
+            <div className="rounded-xl border border-white/10 bg-white/5 backdrop-blur-md shadow-xl p-6">
+              <h3 className="text-lg font-semibold text-white mb-4">Skills</h3>
+              <div className="flex flex-wrap gap-2">
+                {profile.skills.map((skill, index) => (
+                  <Badge
+                    key={index}
+                    variant="secondary"
+                    className="bg-white/5 text-gray-300 border border-white/10 hover:bg-white/10 transition-colors"
+                  >
+                    {skill}
+                  </Badge>
+                ))}
+              </div>
             </div>
-          </div>
+          )}
         </div>
       </div>
     </div>

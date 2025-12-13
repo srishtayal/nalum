@@ -2,9 +2,11 @@ import { useQuery, useMutation, useQueryClient, useInfiniteQuery } from "@tansta
 import { useEffect } from "react";
 import api from "@/lib/api";
 import { toast } from "sonner";
+import { useAuth } from "../context/AuthContext";
 
-export const useMessages = (conversationId: string | null, socket: any) => {
+export const useMessages = (conversationId: string | null, socket: any, initialMessage: any = null) => {
   const queryClient = useQueryClient();
+  const { user } = useAuth();
 
   const {
     data,
@@ -13,6 +15,7 @@ export const useMessages = (conversationId: string | null, socket: any) => {
     isLoading,
   } = useInfiniteQuery({
     queryKey: ["messages", conversationId],
+    initialPageParam: 1,
     queryFn: async ({ pageParam = 1 }) => {
       if (!conversationId) return { data: [], hasMore: false, page: 1 };
       const { data } = await api.get(
@@ -21,13 +24,36 @@ export const useMessages = (conversationId: string | null, socket: any) => {
       return {
         data: data.data || [],
         hasMore: data.hasMore || false,
-        page: pageParam,
+        page: pageParam as number,
       };
     },
-    getNextPageParam: (lastPage) => {
+    getNextPageParam: (lastPage: any) => {
       return lastPage.hasMore ? lastPage.page + 1 : undefined;
     },
+    placeholderData: (previousData) => {
+      if (previousData) return previousData;
+      if (initialMessage && conversationId) {
+        const messageWithId = {
+          ...initialMessage,
+          _id: initialMessage._id || `placeholder-${Date.now()}`,
+          readBy: initialMessage.readBy || [],
+          messageType: initialMessage.messageType || 'text',
+          createdAt: initialMessage.createdAt || initialMessage.timestamp || new Date().toISOString(),
+          isOptimistic: true,
+        };
+        return {
+          pages: [{
+            data: [messageWithId],
+            hasMore: true,
+            page: 1
+          }],
+          pageParams: [1]
+        };
+      }
+      return undefined;
+    },
     enabled: !!conversationId,
+    staleTime: 5000, // Prevent immediate refetch to protect optimistic updates on new conversations
   });
 
   const messages = data?.pages.flatMap((page) => page.data) || [];
@@ -44,7 +70,7 @@ export const useMessages = (conversationId: string | null, socket: any) => {
       if (data.conversationId === conversationId) {
         queryClient.setQueryData(["messages", conversationId], (old: any) => {
           if (!old) return { pages: [{ data: [data.message], hasMore: false, page: 1 }], pageParams: [1] };
-          
+
           const newPages = [...old.pages];
           // Check if message already exists (avoid duplicates)
           const messageExists = newPages[0].data.some((m: any) => m._id === data.message._id);
@@ -54,7 +80,7 @@ export const useMessages = (conversationId: string | null, socket: any) => {
               data: [...newPages[0].data, data.message],
             };
           }
-          
+
           return { ...old, pages: newPages };
         });
       }
@@ -62,32 +88,88 @@ export const useMessages = (conversationId: string | null, socket: any) => {
 
     const handleMessageSent = (data: any) => {
       console.log('Received message:sent event:', data);
-      // Add the confirmed message
+      // Add the confirmed message or replace optimistic message
       if (data.conversationId === conversationId) {
         queryClient.setQueryData(["messages", conversationId], (old: any) => {
           if (!old) return { pages: [{ data: [data.message], hasMore: false, page: 1 }], pageParams: [1] };
-          
+
           const newPages = [...old.pages];
-          // Check if message already exists (avoid duplicates)
-          const messageExists = newPages[0].data.some((m: any) => m._id === data.message._id);
-          if (!messageExists) {
+
+          // Check if real message already exists (e.g. from message:new)
+          const realMessageExists = newPages[0].data.some((m: any) => m._id === data.message._id);
+
+          // Find optimistic message if tempId is provided
+          const optimisticIndex = data.tempId
+            ? newPages[0].data.findIndex((m: any) => m._id === data.tempId)
+            : -1;
+
+          if (optimisticIndex !== -1) {
+            // Optimistic message exists
+            const newData = [...newPages[0].data];
+            if (realMessageExists) {
+              // Real message already there (race condition), just remove optimistic
+              newData.splice(optimisticIndex, 1);
+            } else {
+              // Replace optimistic with real
+              newData[optimisticIndex] = data.message;
+            }
+            newPages[0] = { ...newPages[0], data: newData };
+          } else if (!realMessageExists) {
+            // No optimistic message found and real message not there, append it
             newPages[0] = {
               ...newPages[0],
               data: [...newPages[0].data, data.message],
             };
           }
-          
+
           return { ...old, pages: newPages };
         });
       }
     };
 
     const handleMessageRead = (data: any) => {
-      queryClient.invalidateQueries({ queryKey: ["messages", conversationId] });
+      if (data.conversationId === conversationId) {
+        queryClient.setQueryData(["messages", conversationId], (old: any) => {
+          if (!old) return old;
+          const newPages = old.pages.map((page: any) => ({
+            ...page,
+            data: page.data.map((msg: any) => {
+              // If messageId is provided, only update that message
+              if (data.messageId && msg._id !== data.messageId) return msg;
+
+              // Don't mark own messages as read by self (though backend filters this usually)
+              // But here we are marking messages read BY data.userId
+
+              // Check if already read by this user
+              const alreadyRead = msg.readBy?.some((r: any) => {
+                const rId = r.user?._id || r.user;
+                return rId === data.userId;
+              });
+
+              if (alreadyRead) return msg;
+
+              return {
+                ...msg,
+                readBy: [...(msg.readBy || []), { user: data.userId, readAt: new Date().toISOString() }]
+              };
+            })
+          }));
+          return { ...old, pages: newPages };
+        });
+      }
     };
 
     const handleMessageDeleted = (data: any) => {
-      queryClient.invalidateQueries({ queryKey: ["messages", conversationId] });
+      if (data.conversationId === conversationId) {
+        queryClient.setQueryData(["messages", conversationId], (old: any) => {
+          if (!old) return old;
+          const newPages = old.pages.map((page: any) => ({
+            ...page,
+            data: page.data.filter((msg: any) => msg._id !== data.messageId)
+          }));
+          return { ...old, pages: newPages };
+        });
+      }
     };
 
     socket.on("message:new", handleNewMessage);
@@ -105,10 +187,10 @@ export const useMessages = (conversationId: string | null, socket: any) => {
   }, [socket, conversationId, queryClient]);
 
   const sendMessage = useMutation({
-    mutationFn: async ({ content, conversationId, receiverId }: { content: string; conversationId: string; receiverId: string }) => {
+    mutationFn: async ({ content, conversationId, receiverId, tempId }: { content: string; conversationId: string; receiverId: string; tempId?: string }) => {
       if (socket && socket.connected) {
-        // Send via socket with conversationId
-        socket.emit("message:send", { conversationId, content });
+        // Send via socket with conversationId and tempId
+        socket.emit("message:send", { conversationId, content, tempId });
         // Don't return anything - let message:sent handle it
         return null;
       } else {
@@ -120,7 +202,37 @@ export const useMessages = (conversationId: string | null, socket: any) => {
         return data;
       }
     },
-    onError: (error: any) => {
+    onMutate: async ({ content, conversationId, tempId }) => {
+      if (!tempId) return;
+
+      await queryClient.cancelQueries({ queryKey: ["messages", conversationId] });
+      const previousMessages = queryClient.getQueryData(["messages", conversationId]);
+
+      const optimisticMessage = {
+        _id: tempId,
+        content,
+        sender: user, // Assumes user object matches sender schema enough for UI
+        conversation: conversationId,
+        createdAt: new Date().toISOString(),
+        isOptimistic: true,
+      };
+
+      queryClient.setQueryData(["messages", conversationId], (old: any) => {
+        if (!old) return { pages: [{ data: [optimisticMessage], hasMore: false, page: 1 }], pageParams: [1] };
+        const newPages = [...old.pages];
+        newPages[0] = {
+          ...newPages[0],
+          data: [...newPages[0].data, optimisticMessage],
+        };
+        return { ...old, pages: newPages };
+      });
+
+      return { previousMessages };
+    },
+    onError: (error: any, variables, context) => {
+      if (context?.previousMessages) {
+        queryClient.setQueryData(["messages", conversationId], context.previousMessages);
+      }
       toast.error(error.response?.data?.message || "Failed to send message");
     },
   });

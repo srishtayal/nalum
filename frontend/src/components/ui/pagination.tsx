@@ -1,8 +1,8 @@
-import * as React from "react"
-import { ChevronLeft, ChevronRight, MoreHorizontal } from "lucide-react"
+import * as React from "react";
+import { ChevronLeft, ChevronRight, MoreHorizontal } from "lucide-react";
 
-import { cn } from "@/lib/utils"
-import { ButtonProps, buttonVariants } from "@/components/ui/button"
+import { cn } from "@/lib/utils";
+import { ButtonProps, buttonVariants } from "@/components/ui/button";
 
 const Pagination = ({ className, ...props }: React.ComponentProps<"nav">) => (
   <nav
@@ -11,8 +11,8 @@ const Pagination = ({ className, ...props }: React.ComponentProps<"nav">) => (
     className={cn("mx-auto flex w-full justify-center", className)}
     {...props}
   />
-)
-Pagination.displayName = "Pagination"
+);
+Pagination.displayName = "Pagination";
 
 const PaginationContent = React.forwardRef<
   HTMLUListElement,
@@ -23,21 +23,21 @@ const PaginationContent = React.forwardRef<
     className={cn("flex flex-row items-center gap-1", className)}
     {...props}
   />
-))
-PaginationContent.displayName = "PaginationContent"
+));
+PaginationContent.displayName = "PaginationContent";
 
 const PaginationItem = React.forwardRef<
   HTMLLIElement,
   React.ComponentProps<"li">
 >(({ className, ...props }, ref) => (
   <li ref={ref} className={cn("", className)} {...props} />
-))
-PaginationItem.displayName = "PaginationItem"
+));
+PaginationItem.displayName = "PaginationItem";
 
 type PaginationLinkProps = {
-  isActive?: boolean
+  isActive?: boolean;
 } & Pick<ButtonProps, "size"> &
-  React.ComponentProps<"a">
+  React.ComponentProps<"a">;
 
 const PaginationLink = ({
   className,
@@ -56,8 +56,8 @@ const PaginationLink = ({
     )}
     {...props}
   />
-)
-PaginationLink.displayName = "PaginationLink"
+);
+PaginationLink.displayName = "PaginationLink";
 
 const PaginationPrevious = ({
   className,
@@ -72,8 +72,8 @@ const PaginationPrevious = ({
     <ChevronLeft className="h-4 w-4" />
     <span>Previous</span>
   </PaginationLink>
-)
-PaginationPrevious.displayName = "PaginationPrevious"
+);
+PaginationPrevious.displayName = "PaginationPrevious";
 
 const PaginationNext = ({
   className,
@@ -88,8 +88,8 @@ const PaginationNext = ({
     <span>Next</span>
     <ChevronRight className="h-4 w-4" />
   </PaginationLink>
-)
-PaginationNext.displayName = "PaginationNext"
+);
+PaginationNext.displayName = "PaginationNext";
 
 const PaginationEllipsis = ({
   className,
@@ -103,8 +103,117 @@ const PaginationEllipsis = ({
     <MoreHorizontal className="h-4 w-4" />
     <span className="sr-only">More pages</span>
   </span>
-)
-PaginationEllipsis.displayName = "PaginationEllipsis"
+);
+PaginationEllipsis.displayName = "PaginationEllipsis";
+
+// Smart pagination component for alumni directory
+interface SmartPaginationProps {
+  currentPage: number;
+  totalPages: number;
+  onPageChange: (page: number) => void;
+}
+
+const SmartPagination = ({
+  currentPage,
+  totalPages,
+  onPageChange,
+}: SmartPaginationProps) => {
+  if (totalPages <= 1) {
+    return null;
+  }
+
+  const pagesToShow: (number | string)[] = [];
+
+  // Always show first page
+  if (totalPages > 0) {
+    pagesToShow.push(1);
+  }
+
+  // Add ellipsis and pages before current
+  if (currentPage > 3) {
+    pagesToShow.push("...");
+  }
+
+  // Show pages around current (currentPage - 1 to currentPage + 1)
+  for (
+    let i = Math.max(2, currentPage - 1);
+    i <= Math.min(totalPages - 1, currentPage + 1);
+    i++
+  ) {
+    if (!pagesToShow.includes(i)) {
+      pagesToShow.push(i);
+    }
+  }
+
+  // Add ellipsis and pages after current
+  if (currentPage < totalPages - 2) {
+    pagesToShow.push("...");
+  }
+
+  // Always show last page
+  if (totalPages > 1 && !pagesToShow.includes(totalPages)) {
+    pagesToShow.push(totalPages);
+  }
+
+  return (
+    <Pagination>
+      <PaginationContent>
+        <PaginationItem>
+          <PaginationPrevious
+            href="#"
+            onClick={(e) => {
+              e.preventDefault();
+              if (currentPage > 1) onPageChange(currentPage - 1);
+            }}
+            className={
+              currentPage === 1
+                ? "pointer-events-none opacity-50"
+                : "cursor-pointer"
+            }
+          />
+        </PaginationItem>
+
+        {pagesToShow.map((page, idx) =>
+          page === "..." ? (
+            <PaginationItem key={`ellipsis-${idx}`}>
+              <PaginationEllipsis />
+            </PaginationItem>
+          ) : (
+            <PaginationItem key={page}>
+              <PaginationLink
+                href="#"
+                isActive={page === currentPage}
+                onClick={(e) => {
+                  e.preventDefault();
+                  onPageChange(page as number);
+                }}
+                className="cursor-pointer"
+              >
+                {page}
+              </PaginationLink>
+            </PaginationItem>
+          )
+        )}
+
+        <PaginationItem>
+          <PaginationNext
+            href="#"
+            onClick={(e) => {
+              e.preventDefault();
+              if (currentPage < totalPages) onPageChange(currentPage + 1);
+            }}
+            className={
+              currentPage === totalPages
+                ? "pointer-events-none opacity-50"
+                : "cursor-pointer"
+            }
+          />
+        </PaginationItem>
+      </PaginationContent>
+    </Pagination>
+  );
+};
+SmartPagination.displayName = "SmartPagination";
 
 export {
   Pagination,
@@ -114,4 +223,5 @@ export {
   PaginationLink,
   PaginationNext,
   PaginationPrevious,
-}
+  SmartPagination,
+};
