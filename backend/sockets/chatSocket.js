@@ -115,6 +115,11 @@ async function initializeSocket(server) {
         await messageHandlers.handleMessageRead(io, socket, data);
       });
 
+      // Message deletion
+      socket.on('message:delete', async (data) => {
+        await messageHandlers.handleMessageDeleted(io, socket, data);
+      });
+
       // Disconnect
       socket.on('disconnect', async () => {
         console.log(`User disconnected: ${userId}`);

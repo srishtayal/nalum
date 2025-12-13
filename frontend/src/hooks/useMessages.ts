@@ -247,8 +247,29 @@ export const useMessages = (conversationId: string | null, socket: any, initialM
     mutationFn: async (messageId: string) => {
       await api.delete(`/chat/messages/${messageId}`);
     },
+    onMutate: async (messageId: string) => {
+      await queryClient.cancelQueries({ queryKey: ["messages", conversationId] });
+      const previousMessages = queryClient.getQueryData(["messages", conversationId]);
+
+      queryClient.setQueryData(["messages", conversationId], (old: any) => {
+        if (!old) return old;
+        const newPages = old.pages.map((page: any) => ({
+          ...page,
+          data: page.data.filter((msg: any) => msg._id !== messageId)
+        }));
+        return { ...old, pages: newPages };
+      });
+
+      return { previousMessages };
+    },
+    onError: (err, variables, context) => {
+      if (context?.previousMessages) {
+        queryClient.setQueryData(["messages", conversationId], context.previousMessages);
+      }
+      toast.error("Failed to delete message");
+    },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["messages", conversationId] });
+      // Socket event will handle the cache update confirmation
       toast.success("Message deleted");
     },
   });
