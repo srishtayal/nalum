@@ -100,26 +100,19 @@ const UpdateProfile = () => {
   // Force re-render for dropdown positioning on scroll/resize
   const [, setForceUpdate] = useState(0);
 
-  // Close dropdowns on scroll
+  // Update dropdown positions on scroll/resize (don't close them)
   useEffect(() => {
-    const handleScroll = () => {
-      setShowCompanySuggestions(false);
-      setShowRoleSuggestions(false);
-      setShowSkillSuggestions(false);
-      setShowExpCompanySuggestions({});
-      setShowExpRoleSuggestions({});
+    const handleScrollOrResize = () => {
+      // Trigger re-render to update dropdown positions
+      setForceUpdate((prev) => prev + 1);
     };
 
-    const handleResize = () => {
-      handleScroll();
-    };
-
-    window.addEventListener("scroll", handleScroll, true);
-    window.addEventListener("resize", handleResize);
+    window.addEventListener("scroll", handleScrollOrResize, true);
+    window.addEventListener("resize", handleScrollOrResize);
 
     return () => {
-      window.removeEventListener("scroll", handleScroll, true);
-      window.removeEventListener("resize", handleResize);
+      window.removeEventListener("scroll", handleScrollOrResize, true);
+      window.removeEventListener("resize", handleScrollOrResize);
     };
   }, []);
 
