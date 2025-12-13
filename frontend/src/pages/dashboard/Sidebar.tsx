@@ -1,18 +1,9 @@
 import { Link, useLocation } from "react-router-dom";
-import { useState, useEffect } from "react";
-import {
-  Home,
-  Edit2,
-  Users,
-  LogOut,
-  MessageSquare,
-  UserPlus,
-} from "lucide-react";
+import { Home, Edit2, Users, LogOut, MessageSquare } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { useProfile } from "@/context/ProfileContext";
 import { cn } from "@/lib/utils";
 import UserAvatar from "@/components/UserAvatar";
-import api from "@/lib/api";
 import nsutLogo from "@/assets/nsut-logo.svg";
 
 interface SidebarProps {
@@ -23,23 +14,6 @@ const Sidebar = ({ onNavigate }: SidebarProps) => {
   const { logout } = useAuth();
   const location = useLocation();
   const { profile } = useProfile();
-  const [pendingCount, setPendingCount] = useState(0);
-
-  useEffect(() => {
-    const fetchPendingCount = async () => {
-      try {
-        const { data } = await api.get("/chat/connections/pending");
-        setPendingCount(data?.data?.length || 0);
-      } catch (error) {
-        console.error("Failed to fetch pending requests:", error);
-      }
-    };
-
-    fetchPendingCount();
-    // Refresh count every 30 seconds
-    const interval = setInterval(fetchPendingCount, 30000);
-    return () => clearInterval(interval);
-  }, []);
 
   // Always collapse sidebar
   const isCollapsed = true;
@@ -60,12 +34,6 @@ const Sidebar = ({ onNavigate }: SidebarProps) => {
       to: "/dashboard/alumni",
       icon: Users,
       label: "Directory",
-    },
-    {
-      to: "/dashboard/connections",
-      icon: UserPlus,
-      label: "Connections",
-      badge: pendingCount,
     },
     {
       to: "/dashboard/chat",

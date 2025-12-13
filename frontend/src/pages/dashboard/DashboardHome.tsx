@@ -1,6 +1,7 @@
 import { useProfile } from "@/context/ProfileContext";
 import UserAvatar from "@/components/UserAvatar";
 import PeopleYouMightKnow from "@/pages/dashboard/PeopleYouMightKnow";
+import ConnectionsPopover from "@/components/ConnectionsPopover";
 
 const DashboardHome = () => {
   const { profile, isLoading } = useProfile();
@@ -19,13 +20,14 @@ const DashboardHome = () => {
             </p>
           </div>
           {!isLoading && profile && (
-            <div className="hidden sm:block">
+            <div className="hidden sm:flex items-center gap-4">
               <UserAvatar
                 src={profile.profile_picture}
                 name={profile.user.name}
                 size="lg"
                 className="border-2 border-white/20 shadow-lg"
               />
+              <ConnectionsPopover />
             </div>
           )}
         </div>

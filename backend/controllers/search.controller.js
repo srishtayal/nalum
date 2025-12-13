@@ -4,17 +4,12 @@ const Connection = require("../models/chat/connections.model");
 
 const searchProfiles = async (req, res) => {
   try {
-    const {
-      name,
-      graduationYear,
-      skills,
-      campus,
-      branch,
-      company,
-      role,
-      page = 1,
-      limit = 10,
-    } = req.query;
+    const { name, graduationYear, skills, campus, branch, company, role } =
+      req.query;
+
+    // Parse page and limit as numbers
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
 
     let userQuery = {};
     if (name) {
@@ -37,6 +32,10 @@ const searchProfiles = async (req, res) => {
     }
 
     let profileQuery = {};
+    // If a name filter was applied but no users matched, return empty result
+    if (userQuery.name && users.length === 0) {
+      return res.json({ profiles: [], totalPages: 0, currentPage: page });
+    }
     if (users.length > 0) {
       profileQuery.user = { $in: users.map((user) => user._id) };
     }
@@ -63,7 +62,7 @@ const searchProfiles = async (req, res) => {
 
     const profiles = await Profile.find(profileQuery)
       .populate("user", "name email role")
-      .limit(limit * 1)
+      .limit(limit)
       .skip((page - 1) * limit)
       .exec();
 
@@ -122,7 +121,7 @@ const searchProfiles = async (req, res) => {
     res.json({
       profiles: profilesWithStatus,
       totalPages: Math.ceil(count / limit),
-      currentPage: page,
+      currentPage: Number(page),
     });
   } catch (error) {
     res.status(500).json({ message: error.message });

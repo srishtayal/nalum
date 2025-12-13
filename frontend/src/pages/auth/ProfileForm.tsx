@@ -45,9 +45,12 @@ interface SocialLinks {
 const ProfileForm = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { accessToken } = useAuth();
+  const { accessToken, user } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [currentStep, setCurrentStep] = useState(1);
+  
+  // Check if user is alumni
+  const isAlumni = user?.role === 'alumni';
   const [wantsAdditionalInfo, setWantsAdditionalInfo] = useState(false);
 
   // Form state - Profile Picture
@@ -321,86 +324,90 @@ const ProfileForm = () => {
               </Select>
             </div>
 
-            <div className="space-y-2">
-              <Label
-                htmlFor="currentCompany"
-                className="text-base text-gray-900"
-              >
-                Current Company{" "}
-                <span className="text-gray-400">(Optional)</span>
-              </Label>
-              <div className="relative">
-                <Briefcase className="absolute left-3 top-3 h-5 w-5 text-gray-400 z-10" />
-                <Input
-                  id="currentCompany"
-                  placeholder="Start typing to see suggestions..."
-                  value={currentCompany}
-                  onChange={(e) => handleCompanyChange(e.target.value)}
-                  onFocus={() =>
-                    currentCompany && setShowCompanySuggestions(true)
-                  }
-                  onBlur={() =>
-                    setTimeout(() => setShowCompanySuggestions(false), 200)
-                  }
-                  className="pl-10 h-12 text-base"
-                  autoComplete="off"
-                />
-                {showCompanySuggestions && filteredCompanies.length > 0 && (
-                  <div className="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg max-h-60 overflow-auto">
-                    {filteredCompanies.map((company, index) => (
-                      <button
-                        key={index}
-                        type="button"
-                        className="w-full text-left px-4 py-2 hover:bg-gray-100 transition-colors text-sm"
-                        onClick={() => {
-                          setCurrentCompany(company);
-                          setShowCompanySuggestions(false);
-                        }}
-                      >
-                        {company}
-                      </button>
-                    ))}
+            {isAlumni && (
+              <>
+                <div className="space-y-2">
+                  <Label
+                    htmlFor="currentCompany"
+                    className="text-base text-gray-900"
+                  >
+                    Current Company{" "}
+                    <span className="text-gray-400">(Optional)</span>
+                  </Label>
+                  <div className="relative">
+                    <Briefcase className="absolute left-3 top-3 h-5 w-5 text-gray-400 z-10" />
+                    <Input
+                      id="currentCompany"
+                      placeholder="Start typing to see suggestions..."
+                      value={currentCompany}
+                      onChange={(e) => handleCompanyChange(e.target.value)}
+                      onFocus={() =>
+                        currentCompany && setShowCompanySuggestions(true)
+                      }
+                      onBlur={() =>
+                        setTimeout(() => setShowCompanySuggestions(false), 200)
+                      }
+                      className="pl-10 h-12 text-base"
+                      autoComplete="off"
+                    />
+                    {showCompanySuggestions && filteredCompanies.length > 0 && (
+                      <div className="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg max-h-60 overflow-auto">
+                        {filteredCompanies.map((company, index) => (
+                          <button
+                            key={index}
+                            type="button"
+                            className="w-full text-left px-4 py-2 hover:bg-gray-100 transition-colors text-sm"
+                            onClick={() => {
+                              setCurrentCompany(company);
+                              setShowCompanySuggestions(false);
+                            }}
+                          >
+                            {company}
+                          </button>
+                        ))}
+                      </div>
+                    )}
                   </div>
-                )}
-              </div>
-            </div>
+                </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="currentRole" className="text-base text-gray-900">
-                Current Role <span className="text-gray-400">(Optional)</span>
-              </Label>
-              <div className="relative">
-                <Input
-                  id="currentRole"
-                  placeholder="Start typing to see suggestions..."
-                  value={currentRole}
-                  onChange={(e) => handleRoleChange(e.target.value)}
-                  onFocus={() => currentRole && setShowRoleSuggestions(true)}
-                  onBlur={() =>
-                    setTimeout(() => setShowRoleSuggestions(false), 200)
-                  }
-                  className="h-12 text-base"
-                  autoComplete="off"
-                />
-                {showRoleSuggestions && filteredRoles.length > 0 && (
-                  <div className="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg max-h-60 overflow-auto">
-                    {filteredRoles.map((role, index) => (
-                      <button
-                        key={index}
-                        type="button"
-                        className="w-full text-left px-4 py-2 hover:bg-gray-100 transition-colors text-sm"
-                        onClick={() => {
-                          setCurrentRole(role);
-                          setShowRoleSuggestions(false);
-                        }}
-                      >
-                        {role}
-                      </button>
-                    ))}
+                <div className="space-y-2">
+                  <Label htmlFor="currentRole" className="text-base text-gray-900">
+                    Current Role <span className="text-gray-400">(Optional)</span>
+                  </Label>
+                  <div className="relative">
+                    <Input
+                      id="currentRole"
+                      placeholder="Start typing to see suggestions..."
+                      value={currentRole}
+                      onChange={(e) => handleRoleChange(e.target.value)}
+                      onFocus={() => currentRole && setShowRoleSuggestions(true)}
+                      onBlur={() =>
+                        setTimeout(() => setShowRoleSuggestions(false), 200)
+                      }
+                      className="h-12 text-base"
+                      autoComplete="off"
+                    />
+                    {showRoleSuggestions && filteredRoles.length > 0 && (
+                      <div className="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg max-h-60 overflow-auto">
+                        {filteredRoles.map((role, index) => (
+                          <button
+                            key={index}
+                            type="button"
+                            className="w-full text-left px-4 py-2 hover:bg-gray-100 transition-colors text-sm"
+                            onClick={() => {
+                              setCurrentRole(role);
+                              setShowRoleSuggestions(false);
+                            }}
+                          >
+                            {role}
+                          </button>
+                        ))}
+                      </div>
+                    )}
                   </div>
-                )}
-              </div>
-            </div>
+                </div>
+              </>
+            )}
           </div>
         );
 
