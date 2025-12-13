@@ -329,3 +329,36 @@ exports.blockUser = async (req, res) => {
     res.status(500).json({ error: "Failed to block user" });
   }
 };
+
+// Block user by User ID (for chat window)
+exports.blockUserByUserId = async (req, res) => {
+  try {
+    const requesterId = req.user.user_id;
+    const { userId } = req.body;
+
+    if (!userId) {
+      return res.status(400).json({ error: "User ID is required" });
+    }
+
+    // Find connection
+    const connection = await Connection.findOne({
+      $or: [
+        { requester: requesterId, recipient: userId },
+        { requester: userId, recipient: requesterId },
+      ],
+    });
+
+    if (!connection) {
+      return res.status(404).json({ error: "Connection not found" });
+    }
+
+    connection.status = "blocked";
+    connection.respondedAt = new Date();
+    await connection.save();
+
+    res.json({ message: "User blocked successfully", connection });
+  } catch (error) {
+    console.error("Block user by ID error:", error);
+    res.status(500).json({ error: "Failed to block user" });
+  }
+};

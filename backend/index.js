@@ -37,9 +37,10 @@ dbConnect();
 // connect to redis server (must be done before Socket.io initialization)
 redisConfig.connectRedis().then(() => {
   console.log('Redis initialization complete');
-  
+
   // Initialize Socket.io for chat after Redis is ready
-  initializeSocket(server).then(() => {
+  initializeSocket(server).then((io) => {
+    app.set('io', io);
     console.log('Socket.io initialization complete');
   }).catch(err => {
     console.error('Socket.io initialization failed:', err);
@@ -54,7 +55,7 @@ app.use("/auth", authRoutes);
 app.use("/profile", checkBanned, profileRoutes);
 app.use("/parser", checkBanned, pdfParser);
 app.use("/alumni", checkBanned, alumniRoutes);
-app.use("/chat", checkBanned,chatRoutes);
+app.use("/chat", checkBanned, chatRoutes);
 
 // Admin routes (no checkBanned needed)
 app.use("/admin", adminRoutes);

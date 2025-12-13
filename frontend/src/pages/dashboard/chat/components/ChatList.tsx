@@ -175,7 +175,7 @@ export const ChatList = ({ onSelectConversation, selectedConversation }: ChatLis
                     <div className="relative">
                       <UserAvatar
                         name={chat.otherParticipant?.name || "Unknown"}
-                        src={chat.otherParticipant?.profilePicture}
+                        src={chat.otherParticipant?.profile_picture || chat.otherParticipant?.profilePicture}
                         size="md"
                         className={`border-opacity-20 ${isSelected ? 'border-indigo-400' : 'border-white'}`}
                       />
