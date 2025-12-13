@@ -23,6 +23,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { useNavigate } from "react-router-dom";
 
 interface ChatWindowProps {
   conversation: any;
@@ -45,6 +46,7 @@ export const ChatWindow = ({ conversation, onBack }: ChatWindowProps) => {
   const { user } = useAuth();
   const { createConversation } = useConversations();
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
 
   // Track the real conversation ID locally to handle transitions from connection-only
   const [activeConversationId, setActiveConversationId] = useState<string | null>(
@@ -156,16 +158,21 @@ export const ChatWindow = ({ conversation, onBack }: ChatWindowProps) => {
           <ArrowLeft className="h-5 w-5" />
         </Button>
 
-        <UserAvatar
-          name={conversation.otherParticipant?.name || "Unknown User"}
-          src={conversation.otherParticipant?.profilePicture}
-          className="h-9 w-9 border border-white/10"
-          size="sm"
-        />
+        <div
+          className="flex items-center gap-3 flex-1 min-w-0 cursor-pointer hover:bg-white/5 p-1.5 -ml-1.5 rounded-lg transition-colors"
+          onClick={() => navigate(`/dashboard/alumni/${conversation.otherParticipant._id}`)}
+        >
+          <UserAvatar
+            name={conversation.otherParticipant?.name || "Unknown User"}
+            src={conversation.otherParticipant?.profile_picture || conversation.otherParticipant?.profilePicture}
+            className="h-9 w-9 border border-white/10"
+            size="sm"
+          />
 
-        <div className="flex-1 min-w-0">
-          <p className="font-semibold text-sm truncate text-gray-200">{conversation.otherParticipant?.name || "Unknown User"}</p>
-          <p className="text-xs text-gray-400 truncate">{conversation.otherParticipant?.email}</p>
+          <div className="flex-1 min-w-0">
+            <p className="font-semibold text-sm truncate text-gray-200">{conversation.otherParticipant?.name || "Unknown User"}</p>
+            <p className="text-xs text-gray-400 truncate">{conversation.otherParticipant?.email}</p>
+          </div>
         </div>
 
         <Button variant="ghost" size="icon" className="h-8 w-8 text-gray-400 hover:text-white hover:bg-white/10">

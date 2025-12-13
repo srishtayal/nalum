@@ -41,7 +41,8 @@ const Sidebar = ({ onNavigate }: SidebarProps) => {
     return () => clearInterval(interval);
   }, []);
 
-  const isChatPage = location.pathname.startsWith("/dashboard/chat");
+  // Always collapse sidebar
+  const isCollapsed = true;
 
   const navItems = [
     {
@@ -83,16 +84,16 @@ const Sidebar = ({ onNavigate }: SidebarProps) => {
   return (
     <aside className={cn(
       "h-screen flex flex-col border-r border-white/10 bg-slate-950/50 backdrop-blur-xl shadow-xl sticky top-0 transition-all duration-300",
-      isChatPage ? "w-20" : "w-64"
+      isCollapsed ? "w-20" : "w-64"
     )}>
       <div className={cn(
         "flex items-center border-b border-white/10",
-        isChatPage ? "justify-center p-4" : "p-6"
+        isCollapsed ? "justify-center p-4" : "p-6"
       )}>
         <img src={nsutLogo} alt="NALUM" className="h-8 w-8 flex-shrink-0" />
         <h1 className={cn(
           "text-2xl font-bold text-white tracking-wider transition-all duration-300 ease-in-out",
-          isChatPage ? "opacity-0 max-w-0 ml-0 overflow-hidden" : "opacity-100 max-w-full ml-3"
+          isCollapsed ? "opacity-0 max-w-0 ml-0 overflow-hidden" : "opacity-100 max-w-full ml-3"
         )}>
           NALUM
         </h1>
@@ -109,9 +110,9 @@ const Sidebar = ({ onNavigate }: SidebarProps) => {
               isActive(item.to, item.exact)
                 ? "bg-blue-500/20 text-blue-200 border-blue-500/30 shadow-[0_0_15px_rgba(59,130,246,0.15)]"
                 : "border-transparent text-gray-400 hover:bg-white/5 hover:text-white",
-              isChatPage ? "justify-center px-2 py-3" : "px-4 py-3 gap-3"
+              isCollapsed ? "justify-center px-2 py-3" : "px-4 py-3 gap-3"
             )}
-            title={isChatPage ? item.label : undefined}
+            title={isCollapsed ? item.label : undefined}
           >
             <item.icon className={cn(
               "h-5 w-5 transition-colors flex-shrink-0",
@@ -119,7 +120,7 @@ const Sidebar = ({ onNavigate }: SidebarProps) => {
             )} />
             <span className={cn(
               "font-medium transition-all duration-300 ease-in-out",
-              isChatPage ? "opacity-0 max-w-0 overflow-hidden" : "opacity-100 max-w-full"
+              isCollapsed ? "opacity-0 max-w-0 overflow-hidden" : "opacity-100 max-w-full"
             )}>{item.label}</span>
           </Link>
         ))}
@@ -133,9 +134,9 @@ const Sidebar = ({ onNavigate }: SidebarProps) => {
             onClick={onNavigate}
             className={cn(
               "flex items-center rounded-lg hover:bg-white/5 transition-colors group border border-transparent hover:border-white/10",
-              isChatPage ? "justify-center p-2" : "gap-3 px-4 py-3"
+              isCollapsed ? "justify-center p-2" : "gap-3 px-4 py-3"
             )}
-            title={isChatPage ? profile.user.name : undefined}
+            title={isCollapsed ? profile.user.name : undefined}
           >
             <UserAvatar
               src={profile.profile_picture}
@@ -145,7 +146,7 @@ const Sidebar = ({ onNavigate }: SidebarProps) => {
             />
             <div className={cn(
               "flex flex-col min-w-0 transition-all duration-300 ease-in-out",
-              isChatPage ? "opacity-0 max-w-0 overflow-hidden" : "opacity-100 max-w-full"
+              isCollapsed ? "opacity-0 max-w-0 overflow-hidden" : "opacity-100 max-w-full"
             )}>
               <span className="text-sm font-medium text-gray-200 group-hover:text-white truncate">
                 {profile.user.name}
@@ -161,18 +162,18 @@ const Sidebar = ({ onNavigate }: SidebarProps) => {
           onClick={logout}
           className={cn(
             "w-full flex items-center rounded-lg text-gray-400 hover:bg-red-500/10 hover:text-red-400 transition-colors border border-transparent hover:border-red-500/20",
-            isChatPage ? "justify-center p-2" : "gap-3 px-4 py-3"
+            isCollapsed ? "justify-center p-2" : "gap-3 px-4 py-3"
           )}
-          title={isChatPage ? "Logout" : undefined}
+          title={isCollapsed ? "Logout" : undefined}
         >
           <LogOut className="h-5 w-5 flex-shrink-0" />
           <span className={cn(
             "font-medium transition-all duration-300 ease-in-out",
-            isChatPage ? "opacity-0 max-w-0 overflow-hidden" : "opacity-100 max-w-full"
+            isCollapsed ? "opacity-0 max-w-0 overflow-hidden" : "opacity-100 max-w-full"
           )}>Logout</span>
         </button>
       </div>
-    </aside>
+    </aside >
   );
 };
 

@@ -1,6 +1,6 @@
 const socketIo = require('socket.io');
 const jwt = require('jsonwebtoken');
-const redisClient = require('../config/redis');
+const { getRedisClient } = require('../config/redis.config');
 const { createAdapter } = require('@socket.io/redis-adapter');
 const messageHandlers = require('./handlers/messageHandlers');
 const typingHandlers = require('./handlers/typingHandlers');
@@ -16,16 +16,15 @@ async function initializeSocket(server) {
 
   // Setup Redis adapter for horizontal scaling (optional - degrades gracefully)
   try {
-    const redisModule = require('../config/redis');
-    const redisClient = redisModule;
-    
+    const redisClient = getRedisClient();
+
     if (redisClient && redisClient.isOpen) {
       const pubClient = redisClient.duplicate();
       const subClient = redisClient.duplicate();
-      
+
       await pubClient.connect();
       await subClient.connect();
-      
+
       io.adapter(createAdapter(pubClient, subClient));
       console.log('Socket.io Redis adapter configured');
     } else {
@@ -42,13 +41,13 @@ async function initializeSocket(server) {
       if (!token) {
         return next(new Error('Authentication token required'));
       }
-      
+
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
-      
+
       // The JWT token contains user_id, not id
       socket.userId = decoded.user_id;
       socket.userRole = decoded.role;
-      
+
       next();
     } catch (error) {
       next(new Error('Authentication failed'));
@@ -58,11 +57,10 @@ async function initializeSocket(server) {
   io.on('connection', async (socket) => {
     const userId = socket.userId;
     console.log(`User connected: ${userId}`);
-    
+
     try {
-      const redisModule = require('../config/redis');
-      const currentRedisClient = redisModule;
-      
+      const currentRedisClient = getRedisClient();
+
       // Mark user as online (skip if Redis not available)
       if (currentRedisClient && currentRedisClient.isOpen) {
         try {
@@ -71,13 +69,13 @@ async function initializeSocket(server) {
           console.warn('Redis online status update failed:', error.message);
         }
       }
-      
+
       // Join user to their personal room
       socket.join(`user:${userId}`);
-      
+
       // Broadcast online status to connections
       socket.broadcast.emit('user:online', { userId });
-      
+
       // Periodically update online status (heartbeat)
       const heartbeat = setInterval(async () => {
         if (currentRedisClient && currentRedisClient.isOpen) {
@@ -121,9 +119,8 @@ async function initializeSocket(server) {
       socket.on('disconnect', async () => {
         console.log(`User disconnected: ${userId}`);
         clearInterval(heartbeat);
-        const redisModule = require('../config/redis');
-        const currentRedisClient = redisModule;
-        
+        const currentRedisClient = getRedisClient();
+
         if (currentRedisClient && currentRedisClient.isOpen) {
           try {
             await currentRedisClient.del(`user:online:${userId}`);

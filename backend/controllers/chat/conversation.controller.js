@@ -1,7 +1,8 @@
 const Conversation = require('../../models/chat/conversations.model');
 const Connection = require('../../models/chat/connections.model');
 const Message = require('../../models/chat/messages.model');
-const redisClient = require('../../config/redis');
+const Profile = require('../../models/user/profile.model');
+const redisClient = require('../../config/redis.config'); // Fixed import to match previous fix
 
 // Get all conversations
 exports.getConversations = async (req, res) => {
@@ -21,7 +22,19 @@ exports.getConversations = async (req, res) => {
       .skip(skip)
       .limit(parseInt(limit));
 
-    // Get unread counts and compute otherParticipant
+    // Get all participant IDs to fetch profiles
+    const participantIds = [...new Set(conversations.flatMap(c => c.participants.map(p => p._id)))];
+
+    // Fetch profiles for all participants
+    const profiles = await Profile.find({ user: { $in: participantIds } })
+      .select('user profile_picture');
+
+    const profileMap = profiles.reduce((acc, profile) => {
+      acc[profile.user.toString()] = profile.profile_picture;
+      return acc;
+    }, {});
+
+    // Get unread counts and compute otherParticipant with profile picture
     const conversationsWithUnread = await Promise.all(
       conversations.map(async (conv) => {
         // Count unread messages directly from MongoDB for accuracy
@@ -30,14 +43,21 @@ exports.getConversations = async (req, res) => {
           sender: { $ne: userId },
           'readBy.user': { $ne: userId }
         });
-        
+
+        // Attach profile pictures to participants
+        const participantsWithPics = conv.participants.map(p => ({
+          ...p.toObject(),
+          profile_picture: profileMap[p._id.toString()]
+        }));
+
         // Find the other participant (not the current user)
-        const otherParticipant = conv.participants.find(
+        const otherParticipant = participantsWithPics.find(
           p => p._id.toString() !== userId.toString()
         );
-        
+
         return {
           ...conv.toObject(),
+          participants: participantsWithPics,
           otherParticipant,
           unreadCount
         };
@@ -90,9 +110,31 @@ exports.getConversation = async (req, res) => {
       'readBy.user': { $ne: userId }
     });
 
+    // Fetch profiles for participants
+    const profiles = await Profile.find({
+      user: { $in: conversation.participants.map(p => p._id) }
+    }).select('user profile_picture');
+
+    const profileMap = profiles.reduce((acc, profile) => {
+      acc[profile.user.toString()] = profile.profile_picture;
+      return acc;
+    }, {});
+
+    const participantsWithPics = conversation.participants.map(p => ({
+      ...p.toObject(),
+      profile_picture: profileMap[p._id.toString()]
+    }));
+
+    // Find other participant for consistent response structure
+    const otherParticipant = participantsWithPics.find(
+      p => p._id.toString() !== userId.toString()
+    );
+
     res.json({
       conversation: {
         ...conversation.toObject(),
+        participants: participantsWithPics,
+        otherParticipant, // Add this for easier frontend consumption
         unreadCount: unreadCount
       }
     });
@@ -147,8 +189,23 @@ exports.createConversation = async (req, res) => {
 
     await conversation.populate('participants', 'name email profilePicture');
 
+    // Fetch profiles for participants
+    const profiles = await Profile.find({
+      user: { $in: conversation.participants.map(p => p._id) }
+    }).select('user profile_picture');
+
+    const profileMap = profiles.reduce((acc, profile) => {
+      acc[profile.user.toString()] = profile.profile_picture;
+      return acc;
+    }, {});
+
+    const participantsWithPics = conversation.participants.map(p => ({
+      ...p.toObject(),
+      profile_picture: profileMap[p._id.toString()]
+    }));
+
     // Compute otherParticipant
-    const otherParticipant = conversation.participants.find(
+    const otherParticipant = participantsWithPics.find(
       p => p._id.toString() !== userId.toString()
     );
 
@@ -157,6 +214,7 @@ exports.createConversation = async (req, res) => {
       message: conversation.isNew ? 'Conversation created' : 'Conversation exists',
       data: {
         ...conversation.toObject(),
+        participants: participantsWithPics,
         otherParticipant
       }
     });
@@ -215,8 +273,9 @@ exports.markConversationRead = async (req, res) => {
 
     // Clear unread count in Redis
     try {
-      if (redisClient && redisClient.isOpen) {
-        await redisClient.hDel(`unread:${userId}`, conversationId);
+      const client = redisClient.getRedisClient();
+      if (client && client.isOpen) {
+        await client.hDel(`unread:${userId}`, conversationId);
       }
     } catch (error) {
       console.warn('Redis update failed:', error.message);
