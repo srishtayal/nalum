@@ -311,13 +311,14 @@ export default function Events() {
           <h2 className="text-2xl font-bold text-white mb-4">
             🔥 Most Liked Events
           </h2>
-          <div 
-            onClick={() => {
-              setSelectedEvent(mostLikedEvents[carouselIndex]);
-              setIsModalOpen(true);
-            }}
-            className="relative bg-white/5 border border-white/10 rounded-2xl overflow-hidden backdrop-blur-md cursor-pointer hover:border-white/20 transition-all"
-          >
+          <div className="px-4 md:px-8">
+            <div 
+              onClick={() => {
+                setSelectedEvent(mostLikedEvents[carouselIndex]);
+                setIsModalOpen(true);
+              }}
+              className="relative bg-white/5 border border-white/10 rounded-2xl overflow-hidden backdrop-blur-md cursor-pointer hover:border-white/20 transition-all"
+            >
             <div className="md:flex">
               <div className="md:w-1/2 h-80 bg-gray-800/50">
                 {mostLikedEvents[carouselIndex]?.image_url ? (
@@ -413,6 +414,7 @@ export default function Events() {
               ))}
             </div>
           </div>
+        </div>
         </div>
       )}
 

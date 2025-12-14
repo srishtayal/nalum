@@ -51,6 +51,24 @@ const HostEvent = () => {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
   const [imagePreview, setImagePreview] = useState<string>("");
+  const [imageFile, setImageFile] = useState<File | null>(null);
+
+  // Get today's date in YYYY-MM-DD format
+  const getTodayDate = () => {
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, '0');
+    const day = String(today.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
+
+  // Get current time in HH:MM format
+  const getCurrentTime = () => {
+    const now = new Date();
+    const hours = String(now.getHours()).padStart(2, '0');
+    const minutes = String(now.getMinutes()).padStart(2, '0');
+    return `${hours}:${minutes}`;
+  };
   const [myEvents, setMyEvents] = useState<Event[]>([]);
   const [loadingEvents, setLoadingEvents] = useState(true);
   const [editingEvent, setEditingEvent] = useState<string | null>(null);
@@ -107,18 +125,37 @@ const HostEvent = () => {
   };
 
   const handleInputChange = (field: string, value: string) => {
+    // Validate time if date is today
+    if (field === "event_date" && value === getTodayDate()) {
+      const currentTime = getCurrentTime();
+      if (formData.event_time && formData.event_time < currentTime) {
+        toast.error("Event time cannot be in the past");
+        setFormData((prev) => ({ ...prev, event_time: "" }));
+      }
+    }
+    
+    // Validate time selection if date is today
+    if (field === "event_time") {
+      const isToday = formData.event_date === getTodayDate();
+      if (isToday && value < getCurrentTime()) {
+        toast.error("Event time cannot be in the past");
+        return;
+      }
+    }
+    
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      // For now, just create a preview URL
-      // In production, you'd upload to a server or cloud storage
+      // Store the file for upload
+      setImageFile(file);
+      
+      // Create preview
       const reader = new FileReader();
       reader.onloadend = () => {
         setImagePreview(reader.result as string);
-        setFormData((prev) => ({ ...prev, image_url: reader.result as string }));
       };
       reader.readAsDataURL(file);
     }
@@ -126,6 +163,7 @@ const HostEvent = () => {
 
   const removeImage = () => {
     setImagePreview("");
+    setImageFile(null);
     setFormData((prev) => ({ ...prev, image_url: "" }));
     // Clear the file input
     const fileInput = document.getElementById("image") as HTMLInputElement;
@@ -145,10 +183,32 @@ const HostEvent = () => {
       toast.error("Event date is required");
       return false;
     }
+    
+    // Validate date is not in the past
+    const selectedDate = new Date(formData.event_date);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    selectedDate.setHours(0, 0, 0, 0);
+    
+    if (selectedDate < today) {
+      toast.error("Event date cannot be in the past");
+      return false;
+    }
+    
     if (!formData.event_time) {
       toast.error("Event time is required");
       return false;
     }
+    
+    // Validate time is not in the past if date is today
+    if (formData.event_date === getTodayDate()) {
+      const currentTime = getCurrentTime();
+      if (formData.event_time < currentTime) {
+        toast.error("Event time cannot be in the past");
+        return false;
+      }
+    }
+    
     if (!formData.location.trim()) {
       toast.error("Event location is required");
       return false;
@@ -162,27 +222,37 @@ const HostEvent = () => {
 
     setIsLoading(true);
     try {
-      const eventData = {
-        title: formData.title,
-        description: formData.description,
-        event_date: formData.event_date,
-        event_time: formData.event_time,
-        location: formData.location,
-        event_type: formData.event_type,
-        image_url: formData.image_url,
-        registration_link: formData.registration_link,
-        max_participants: formData.max_participants ? parseInt(formData.max_participants) : null,
-        contact_info: {
-          phone: formData.contact_phone,
-          email: formData.contact_email,
-          website: formData.contact_website,
-        },
-      };
+      // Use FormData for file upload
+      const formDataToSend = new FormData();
+      formDataToSend.append("title", formData.title);
+      formDataToSend.append("description", formData.description);
+      formDataToSend.append("event_date", formData.event_date);
+      formDataToSend.append("event_time", formData.event_time);
+      formDataToSend.append("location", formData.location);
+      formDataToSend.append("event_type", formData.event_type);
+      formDataToSend.append("registration_link", formData.registration_link);
+      
+      if (formData.max_participants) {
+        formDataToSend.append("max_participants", formData.max_participants);
+      }
+
+      // Add contact info as JSON string
+      formDataToSend.append("contact_info", JSON.stringify({
+        phone: formData.contact_phone,
+        email: formData.contact_email,
+        website: formData.contact_website,
+      }));
+
+      // Add image file if exists
+      if (imageFile) {
+        formDataToSend.append("event_image", imageFile);
+      }
 
       // Create new event
-      await api.post("/events/create", eventData, {
+      await api.post("/events/create", formDataToSend, {
         headers: {
           Authorization: `Bearer ${accessToken}`,
+          "Content-Type": "multipart/form-data",
         },
       });
 
@@ -206,6 +276,7 @@ const HostEvent = () => {
         contact_website: "",
       });
       setImagePreview("");
+      setImageFile(null);
       fetchMyEvents();
     } catch (error) {
       const axiosError = error as AxiosError<{ message?: string }>;
@@ -249,26 +320,36 @@ const HostEvent = () => {
 
     setIsLoading(true);
     try {
-      const eventData = {
-        title: formData.title,
-        description: formData.description,
-        event_date: formData.event_date,
-        event_time: formData.event_time,
-        location: formData.location,
-        event_type: formData.event_type,
-        image_url: formData.image_url,
-        registration_link: formData.registration_link,
-        max_participants: formData.max_participants ? parseInt(formData.max_participants) : null,
-        contact_info: {
-          phone: formData.contact_phone,
-          email: formData.contact_email,
-          website: formData.contact_website,
-        },
-      };
+      // Use FormData for file upload
+      const formDataToSend = new FormData();
+      formDataToSend.append("title", formData.title);
+      formDataToSend.append("description", formData.description);
+      formDataToSend.append("event_date", formData.event_date);
+      formDataToSend.append("event_time", formData.event_time);
+      formDataToSend.append("location", formData.location);
+      formDataToSend.append("event_type", formData.event_type);
+      formDataToSend.append("registration_link", formData.registration_link);
+      
+      if (formData.max_participants) {
+        formDataToSend.append("max_participants", formData.max_participants);
+      }
 
-      await api.put(`/events/update/${editingEvent}`, eventData, {
+      // Add contact info as JSON string
+      formDataToSend.append("contact_info", JSON.stringify({
+        phone: formData.contact_phone,
+        email: formData.contact_email,
+        website: formData.contact_website,
+      }));
+
+      // Add image file if new one was selected
+      if (imageFile) {
+        formDataToSend.append("event_image", imageFile);
+      }
+
+      await api.put(`/events/update/${editingEvent}`, formDataToSend, {
         headers: {
           Authorization: `Bearer ${accessToken}`,
+          "Content-Type": "multipart/form-data",
         },
       });
 
@@ -292,6 +373,7 @@ const HostEvent = () => {
         contact_website: "",
       });
       setImagePreview("");
+      setImageFile(null);
       setEditingEvent(null);
       setEditDialogOpen(false);
       fetchMyEvents();
@@ -471,6 +553,7 @@ const HostEvent = () => {
                     <Input
                       id="event_date"
                       type="date"
+                      min={getTodayDate()}
                       value={formData.event_date}
                       onChange={(e) => handleInputChange("event_date", e.target.value)}
                       className="mt-1 bg-white/5 border-white/10 text-white focus:border-blue-500/50"
@@ -731,6 +814,7 @@ const HostEvent = () => {
                 <Input
                   id="dialog-date"
                   type="date"
+                  min={getTodayDate()}
                   value={formData.event_date}
                   onChange={(e) => handleInputChange("event_date", e.target.value)}
                   className="mt-1 bg-white/5 border-white/10 text-white"

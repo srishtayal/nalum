@@ -4,6 +4,7 @@ const eventController = require("../../controllers/admin/event.controller");
 const { protectAdmin } = require("../../middleware/adminAuth");
 const Settings = require("../../models/admin/settings.model");
 const Event = require("../../models/admin/event.model");
+const uploadEventImage = require("../../config/eventImage.multer");
 
 // All routes are protected (admin only)
 router.get("/all", protectAdmin, eventController.getAllEvents);
@@ -14,7 +15,7 @@ router.post("/reject/:eventId", protectAdmin, eventController.rejectEvent);
 router.delete("/:eventId", protectAdmin, eventController.deleteEvent);
 
 // Create event as admin (auto-approved)
-router.post("/create", protectAdmin, async (req, res) => {
+router.post("/create", protectAdmin, uploadEventImage.single("event_image"), async (req, res) => {
   try {
     const {
       title,
@@ -30,6 +31,22 @@ router.post("/create", protectAdmin, async (req, res) => {
       creator_email,
     } = req.body;
 
+    // Parse contact_info if it's a string
+    let parsedContactInfo = contact_info;
+    if (typeof contact_info === 'string') {
+      try {
+        parsedContactInfo = JSON.parse(contact_info);
+      } catch (e) {
+        parsedContactInfo = contact_info;
+      }
+    }
+
+    // Handle image upload
+    let image_url = "";
+    if (req.file) {
+      image_url = `/uploads/event-images/${req.file.filename}`;
+    }
+
     const event = new Event({
       title,
       description,
@@ -37,9 +54,10 @@ router.post("/create", protectAdmin, async (req, res) => {
       event_time,
       location,
       event_type,
+      image_url,
       registration_link,
       max_participants,
-      contact_info,
+      contact_info: parsedContactInfo,
       creator_name,
       creator_email,
       created_by: req.admin._id, // Admin who created it

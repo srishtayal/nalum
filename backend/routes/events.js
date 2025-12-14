@@ -3,6 +3,9 @@ const router = express.Router();
 const Event = require("../models/admin/event.model");
 const Settings = require("../models/admin/settings.model");
 const { protect } = require("../middleware/auth");
+const uploadEventImage = require("../config/eventImage.multer");
+const fs = require("fs");
+const path = require("path");
 
 // Check if event hosting is allowed
 router.get("/hosting-allowed", async (req, res) => {
@@ -25,7 +28,7 @@ router.get("/hosting-allowed", async (req, res) => {
 });
 
 // Create a new event (Alumni only)
-router.post("/create", protect, async (req, res) => {
+router.post("/create", protect, uploadEventImage.single("event_image"), async (req, res) => {
   try {
     // Check if hosting is allowed
     const hostingSetting = await Settings.findOne({ key: "allow_event_hosting" });
@@ -61,11 +64,26 @@ router.post("/create", protect, async (req, res) => {
       event_time,
       location,
       event_type,
-      image_url,
       registration_link,
       max_participants,
       contact_info,
     } = req.body;
+
+    // Parse contact_info if it's a string
+    let parsedContactInfo = contact_info;
+    if (typeof contact_info === 'string') {
+      try {
+        parsedContactInfo = JSON.parse(contact_info);
+      } catch (e) {
+        parsedContactInfo = contact_info;
+      }
+    }
+
+    // Handle image upload
+    let image_url = "";
+    if (req.file) {
+      image_url = `/uploads/event-images/${req.file.filename}`;
+    }
 
     const event = new Event({
       title,
@@ -77,7 +95,7 @@ router.post("/create", protect, async (req, res) => {
       image_url,
       registration_link,
       max_participants,
-      contact_info,
+      contact_info: parsedContactInfo,
       created_by: userId,
       creator_name: user.name,
       creator_email: user.email,
@@ -105,21 +123,29 @@ router.get("/approved", async (req, res) => {
   try {
     const { page = 1, limit = 9, event_type } = req.query;
 
+    // Get today's date at start of day (local timezone)
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
     const query = {
       status: "approved",
       is_active: true,
-      event_date: { $gte: new Date() }, // Only future events
+      event_date: { $gte: today }, // Events from today onwards
     };
 
     if (event_type && event_type !== "all") {
       query.event_type = event_type;
     }
 
+    console.log("Fetching events with query:", JSON.stringify(query));
+
     const events = await Event.find(query)
       .sort({ event_date: 1 }) // Upcoming events first
       .skip((page - 1) * limit)
       .limit(parseInt(limit))
       .select("-liked_by"); // Don't send full liked_by array
+
+    console.log(`Found ${events.length} events`);
 
     const total = await Event.countDocuments(query);
 
@@ -147,10 +173,14 @@ router.get("/most-liked", async (req, res) => {
   try {
     const { limit = 5 } = req.query;
 
+    // Get today's date at midnight
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
     const events = await Event.find({
       status: "approved",
       is_active: true,
-      event_date: { $gte: new Date() },
+      event_date: { $gte: today },
     })
       .sort({ likes: -1, event_date: 1 })
       .limit(parseInt(limit))
@@ -261,7 +291,7 @@ router.get("/my/events", protect, async (req, res) => {
 });
 
 // Update event (Owner only)
-router.put("/update/:eventId", protect, async (req, res) => {
+router.put("/update/:eventId", protect, uploadEventImage.single("event_image"), async (req, res) => {
   try {
     // Check if hosting is allowed
     const hostingSetting = await Settings.findOne({ key: "allow_event_hosting" });
@@ -299,11 +329,32 @@ router.put("/update/:eventId", protect, async (req, res) => {
       event_time,
       location,
       event_type,
-      image_url,
       registration_link,
       max_participants,
       contact_info,
     } = req.body;
+
+    // Parse contact_info if it's a string
+    let parsedContactInfo = contact_info;
+    if (typeof contact_info === 'string') {
+      try {
+        parsedContactInfo = JSON.parse(contact_info);
+      } catch (e) {
+        parsedContactInfo = contact_info;
+      }
+    }
+
+    // Handle new image upload
+    if (req.file) {
+      // Delete old image if exists
+      if (event.image_url) {
+        const oldImagePath = path.join(__dirname, "..", event.image_url);
+        if (fs.existsSync(oldImagePath)) {
+          fs.unlinkSync(oldImagePath);
+        }
+      }
+      event.image_url = `/uploads/event-images/${req.file.filename}`;
+    }
 
     // Update fields
     event.title = title;
@@ -312,10 +363,9 @@ router.put("/update/:eventId", protect, async (req, res) => {
     event.event_time = event_time;
     event.location = location;
     event.event_type = event_type;
-    event.image_url = image_url;
     event.registration_link = registration_link;
     event.max_participants = max_participants;
-    event.contact_info = contact_info;
+    event.contact_info = parsedContactInfo;
 
     // If event was approved, set back to pending for re-approval
     if (event.status === "approved") {

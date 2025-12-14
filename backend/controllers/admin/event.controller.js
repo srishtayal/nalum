@@ -93,9 +93,18 @@ exports.approveEvent = async (req, res) => {
 
     // Update event status
     event.status = "approved";
+    event.is_active = true;
     event.reviewed_by = req.admin.email;
     event.reviewed_at = new Date();
     await event.save();
+
+    console.log("Event approved:", {
+      eventId: event._id,
+      title: event.title,
+      status: event.status,
+      is_active: event.is_active,
+      event_date: event.event_date
+    });
 
     // Log activity
     await logAdminActivity(
