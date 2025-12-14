@@ -17,7 +17,9 @@ import {
   Loader2,
   Mail,
   UserPlus,
+  MessageSquare,
 } from "lucide-react";
+import { useConversations } from "@/hooks/useConversations";
 import { useAuth } from "@/context/AuthContext";
 import api from "@/lib/api";
 import UserAvatar from "@/components/UserAvatar";
@@ -57,6 +59,17 @@ const ViewProfile = () => {
   const { userId } = useParams<{ userId: string }>();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const { createConversation } = useConversations();
+
+  const handleMessage = async () => {
+    if (!profile) return;
+    try {
+      const conversation = await createConversation.mutateAsync(profile.user._id);
+      navigate("/dashboard/chat", { state: { conversation } });
+    } catch (error) {
+      console.error("Failed to start conversation:", error);
+    }
+  };
 
   const handleConnect = async (recipientId: string) => {
     try {
@@ -214,12 +227,16 @@ const ViewProfile = () => {
                     </Button>
                   ) : profile.connectionStatus === "accepted" ? (
                     <Button
-                      size="default"
-                      variant="ghost"
-                      disabled
-                      className="text-green-400 bg-green-500/10 cursor-not-allowed"
+                      onClick={handleMessage}
+                      className="bg-blue-600 hover:bg-blue-700 text-white"
+                      disabled={createConversation.isPending}
                     >
-                      Connected
+                      {createConversation.isPending ? (
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      ) : (
+                        <MessageSquare className="h-4 w-4 mr-2" />
+                      )}
+                      Message
                     </Button>
                   ) : profile.connectionStatus === "pending" ? (
                     <Button

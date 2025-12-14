@@ -41,7 +41,8 @@ exports.getConversations = async (req, res) => {
         const unreadCount = await Message.countDocuments({
           conversation: conv._id,
           sender: { $ne: userId },
-          'readBy.user': { $ne: userId }
+          'readBy.user': { $ne: userId },
+          deleted: { $ne: true } // Exclude deleted messages
         });
 
         // Attach profile pictures to participants

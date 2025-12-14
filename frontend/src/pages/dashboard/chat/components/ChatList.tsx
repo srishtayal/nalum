@@ -2,19 +2,20 @@ import { useState, useMemo } from "react";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
-import { Search, MessageSquare, UserPlus, Menu } from "lucide-react";
+import { Search, MessageSquare, UserPlus } from "lucide-react";
 import { useChatContext } from "@/context/ChatContext";
-import { useConversations } from "@/hooks/useConversations";
+// import { useConversations } from "@/hooks/useConversations";
 import { useAuth } from "@/context/AuthContext";
 import { format, isToday, isYesterday, isThisWeek } from "date-fns";
 import UserAvatar from "@/components/UserAvatar";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+// import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
-import Sidebar from "../../Sidebar";
+// import Sidebar from "../../Sidebar";
 
 interface ChatListProps {
   onSelectConversation: (conversation: any) => void;
   selectedConversation: any | null;
+  chats: any[];
 }
 
 const formatMessageDate = (dateString: string) => {
@@ -33,64 +34,20 @@ const formatMessageDate = (dateString: string) => {
  * It merges existing conversations with connections that don't have a conversation yet,
  * allowing users to start chatting immediately with any connection.
  */
-export const ChatList = ({ onSelectConversation, selectedConversation }: ChatListProps) => {
-  const { isConnected, connections } = useChatContext();
-  const { conversations, isLoading } = useConversations();
+export const ChatList = ({ onSelectConversation, selectedConversation, chats = [] }: ChatListProps) => {
+  const { isConnected } = useChatContext();
   const { user } = useAuth();
   const [searchQuery, setSearchQuery] = useState("");
-
-  // Filter for only accepted connections to show in the chat list
-  const acceptedConnections = useMemo(() =>
-    connections.filter((conn: any) => conn.status === 'accepted'),
-    [connections]);
 
   if (!user) {
     return <div className="p-4 text-center text-sm text-gray-400">Loading user data...</div>;
   }
 
-  // Create a map for O(1) lookup of existing conversations by participant ID
-  const conversationMap = useMemo(() =>
-    new Map(conversations.map((conv: any) => [conv.otherParticipant?._id, conv])),
-    [conversations]);
-
-  // Combine connections and conversations into a single list
-  const allChats = useMemo(() => {
-    return acceptedConnections.map((connection: any) => {
-      // Determine the other user (not the current user)
-      const currentUserId = user?.id || user?._id;
-      const otherUser = connection.requester._id === currentUserId
-        ? connection.recipient
-        : connection.requester;
-
-      const existingConversation = conversationMap.get(otherUser._id);
-
-      if (existingConversation) {
-        return existingConversation;
-      }
-
-      // Return connection as a "virtual" conversation
-      return {
-        _id: `connection-${connection._id}`,
-        isConnectionOnly: true,
-        connectionId: connection._id,
-        otherParticipant: otherUser,
-        lastMessage: null,
-        unreadCount: 0,
-        // Use connection creation date as fallback for sorting
-        updatedAt: connection.updatedAt || connection.createdAt
-      };
-    }).sort((a: any, b: any) => {
-      const dateA = new Date(a.lastMessage?.timestamp || a.lastMessage?.createdAt || a.updatedAt || 0).getTime();
-      const dateB = new Date(b.lastMessage?.timestamp || b.lastMessage?.createdAt || b.updatedAt || 0).getTime();
-      return dateB - dateA;
-    });
-  }, [acceptedConnections, conversationMap, user]);
-
   const filteredChats = useMemo(() =>
-    allChats.filter((chat: any) =>
+    chats.filter((chat: any) =>
       chat.otherParticipant?.name?.toLowerCase().includes(searchQuery.toLowerCase())
     ),
-    [allChats, searchQuery]);
+    [chats, searchQuery]);
 
   return (
     <div className="w-full h-full flex flex-col bg-transparent">
@@ -98,16 +55,6 @@ export const ChatList = ({ onSelectConversation, selectedConversation }: ChatLis
       <div className="p-3 border-b border-white/10 space-y-3 bg-black/20">
         <div className="flex items-center justify-between">
           <h2 className="text-lg font-semibold text-gray-100 flex items-center gap-2">
-            <Sheet>
-              <SheetTrigger asChild>
-                <Button variant="ghost" size="icon" className="md:hidden -ml-2 h-8 w-8 text-gray-400 hover:text-white">
-                  <Menu className="h-5 w-5" />
-                </Button>
-              </SheetTrigger>
-              <SheetContent side="left" className="p-0 bg-transparent border-none w-72">
-                <Sidebar />
-              </SheetContent>
-            </Sheet>
             Messages
           </h2>
           <div className="flex items-center gap-2">
@@ -133,7 +80,7 @@ export const ChatList = ({ onSelectConversation, selectedConversation }: ChatLis
 
       {/* Chat List Area */}
       <ScrollArea className="flex-1">
-        {isLoading ? (
+        {false ? ( // isLoading removed from props for now
           <div className="p-4 text-center text-sm text-gray-400">Loading chats...</div>
         ) : filteredChats.length === 0 ? (
           <div className="p-8 text-center text-gray-500 space-y-2">

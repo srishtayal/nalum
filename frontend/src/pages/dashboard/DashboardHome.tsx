@@ -34,7 +34,7 @@ const DashboardHome = () => {
       </div>
 
       {/* People You Might Know Section */}
-      <div className="w-full">
+      <div className="w-full hidden md:block">
         <PeopleYouMightKnow />
       </div>
     </div>

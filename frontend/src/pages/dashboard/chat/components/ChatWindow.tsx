@@ -115,18 +115,19 @@ export const ChatWindow = ({ conversation, onBack }: ChatWindowProps) => {
 
   const markAsRead = useCallback(() => {
     if (activeConversationId && socket && isConnected) {
-      // Only mark as read if the document is visible and focused
-      if (document.visibilityState === 'visible' && document.hasFocus()) {
-        socket.emit('message:read', { conversationId: activeConversationId });
+      // Optimistically update conversations list to show as read (gray)
+      queryClient.setQueryData(["conversations"], (old: any[]) => {
+        if (!old) return old;
+        return old.map((c: any) =>
+          c._id === activeConversationId ? { ...c, unreadCount: 0 } : c
+        );
+      });
 
-        // Optimistically update conversations list to show as read (gray)
-        queryClient.setQueryData(["conversations"], (old: any[]) => {
-          if (!old) return old;
-          return old.map((c: any) =>
-            c._id === activeConversationId ? { ...c, unreadCount: 0 } : c
-          );
-        });
-      }
+      // Emit with callback to ensure server has processed it before we refetch
+      socket.emit('message:read', { conversationId: activeConversationId }, (response: any) => {
+        // Force a refetch to ensure server state is synced ONLY after server confirms
+        queryClient.invalidateQueries({ queryKey: ["conversations"] });
+      });
     }
   }, [activeConversationId, socket, isConnected, queryClient]);
 

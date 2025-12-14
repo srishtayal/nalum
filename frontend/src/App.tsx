@@ -164,6 +164,10 @@ function AppContent() {
   );
 }
 
+import { ChatProvider } from "@/context/ChatContext";
+
+// ... (existing imports)
+
 function App() {
   useEffect(() => {
     // Start keep-alive when app mounts
@@ -178,7 +182,9 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
-        <AppContent />
+        <ChatProvider>
+          <AppContent />
+        </ChatProvider>
       </AuthProvider>
     </QueryClientProvider>
   );

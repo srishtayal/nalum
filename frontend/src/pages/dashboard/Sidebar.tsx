@@ -5,6 +5,7 @@ import { useProfile } from "@/context/ProfileContext";
 import { cn } from "@/lib/utils";
 import UserAvatar from "@/components/UserAvatar";
 import nsutLogo from "@/assets/nsut-logo.svg";
+import { useConversations } from "@/hooks/useConversations"; // Restored import
 
 interface SidebarProps {
   onNavigate?: () => void;
@@ -14,6 +15,11 @@ const Sidebar = ({ onNavigate }: SidebarProps) => {
   const { logout } = useAuth();
   const location = useLocation();
   const { profile } = useProfile();
+  const { conversations } = useConversations(); // Restored hook usage
+
+  // Calculate total unread count
+  // Calculate total unread count
+  const unreadCount = conversations.reduce((acc: number, conv: any) => acc + (conv.unreadCount || 0), 0);
 
   // Always collapse sidebar
   const isCollapsed = true;
@@ -39,6 +45,7 @@ const Sidebar = ({ onNavigate }: SidebarProps) => {
       to: "/dashboard/chat",
       icon: MessageSquare,
       label: "Messages",
+      hasBadge: true, // Restored flag
     },
   ];
 
@@ -82,10 +89,20 @@ const Sidebar = ({ onNavigate }: SidebarProps) => {
             )}
             title={isCollapsed ? item.label : undefined}
           >
-            <item.icon className={cn(
-              "h-5 w-5 transition-colors flex-shrink-0",
-              isActive(item.to, item.exact) ? "text-blue-300" : "text-gray-500 group-hover:text-white"
-            )} />
+            <div className="relative">
+              <item.icon className={cn(
+                "h-5 w-5 transition-colors flex-shrink-0",
+                isActive(item.to, item.exact) ? "text-blue-300" : "text-gray-500 group-hover:text-white"
+              )} />
+              {/* Notification Dot */}
+              {/* Notification Dot */}
+              {item.hasBadge && unreadCount > 0 && (
+                <span className={cn(
+                  "absolute -top-1 -right-1 h-2.5 w-2.5 rounded-full bg-blue-500 border-2 border-slate-900",
+                  "animate-in zoom-in duration-300"
+                )} />
+              )}
+            </div>
             <span className={cn(
               "font-medium transition-all duration-300 ease-in-out",
               isCollapsed ? "opacity-0 max-w-0 overflow-hidden" : "opacity-100 max-w-full"

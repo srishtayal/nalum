@@ -111,8 +111,11 @@ async function initializeSocket(server) {
       });
 
       // Message read receipt
-      socket.on('message:read', async (data) => {
+      socket.on('message:read', async (data, callback) => {
         await messageHandlers.handleMessageRead(io, socket, data);
+        if (typeof callback === 'function') {
+          callback({ success: true });
+        }
       });
 
       // Message deletion

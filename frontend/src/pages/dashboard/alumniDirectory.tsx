@@ -24,6 +24,7 @@ import { AlumniCard } from "@/components/alumni/AlumniCard";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { SmartPagination } from "@/components/ui/pagination";
 import { BRANCHES, CAMPUSES } from "@/constants/branches";
+import PeopleYouMightKnow from "./PeopleYouMightKnow";
 
 const AlumniDirectory = () => {
   const navigate = useNavigate();
@@ -89,10 +90,10 @@ const AlumniDirectory = () => {
                   <Button
                     onClick={() => setShowFilters(!showFilters)}
                     variant="outline"
-                    className="gap-2 border-white/10 bg-white/5 text-gray-300 hover:bg-white/10 hover:text-white"
+                    size="icon"
+                    className="border-white/10 bg-white/5 text-gray-300 hover:bg-white/10 hover:text-white shrink-0 w-10 h-10 relative"
                   >
                     <Filter className="h-4 w-4" />
-                    Filters
                     {(filters.batch ||
                       filters.branch ||
                       filters.campus ||
@@ -100,42 +101,25 @@ const AlumniDirectory = () => {
                       filters.connectionFilter !== "all" ||
                       filters.roleFilter !== "all" ||
                       filters.skills.length > 0) && (
-                      <Badge
-                        variant="secondary"
-                        className="ml-1 bg-blue-500/20 text-blue-300"
-                      >
-                        {
-                          [
-                            filters.batch,
-                            filters.branch,
-                            filters.campus,
-                            filters.company,
-                            filters.connectionFilter !== "all"
-                              ? "connection"
-                              : "",
-                            filters.roleFilter !== "all" ? "role" : "",
-                            ...filters.skills,
-                          ].filter(Boolean).length
-                        }
-                      </Badge>
-                    )}
+                        <div className="absolute -top-1 -right-1 h-3 w-3 bg-blue-500 rounded-full border-2 border-slate-900" />
+                      )}
                   </Button>
                   {showClearButton ? (
                     <Button
                       onClick={handleClearResults}
                       variant="outline"
-                      className="gap-2 border-red-500/30 text-red-400 hover:bg-red-500/10 hover:text-red-300 bg-transparent"
+                      size="icon"
+                      className="border-red-500/30 text-red-400 hover:bg-red-500/10 hover:text-red-300 bg-transparent shrink-0 w-10 h-10"
                     >
                       <X className="h-4 w-4" />
-                      Clear Results
                     </Button>
                   ) : (
                     <Button
                       onClick={handleSearch}
-                      className="gap-2 bg-blue-600 hover:bg-blue-500 text-white"
+                      size="icon"
+                      className="bg-blue-600 hover:bg-blue-500 text-white shrink-0 w-10 h-10"
                     >
                       <Search className="h-4 w-4" />
-                      Search
                     </Button>
                   )}
                 </div>
@@ -425,25 +409,35 @@ const AlumniDirectory = () => {
               title="Searching alumni..."
             />
           ) : !hasSearched ? (
-            <EmptyState
-              icon={
-                <GraduationCap className="h-20 w-20 text-blue-500/30 mx-auto" />
-              }
-              title="Ready to Connect? 🎓"
-              description="Use the search bar and filters above to find alumni"
-            />
+            <>
+              {/* Mobile: Show People You Might Know */}
+              <div className="md:hidden">
+                <PeopleYouMightKnow />
+              </div>
+
+              {/* Desktop: Show Empty State */}
+              <div className="hidden md:block">
+                <EmptyState
+                  icon={
+                    <GraduationCap className="h-20 w-20 text-blue-500/30 mx-auto" />
+                  }
+                  title="Ready to Connect? 🎓"
+                  description="Use the search bar and filters above to find alumni"
+                />
+              </div>
+            </>
           ) : alumni.length === 0 ? (
             <EmptyState
-              icon="🔍"
-              title="Oops! No Alumni Found"
-              description="We couldn't find anyone matching these criteria"
+              icon={<GraduationCap className="h-12 w-12 text-gray-400 mx-auto" />}
+              title="People You Might Know"
+              description="Start connecting with alumni to expand your network"
               action={
                 <Button
-                  onClick={handleClearResults}
+                  onClick={() => handleSearch()} // Maybe trigger a broader search or just remove
                   variant="outline"
-                  className="border-blue-500/50 text-blue-400 hover:bg-blue-500/10 hover:text-blue-300 bg-transparent"
+                  className="mt-4"
                 >
-                  Clear All Filters
+                  Browse Directory
                 </Button>
               }
             />

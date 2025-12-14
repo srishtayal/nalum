@@ -1,10 +1,13 @@
-import { useState } from "react";
-import { ChatProvider } from "@/context/ChatContext";
+import { useState, useEffect, useMemo } from "react";
+import { useLocation } from "react-router-dom";
+
 import { ChatList } from "./components/ChatList";
 import { ChatWindow } from "./components/ChatWindow";
 
 import { Button } from "@/components/ui/button";
 import { MessageSquare } from "lucide-react";
+
+import { useMergedChats } from "@/hooks/useMergedChats";
 
 /**
  * ChatPageContent Component
@@ -17,7 +20,34 @@ import { MessageSquare } from "lucide-react";
  * - Right Area: ChatWindow (active conversation) or placeholder.
  */
 const ChatPageContent = () => {
-  const [selectedConversation, setSelectedConversation] = useState<any>(null);
+  const [selectedChatId, setSelectedChatId] = useState<string | null>(null);
+  const location = useLocation();
+  const { allChats } = useMergedChats();
+
+  const selectedConversation = useMemo(() =>
+    allChats.find((c: any) => c._id === selectedChatId) || null,
+    [allChats, selectedChatId]
+  );
+
+  useEffect(() => {
+    if (location.state?.conversation) {
+      // If passing a conversation object, we can extract ID to select it
+      // Ideally the object fits the shape in allChats.
+      // If it is a newly created conversation, it might have a real _id.
+      // If it comes from viewProfile, it is the result of createConversation.
+      const conv = location.state.conversation;
+      // We need to ensure we select the item that corresponds to this conversation.
+      // If allChats has updated, we find it there.
+      // If allChats hasn't updated yet, we might have an issue, but usually cache invalidation happens fast.
+      // However, if we just rely on ID, we are safe once allChats updates.
+      if (conv._id) {
+        setSelectedChatId(conv._id);
+      }
+
+      // Clear state so it doesn't persist if we navigate away and back without intent
+      window.history.replaceState({}, document.title);
+    }
+  }, [location.state]);
 
 
   return (
@@ -31,8 +61,9 @@ const ChatPageContent = () => {
               <div className="h-full flex flex-col">
                 <div className="flex-1 mt-0 overflow-hidden min-h-0">
                   <ChatList
-                    onSelectConversation={setSelectedConversation}
+                    onSelectConversation={(chat: any) => setSelectedChatId(chat._id)}
                     selectedConversation={selectedConversation}
+                    chats={allChats}
                   />
                 </div>
               </div>
@@ -45,7 +76,7 @@ const ChatPageContent = () => {
               {selectedConversation ? (
                 <ChatWindow
                   conversation={selectedConversation}
-                  onBack={() => setSelectedConversation(null)}
+                  onBack={() => setSelectedChatId(null)}
                 />
               ) : (
                 <div className="h-full flex items-center justify-center">
@@ -68,8 +99,6 @@ const ChatPageContent = () => {
 
 export const ChatPage = () => {
   return (
-    <ChatProvider>
-      <ChatPageContent />
-    </ChatProvider>
+    <ChatPageContent />
   );
 };

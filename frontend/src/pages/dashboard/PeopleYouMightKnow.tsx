@@ -111,7 +111,7 @@ const PeopleYouMightKnow = () => {
   }
 
   return (
-    <div className="rounded-xl border border-white/10 bg-white/5 p-4 backdrop-blur-md w-full max-w-xs ml-auto">
+    <div className="rounded-xl border border-white/10 bg-white/5 p-4 backdrop-blur-md w-full md:max-w-xs md:ml-auto">
       <div className="flex items-center justify-between mb-3">
         <h3 className="text-lg font-semibold text-white">
           People you might know
