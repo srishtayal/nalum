@@ -13,10 +13,8 @@ import {
 import {
   ShieldCheck,
   Mail,
-  Database,
   UserCheck,
   CheckCircle,
-  XCircle,
   Loader2,
 } from "lucide-react";
 import { toast } from "sonner";
@@ -42,9 +40,9 @@ interface ApiErrorResponse {
 }
 
 const VerifyAlumni = () => {
-  const { accessToken } = useAuth();
+  const { accessToken, refreshUser } = useAuth();
   const [activeMethod, setActiveMethod] = useState<
-    "code" | "database" | "manual" | null
+    "code" | "manual" | null
   >(null);
   const [isLoading, setIsLoading] = useState(false);
   const [verificationStatus, setVerificationStatus] = useState<
@@ -55,22 +53,19 @@ const VerifyAlumni = () => {
   // Code verification state
   const [verificationCode, setVerificationCode] = useState("");
 
-  // Database verification state
-  const [dbName, setDbName] = useState("");
-  const [dbRollNo, setDbRollNo] = useState("");
-  const [dbBatch, setDbBatch] = useState("");
-  const [dbBranch, setDbBranch] = useState("");
-  const [matches, setMatches] = useState<VerificationMatch[]>([]);
-  const [selectedMatch, setSelectedMatch] = useState<string | null>(null);
-
   // Manual verification state
   const [manualName, setManualName] = useState("");
   const [manualRollNo, setManualRollNo] = useState("");
   const [manualBatch, setManualBatch] = useState("");
   const [manualBranch, setManualBranch] = useState("");
   const [manualSubmitted, setManualSubmitted] = useState(false);
+  
+  // Contact info state
+  const [contactPhone, setContactPhone] = useState("");
+  const [contactEmail, setContactEmail] = useState("");
+  const [contactLinkedIn, setContactLinkedIn] = useState("");
 
-  // Check verification status on mount
+  // Check verification status on mount and poll every 5 seconds
   useEffect(() => {
     const checkStatus = async () => {
       try {
@@ -80,18 +75,34 @@ const VerifyAlumni = () => {
           },
         });
         setVerificationStatus(response.data);
+        
+        // If verified, show success toast and refresh auth context (only once)
+        if (response.data.verified_alumni && !verificationStatus?.verified_alumni) {
+          toast.success("🎉 You have been verified as an alumni!");
+          // Refresh the user data in AuthContext to update verified status everywhere
+          await refreshUser();
+        }
       } catch (error) {
         console.error("Error checking verification status:", error);
-        toast.error("Failed to check verification status");
+        if (isCheckingStatus) {
+          toast.error("Failed to check verification status");
+        }
       } finally {
         setIsCheckingStatus(false);
       }
     };
 
     if (accessToken) {
+      // Initial check
       checkStatus();
+      
+      // Poll every 5 seconds for verification status updates
+      const pollInterval = setInterval(checkStatus, 5000);
+      
+      // Cleanup on unmount
+      return () => clearInterval(pollInterval);
     }
-  }, [accessToken]);
+  }, [accessToken, verificationStatus?.verified_alumni, isCheckingStatus, refreshUser]);
 
   // Method 1: Code Verification
   const handleCodeVerification = async () => {
@@ -127,92 +138,7 @@ const VerifyAlumni = () => {
     }
   };
 
-  // Method 2: Database Verification
-  const handleDatabaseCheck = async () => {
-    if (!dbName.trim() || !dbBatch.trim() || !dbBranch) {
-      toast.error("Please fill in all required fields");
-      return;
-    }
-
-    setIsLoading(true);
-    setMatches([]);
-    setSelectedMatch(null);
-
-    try {
-      const response = await api.post(
-        "/alumni/check-manual",
-        {
-          name: dbName,
-          roll_no: dbRollNo,
-          batch: dbBatch,
-          branch: dbBranch,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
-        }
-      );
-
-      if (response.data.success) {
-        const foundMatches = response.data.matches || [];
-
-        if (foundMatches.length > 0) {
-          setMatches(foundMatches);
-          toast.success(`Found ${foundMatches.length} potential match(es)!`);
-        } else {
-          toast.info(
-            "No exact matches found. Your request has been sent to admins for manual verification."
-          );
-          setManualSubmitted(true);
-          setActiveMethod("manual");
-        }
-      }
-    } catch (error) {
-      const axiosError = error as AxiosError<ApiErrorResponse>;
-      const message =
-        axiosError.response?.data?.message || "Database check failed";
-      toast.error(message);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleConfirmMatch = async () => {
-    if (!selectedMatch) {
-      toast.error("Please select a match to confirm");
-      return;
-    }
-
-    setIsLoading(true);
-    try {
-      const response = await api.post(
-        "/alumni/confirm-match",
-        { roll_no: selectedMatch },
-        {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
-        }
-      );
-
-      if (response.data.success) {
-        toast.success("🎉 Alumni status verified successfully!");
-        setVerificationStatus({ verified_alumni: true });
-        setMatches([]);
-        setSelectedMatch(null);
-      }
-    } catch (error) {
-      const axiosError = error as AxiosError<ApiErrorResponse>;
-      const message =
-        axiosError.response?.data?.message || "Confirmation failed";
-      toast.error(message);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  // Method 3: Manual Verification (Admin Review)
+  // Method 2: Manual Verification (Admin Review)
   const handleManualSubmit = async () => {
     if (!manualName.trim() || !manualBatch.trim() || !manualBranch) {
       toast.error("Please fill in all required fields");
@@ -228,6 +154,11 @@ const VerifyAlumni = () => {
           roll_no: manualRollNo,
           batch: manualBatch,
           branch: manualBranch,
+          contact_info: {
+            phone: contactPhone,
+            alternate_email: contactEmail,
+            linkedin: contactLinkedIn,
+          },
         },
         {
           headers: {
@@ -246,6 +177,9 @@ const VerifyAlumni = () => {
         setManualRollNo("");
         setManualBatch("");
         setManualBranch("");
+        setContactPhone("");
+        setContactEmail("");
+        setContactLinkedIn("");
       }
     } catch (error) {
       const axiosError = error as AxiosError<ApiErrorResponse>;
@@ -310,7 +244,7 @@ const VerifyAlumni = () => {
           </div>
 
           {/* Verification Methods */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8 max-w-3xl mx-auto">
             {/* Method 1: Code Verification */}
             <Card
               className={`p-6 cursor-pointer transition-all border-2 ${
@@ -329,23 +263,7 @@ const VerifyAlumni = () => {
               </p>
             </Card>
 
-            {/* Method 2: Database Check */}
-            <Card
-              className={`p-6 cursor-pointer transition-all border-2 ${
-                activeMethod === "database"
-                  ? "border-nsut-maroon bg-nsut-maroon/5"
-                  : "border-gray-200 hover:border-nsut-maroon/50"
-              }`}
-              onClick={() => setActiveMethod("database")}
-            >
-              <Database className="h-10 w-10 text-nsut-maroon mb-3" />
-              <h3 className="font-bold text-gray-900 mb-2">Database Check</h3>
-              <p className="text-sm text-gray-600">
-                Verify against college alumni database
-              </p>
-            </Card>
-
-            {/* Method 3: Manual Verification */}
+            {/* Method 2: Manual Verification */}
             <Card
               className={`p-6 cursor-pointer transition-all border-2 ${
                 activeMethod === "manual"
@@ -404,155 +322,6 @@ const VerifyAlumni = () => {
                       )}
                     </Button>
                   </div>
-                </div>
-              )}
-
-              {/* Database Check Form */}
-              {activeMethod === "database" && (
-                <div>
-                  <h3 className="text-xl font-bold text-gray-900 mb-4">
-                    Database Verification
-                  </h3>
-                  <p className="text-sm text-gray-600 mb-6">
-                    Enter your details to check against the college alumni
-                    database.
-                  </p>
-
-                  {matches.length === 0 ? (
-                    <div className="space-y-4">
-                      <div>
-                        <Label htmlFor="db-name">Full Name *</Label>
-                        <Input
-                          id="db-name"
-                          placeholder="Enter your full name"
-                          value={dbName}
-                          onChange={(e) => setDbName(e.target.value)}
-                        />
-                      </div>
-
-                      <div>
-                        <Label htmlFor="db-roll">Roll Number (Optional)</Label>
-                        <Input
-                          id="db-roll"
-                          placeholder="Enter your roll number"
-                          value={dbRollNo}
-                          onChange={(e) => setDbRollNo(e.target.value)}
-                        />
-                      </div>
-
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                          <Label htmlFor="db-batch">Batch/Year *</Label>
-                          <Input
-                            id="db-batch"
-                            placeholder="e.g., 2020"
-                            value={dbBatch}
-                            onChange={(e) => setDbBatch(e.target.value)}
-                          />
-                        </div>
-
-                        <div>
-                          <Label htmlFor="db-branch">Branch *</Label>
-                          <Select value={dbBranch} onValueChange={setDbBranch}>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Select branch" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {BRANCHES.map((branch) => (
-                                <SelectItem key={branch} value={branch}>
-                                  {branch}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        </div>
-                      </div>
-
-                      <Button
-                        onClick={handleDatabaseCheck}
-                        disabled={isLoading}
-                        className="w-full bg-nsut-maroon hover:bg-nsut-maroon/90"
-                      >
-                        {isLoading ? (
-                          <>
-                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                            Checking Database...
-                          </>
-                        ) : (
-                          "Check Database"
-                        )}
-                      </Button>
-                    </div>
-                  ) : (
-                    <div className="space-y-4">
-                      <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-                        <p className="text-sm text-green-800 font-medium">
-                          Found {matches.length} potential match(es). Please
-                          select your record:
-                        </p>
-                      </div>
-
-                      <div className="space-y-3">
-                        {matches.map((match, index) => (
-                          <div
-                            key={index}
-                            className={`border-2 rounded-lg p-4 cursor-pointer transition-all ${
-                              selectedMatch === match.roll_no
-                                ? "border-nsut-maroon bg-nsut-maroon/5"
-                                : "border-gray-200 hover:border-nsut-maroon/50"
-                            }`}
-                            onClick={() => setSelectedMatch(match.roll_no)}
-                          >
-                            <div className="flex items-start justify-between">
-                              <div>
-                                <p className="font-semibold text-gray-900">
-                                  {match.name}
-                                </p>
-                                <p className="text-sm text-gray-600">
-                                  Roll No: {match.roll_no}
-                                </p>
-                                <p className="text-sm text-gray-600">
-                                  {match.branch} • Batch {match.batch}
-                                </p>
-                              </div>
-                              {match.similarity && (
-                                <span className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded">
-                                  {(match.similarity * 100).toFixed(0)}% match
-                                </span>
-                              )}
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-
-                      <div className="flex gap-3">
-                        <Button
-                          onClick={handleConfirmMatch}
-                          disabled={!selectedMatch || isLoading}
-                          className="flex-1 bg-nsut-maroon hover:bg-nsut-maroon/90"
-                        >
-                          {isLoading ? (
-                            <>
-                              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                              Confirming...
-                            </>
-                          ) : (
-                            "Confirm Selection"
-                          )}
-                        </Button>
-                        <Button
-                          onClick={() => {
-                            setMatches([]);
-                            setSelectedMatch(null);
-                          }}
-                          variant="outline"
-                          className="flex-1"
-                        >
-                          Try Again
-                        </Button>
-                      </div>
-                    </div>
-                  )}
                 </div>
               )}
 
@@ -642,6 +411,51 @@ const VerifyAlumni = () => {
                           </div>
                         </div>
 
+                        {/* Contact Information Section */}
+                        <div className="border-t border-gray-200 pt-6 mt-6">
+                          <h4 className="font-semibold text-gray-900 mb-3">
+                            Contact Information
+                          </h4>
+                          <p className="text-sm text-gray-600 mb-4">
+                            Provide contact details so admins can reach you if needed
+                          </p>
+
+                          <div className="space-y-4">
+                            <div>
+                              <Label htmlFor="contact-phone">Phone Number</Label>
+                              <Input
+                                id="contact-phone"
+                                type="tel"
+                                placeholder="e.g., +91 9876543210"
+                                value={contactPhone}
+                                onChange={(e) => setContactPhone(e.target.value)}
+                              />
+                            </div>
+
+                            <div>
+                              <Label htmlFor="contact-email">Alternate Email</Label>
+                              <Input
+                                id="contact-email"
+                                type="email"
+                                placeholder="e.g., personal@gmail.com"
+                                value={contactEmail}
+                                onChange={(e) => setContactEmail(e.target.value)}
+                              />
+                            </div>
+
+                            <div>
+                              <Label htmlFor="contact-linkedin">LinkedIn Profile</Label>
+                              <Input
+                                id="contact-linkedin"
+                                type="url"
+                                placeholder="e.g., https://linkedin.com/in/yourprofile"
+                                value={contactLinkedIn}
+                                onChange={(e) => setContactLinkedIn(e.target.value)}
+                              />
+                            </div>
+                          </div>
+                        </div>
+
                         <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                           <p className="text-sm text-blue-800">
                             <strong>Note:</strong> Please ensure all information
@@ -681,11 +495,10 @@ const VerifyAlumni = () => {
                 for the 10-digit code
               </p>
               <p>
-                • <strong>Database Check:</strong> Use your official name and
-                details as registered with the college
+                • <strong>Manual Review:</strong> Submit your details and contact information for admin verification
               </p>
               <p>
-                • <strong>Manual Review:</strong> Contact admin@nsut.ac.in if
+                • <strong>Need Help?</strong> Contact admin@nsut.ac.in if
                 you face issues
               </p>
             </div>

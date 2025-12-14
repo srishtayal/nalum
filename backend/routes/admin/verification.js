@@ -8,5 +8,6 @@ router.get("/queue", protectAdmin, verificationController.getVerificationQueue);
 router.post("/approve/:userId", protectAdmin, verificationController.approveVerification);
 router.post("/reject/:userId", protectAdmin, verificationController.rejectVerification);
 router.get("/stats", protectAdmin, verificationController.getVerificationStats);
+router.post("/search-alumni-database", protectAdmin, verificationController.searchAlumniDatabase);
 
 module.exports = router;

@@ -1,5 +1,5 @@
 import { Link, useLocation } from "react-router-dom";
-import { Home, Edit2, Users, LogOut, MessageSquare } from "lucide-react";
+import { Home, Edit2, Users, LogOut, MessageSquare, Calendar, Sparkles } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { useProfile } from "@/context/ProfileContext";
 import { cn } from "@/lib/utils";
@@ -11,7 +11,7 @@ interface SidebarProps {
 }
 
 const Sidebar = ({ onNavigate }: SidebarProps) => {
-  const { logout } = useAuth();
+  const { logout, user } = useAuth();
   const location = useLocation();
   const { profile } = useProfile();
 
@@ -40,6 +40,20 @@ const Sidebar = ({ onNavigate }: SidebarProps) => {
       icon: MessageSquare,
       label: "Messages",
     },
+    {
+      to: "/dashboard/events",
+      icon: Calendar,
+      label: "Events",
+    },
+    ...(user?.role === "alumni"
+      ? [
+          {
+            to: "/dashboard/host-event",
+            icon: Sparkles,
+            label: "Host Event",
+          },
+        ]
+      : []),
   ];
 
   const isActive = (path: string, exact = false) => {

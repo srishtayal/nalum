@@ -8,6 +8,7 @@ import {
   Ban,
   LogOut,
   Key,
+  Database,
 } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
 
@@ -34,6 +35,11 @@ const AdminSidebar = () => {
       name: "Verification Codes",
       path: "/admin-panel/codes",
       icon: Key,
+    },
+    {
+      name: "Alumni Database",
+      path: "/admin-panel/alumni-database",
+      icon: Database,
     },
     {
       name: "User Management",

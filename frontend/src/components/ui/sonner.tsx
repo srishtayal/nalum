@@ -14,16 +14,16 @@ const Toaster = ({ ...props }: ToasterProps) => {
       toastOptions={{
         classNames: {
           toast:
-            "group toast group-[.toaster]:bg-background group-[.toaster]:text-foreground group-[.toaster]:border-border group-[.toaster]:shadow-lg group-[.toaster]:rounded-xl",
-          description: "group-[.toast]:text-white group-[.toast]:text-sm",
+            "group toast group-[.toaster]:bg-gray-900/95 group-[.toaster]:text-white group-[.toaster]:border-white/10 group-[.toaster]:shadow-lg group-[.toaster]:rounded-xl group-[.toaster]:backdrop-blur-md",
+          description: "group-[.toast]:text-gray-300 group-[.toast]:text-sm",
           actionButton:
-            "group-[.toast]:bg-primary group-[.toast]:text-primary-foreground",
+            "group-[.toast]:bg-blue-500 group-[.toast]:text-white group-[.toast]:hover:bg-blue-600",
           cancelButton:
-            "group-[.toast]:bg-muted group-[.toast]:text-muted-foreground",
-          success: "group-[.toaster]:border-[#FFD700]",
-          error: "group-[.toaster]:border-[#FFD700]",
-          info: "group-[.toaster]:border-[#FFD700]",
-          warning: "group-[.toaster]:border-[#FFD700]",
+            "group-[.toast]:bg-gray-700 group-[.toast]:text-white group-[.toast]:hover:bg-gray-600",
+          success: "group-[.toaster]:border-green-500/30",
+          error: "group-[.toaster]:border-red-500/30",
+          info: "group-[.toaster]:border-blue-500/30",
+          warning: "group-[.toaster]:border-yellow-500/30",
         },
         style: {
           fontFamily: "ui-sans-serif, system-ui, sans-serif",
