@@ -25,6 +25,7 @@ router.get("/:userId", protect, async (req, res) => {
 
     // Add connection status
     let connectionStatus = "not_connected";
+    let blockedBy = null;
 
     // Check if viewing own profile
     const viewingOwnProfile = userId === req.user.user_id?.toString();
@@ -40,6 +41,7 @@ router.get("/:userId", protect, async (req, res) => {
 
       if (connection) {
         connectionStatus = connection.status; // 'pending', 'accepted', 'rejected', 'blocked'
+        blockedBy = connection.blockedBy;
       }
     } else if (viewingOwnProfile) {
       connectionStatus = "self"; // viewing own profile
@@ -48,6 +50,7 @@ router.get("/:userId", protect, async (req, res) => {
     // Add connectionStatus to profile response
     const profileData = profile.toObject();
     profileData.connectionStatus = connectionStatus;
+    profileData.blockedBy = blockedBy;
 
     res.status(200).json({ profile: profileData });
   } catch (err) {

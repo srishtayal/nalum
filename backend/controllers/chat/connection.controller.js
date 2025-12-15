@@ -53,6 +53,12 @@ exports.sendConnectionRequest = async (req, res) => {
       "name email profilePicture"
     );
 
+    // Emit socket event for real-time notification
+    const io = req.app.get("io");
+    if (io) {
+      io.to(`user:${recipientId}`).emit("connection_request", connection);
+    }
+
     res.status(201).json({
       message: "Connection request sent successfully",
       connection,
@@ -107,6 +113,7 @@ exports.respondToConnection = async (req, res) => {
       connection.status = "rejected";
     } else if (action === "block") {
       connection.status = "blocked";
+      connection.blockedBy = userId;
     }
     connection.respondedAt = new Date();
     await connection.save();
@@ -320,6 +327,7 @@ exports.blockUser = async (req, res) => {
     }
 
     connection.status = "blocked";
+    connection.blockedBy = userId;
     connection.respondedAt = new Date();
     await connection.save();
 
@@ -327,6 +335,44 @@ exports.blockUser = async (req, res) => {
   } catch (error) {
     console.error("Block user error:", error);
     res.status(500).json({ error: "Failed to block user" });
+  }
+};
+
+// Unblock user
+exports.unblockUser = async (req, res) => {
+  try {
+    const userId = req.user.user_id;
+    const { userId: targetUserId } = req.body;
+
+    if (!targetUserId) {
+      return res.status(400).json({ error: "Target User ID is required" });
+    }
+
+    // Find connection that is blocked
+    const connection = await Connection.findOne({
+      $or: [
+        { requester: userId, recipient: targetUserId, status: 'blocked' },
+        { requester: targetUserId, recipient: userId, status: 'blocked' }
+      ]
+    });
+
+    if (!connection) {
+      return res.status(404).json({ error: "Blocked connection not found" });
+    }
+
+    // Verify current user is the one who blocked
+    if (connection.blockedBy && connection.blockedBy.toString() !== userId.toString()) {
+      return res.status(403).json({ error: "You cannot unblock this user (they blocked you)" });
+    }
+
+    // Delete the connection entirely upon unblocking (clean slate)
+    await Connection.findByIdAndDelete(connection._id);
+
+    res.json({ message: "User unblocked successfully" });
+
+  } catch (error) {
+    console.error("Unblock user error:", error);
+    res.status(500).json({ error: "Failed to unblock user" });
   }
 };
 
@@ -353,6 +399,7 @@ exports.blockUserByUserId = async (req, res) => {
     }
 
     connection.status = "blocked";
+    connection.blockedBy = requesterId;
     connection.respondedAt = new Date();
     await connection.save();
 

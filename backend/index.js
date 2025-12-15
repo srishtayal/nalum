@@ -22,7 +22,7 @@ const redisConfig = require("./config/redis.config.js");
 const { initializeSocket } = require("./sockets/chatSocket.js");
 app.use(morgan("dev"));
 app.use(cors({
-  origin: ['https://nalum.vercel.app', 'http://localhost:8080', 'http://localhost:5173'],
+  origin: ['https://nalum.vercel.app', 'http://localhost:8080', 'http://localhost:5173', 'https://unseeing-malaya-unprejudicedly.ngrok-free.dev'],
   credentials: true,
 }));
 app.use(helmet({

@@ -44,6 +44,19 @@ export const ConnectionButton = ({
     );
   }
 
+  if (status === "blocked") {
+    return (
+      <Button
+        size={size}
+        variant="ghost"
+        disabled
+        className={`${baseClasses} text-red-400 bg-red-500/10`}
+      >
+        Unavailable
+      </Button>
+    );
+  }
+
   // Default: Connect button
   return (
     <Button

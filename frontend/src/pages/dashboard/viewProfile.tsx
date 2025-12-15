@@ -39,6 +39,7 @@ interface Profile {
   current_role?: string;
   profile_picture?: string;
   connectionStatus?: string;
+  blockedBy?: string;
   social_media?: {
     linkedin?: string;
     github?: string;
@@ -104,6 +105,27 @@ const ViewProfile = () => {
           },
         }
       );
+    }
+  };
+
+  const handleUnblock = async (recipientId: string) => {
+    try {
+      await api.post(
+        "/chat/connections/unblock-user",
+        { userId: recipientId },
+        { headers: { Authorization: `Bearer ${accessToken}` } }
+      );
+
+      // Refresh profile to update connection status
+      const response = await api.get(`/profile/user/${userId}`, {
+        headers: { Authorization: `Bearer ${accessToken}` },
+      });
+      setProfile(response.data.profile);
+
+      toast.success("User unblocked successfully");
+    } catch (error) {
+      console.error("Error unblocking user:", error);
+      toast.error("Failed to unblock user");
     }
   };
 
@@ -255,6 +277,30 @@ const ViewProfile = () => {
                       <UserPlus className="h-4 w-4 mr-2" />
                       Connect
                     </Button>
+                  )}
+
+                  {/* Handle Blocked State */}
+                  {profile.connectionStatus === "blocked" && (
+                    <>
+                      {profile.blockedBy === profile.user._id ? (
+                        <Button
+                          size="default"
+                          variant="ghost"
+                          disabled
+                          className="text-red-400 bg-red-500/10 cursor-not-allowed border border-red-500/20"
+                        >
+                          Unavailable
+                        </Button>
+                      ) : (
+                        // I blocked them -> Show Unblock
+                        <Button
+                          onClick={() => handleUnblock(profile.user._id)}
+                          className="bg-red-600 hover:bg-red-700 text-white"
+                        >
+                          Unblock
+                        </Button>
+                      )}
+                    </>
                   )}
 
                   {/* Social Media Buttons */}

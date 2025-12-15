@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -25,9 +26,11 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import { SmartPagination } from "@/components/ui/pagination";
 import { BRANCHES, CAMPUSES } from "@/constants/branches";
 import PeopleYouMightKnow from "./PeopleYouMightKnow";
+import UserAvatar from "@/components/UserAvatar";
 
 const AlumniDirectory = () => {
   const navigate = useNavigate();
+  const [isSearchFocused, setIsSearchFocused] = useState(false);
   const {
     alumni,
     isLoading,
@@ -84,8 +87,59 @@ const AlumniDirectory = () => {
                       onKeyPress={(e) => {
                         if (e.key === "Enter") handleSearch();
                       }}
+                      onFocus={() => setIsSearchFocused(true)}
+                      onBlur={() => setTimeout(() => setIsSearchFocused(false), 200)}
                       className="pl-10 bg-black/20 border-white/10 text-white placeholder:text-gray-500 focus:border-blue-500/50 focus:ring-blue-500/20"
                     />
+
+                    {/* Mobile Search Dropdown */}
+                    {isSearchFocused && filters.name && (
+                      <div className="md:hidden absolute top-full mt-2 left-0 right-0 bg-slate-900/95 backdrop-blur-xl border border-white/10 rounded-xl shadow-2xl z-50 overflow-hidden max-h-80 overflow-y-auto">
+                        {isLoading ? (
+                          <div className="p-4 flex items-center justify-center text-gray-400">
+                            <Loader2 className="h-5 w-5 animate-spin mr-2" />
+                            Searching...
+                          </div>
+                        ) : alumni.length > 0 ? (
+                          <div className="py-2">
+                            {alumni.slice(0, 5).map((profile) => (
+                              <div
+                                key={profile._id}
+                                onClick={() => navigate(`/dashboard/alumni/${profile.user._id}`)}
+                                className="flex items-center gap-3 px-4 py-3 hover:bg-white/5 cursor-pointer transition-colors"
+                              >
+                                <UserAvatar
+                                  src={profile.profile_picture}
+                                  name={profile.user.name}
+                                  size="sm"
+                                />
+                                <div className="min-w-0">
+                                  <p className="text-sm font-medium text-white truncate">
+                                    {profile.user.name}
+                                  </p>
+                                  <p className="text-xs text-gray-400 truncate">
+                                    {profile.batch} • {profile.branch}
+                                  </p>
+                                </div>
+                              </div>
+                            ))}
+                            <div
+                              onClick={() => {
+                                setIsSearchFocused(false);
+                                // The main grid will show all results
+                              }}
+                              className="px-4 py-2 text-center text-xs text-blue-400 font-medium cursor-pointer border-t border-white/5 hover:bg-white/5"
+                            >
+                              View all {alumni.length} results
+                            </div>
+                          </div>
+                        ) : hasSearched ? (
+                          <div className="p-4 text-center text-gray-400 text-sm">
+                            No alumni found matching "{filters.name}"
+                          </div>
+                        ) : null}
+                      </div>
+                    )}
                   </div>
                   <Button
                     onClick={() => setShowFilters(!showFilters)}
@@ -428,16 +482,16 @@ const AlumniDirectory = () => {
             </>
           ) : alumni.length === 0 ? (
             <EmptyState
-              icon={<GraduationCap className="h-12 w-12 text-gray-400 mx-auto" />}
-              title="People You Might Know"
-              description="Start connecting with alumni to expand your network"
+              icon={<Search className="h-12 w-12 text-gray-400 mx-auto" />}
+              title="No Results Found"
+              description="We couldn't find any alumni matching your search."
               action={
                 <Button
-                  onClick={() => handleSearch()} // Maybe trigger a broader search or just remove
+                  onClick={handleClearResults}
                   variant="outline"
-                  className="mt-4"
+                  className="mt-4 border-white/10 hover:bg-white/5"
                 >
-                  Browse Directory
+                  Clear Search
                 </Button>
               }
             />

@@ -18,6 +18,7 @@ import ShowProfile from "@/pages/dashboard/showProfile";
 import UpdateProfile from "@/pages/dashboard/updateProfile";
 import AlumniDirectory from "@/pages/dashboard/alumniDirectory";
 import ViewProfile from "@/pages/dashboard/viewProfile";
+import ConnectionsPage from "@/pages/dashboard/ConnectionsPage";
 import VerifyAlumni from "@/pages/dashboard/verifyAlumni";
 import { ChatPage } from "@/pages/dashboard/chat/ChatPage";
 import Root from "@/pages/Root";
@@ -127,6 +128,7 @@ function AppContent() {
           <Route path="/dashboard/update-profile" element={<UpdateProfile />} />
           <Route path="/dashboard/alumni" element={<AlumniDirectory />} />
           <Route path="/dashboard/alumni/:userId" element={<ViewProfile />} />
+          <Route path="/dashboard/connections" element={<ConnectionsPage />} />
           <Route path="/dashboard/chat" element={<ChatPage />} />
         </Route>
 

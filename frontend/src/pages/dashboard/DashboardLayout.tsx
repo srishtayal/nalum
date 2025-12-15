@@ -5,23 +5,58 @@ import { ProfileProvider, useProfile } from "@/context/ProfileContext";
 import { cn } from "@/lib/utils";
 // import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"; // Removed
 // import { Menu } from "lucide-react"; // Removed
-import { Home, MessageSquare, Search, ArrowLeft } from "lucide-react";
+import { Home, MessageSquare, Search, ArrowLeft, Users } from "lucide-react";
 import UserAvatar from "@/components/UserAvatar";
 import nsutLogo from "@/assets/nsut-logo.svg";
 import { useConversations } from "@/hooks/useConversations"; // Restored import
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import api from "@/lib/api";
 
-
+import { useChatContext } from "@/context/ChatContext";
+import { useEffect } from "react";
 
 const DashboardContent = () => {
   const location = useLocation();
   const isChatPage = location.pathname.startsWith("/dashboard/chat");
+  const isConnectionsPage = location.pathname.startsWith("/dashboard/connections");
   const { profile } = useProfile();
   // const { logout } = useAuth(); // Removed unused
   const { conversations } = useConversations(); // Restored hook usage
+  const { socket } = useChatContext();
+  const queryClient = useQueryClient();
 
   // Calculate total unread count
-  // Calculate total unread count
   const unreadCount = conversations.reduce((acc: number, conv: any) => acc + (conv.unreadCount || 0), 0);
+
+  // Fetch Pending Received Requests Count for blue dot
+  const { data: pendingRequests = [] } = useQuery({
+    queryKey: ["connections", "received"],
+    queryFn: async () => {
+      const { data } = await api.get("/chat/connections/pending");
+      return data.data;
+    },
+    // Only fetch if authenticated (implied by this layout)
+    // Refetch in background to keep updated
+    // Also refetch on mount
+  });
+
+  // Listen for real-time connection requests
+  useEffect(() => {
+    if (!socket) return;
+
+    const handleConnectionRequest = () => {
+      // Invalidate query to refetch pending requests
+      queryClient.invalidateQueries({ queryKey: ["connections", "received"] });
+    };
+
+    socket.on("connection_request", handleConnectionRequest);
+
+    return () => {
+      socket.off("connection_request", handleConnectionRequest);
+    };
+  }, [socket, queryClient]);
+
+  const hasPendingRequests = pendingRequests.length > 0;
 
   return (
     <div className="flex h-[100dvh] w-full overflow-hidden bg-slate-950 text-slate-100 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-slate-900 via-slate-950 to-black">
@@ -73,6 +108,21 @@ const DashboardContent = () => {
           </Link>
 
           <Link
+            to="/dashboard/connections"
+            className={cn(
+              "p-2 rounded-xl transition-all duration-300 relative",
+              location.pathname === "/dashboard/connections"
+                ? "bg-blue-600/20 text-blue-400"
+                : "text-gray-400 hover:text-white"
+            )}
+          >
+            <Users className="h-5 w-5" />
+            {hasPendingRequests && (
+              <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-blue-500 ring-2 ring-slate-950" />
+            )}
+          </Link>
+
+          <Link
             to="/dashboard"
             className={cn(
               "p-2 rounded-xl transition-all duration-300",
@@ -113,9 +163,9 @@ const DashboardContent = () => {
       <main className="flex-1 h-full overflow-y-auto relative z-10 scrollbar-hide">
         <div className={cn(
           "relative mx-auto transition-all duration-300 min-h-full flex flex-col",
-          isChatPage
-            ? "pt-16 pb-0 px-0 max-w-full h-full" // Added pt-16 for chat header
-            : "pt-20 md:pt-8 p-4 md:p-8 pb-20 md:pb-8 max-w-7xl" // Reduced pb from 28 to 20 since bar is smaller/docked
+          isChatPage || isConnectionsPage
+            ? "pt-16 pb-0 px-0 max-w-full h-full"
+            : "px-4 pt-28 pb-20 md:p-8 max-w-7xl"
         )}>
           <Outlet />
         </div>

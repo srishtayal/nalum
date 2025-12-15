@@ -16,6 +16,7 @@ import {
   Globe,
   ArrowLeft,
   Loader2,
+  LogOut,
 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import api from "@/lib/api";
@@ -111,14 +112,25 @@ const ShowProfile = () => {
       <div className="container mx-auto">
         <div className="max-w-5xl mx-auto">
           {/* Back Button */}
-          <Button
-            variant="ghost"
-            className="mb-6 text-gray-400 hover:text-white hover:bg-white/10"
-            onClick={() => navigate("/dashboard")}
-          >
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to Dashboard
-          </Button>
+          <div className="flex items-center justify-between mb-6">
+            <Button
+              variant="ghost"
+              className="text-gray-400 hover:text-white hover:bg-white/10"
+              onClick={() => navigate("/dashboard")}
+            >
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Back to Dashboard
+            </Button>
+
+            <Button
+              onClick={logout}
+              variant="ghost"
+              size="icon"
+              className="md:hidden text-red-500 hover:bg-red-500/10 hover:text-red-400"
+            >
+              <LogOut className="h-5 w-5" />
+            </Button>
+          </div>
 
           {/* Profile Header */}
           <div className="mb-6 rounded-xl border border-white/10 bg-white/5 backdrop-blur-md shadow-xl overflow-hidden">
@@ -156,6 +168,7 @@ const ShowProfile = () => {
                   Edit Profile
                 </Button>
               </div>
+
 
               {/* Social Links */}
               {profile.social_media && (
@@ -319,7 +332,7 @@ const ShowProfile = () => {
                     <div key={index} className="relative pl-6 pb-6 border-l-2 border-blue-500/30 last:pb-0">
                       {/* Timeline dot */}
                       <div className="absolute left-[-5px] top-0 w-3 h-3 rounded-full bg-blue-500 border-2 border-slate-950"></div>
-                      
+
                       <div className="space-y-1">
                         <p className="font-semibold text-lg text-white">{exp.role}</p>
                         <p className="text-blue-400 font-medium">{exp.company}</p>
