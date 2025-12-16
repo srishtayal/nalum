@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { Loader2, MapPin, GraduationCap, BadgeIcon } from "lucide-react";
+import { Loader2, MapPin, GraduationCap, BadgeIcon, UserPlus } from "lucide-react";
 import api from "@/lib/api";
 import UserAvatar from "@/components/UserAvatar";
 import { ConnectionButton } from "@/components/ui/ConnectionButton";
@@ -30,7 +30,11 @@ interface PeopleYouMightKnowProps {
   fullHeight?: boolean;
 }
 
-const PeopleYouMightKnow = ({ className, hideHeader, fullHeight }: PeopleYouMightKnowProps) => {
+const PeopleYouMightKnow = ({
+  className,
+  hideHeader,
+  fullHeight,
+}: PeopleYouMightKnowProps) => {
   const navigate = useNavigate();
   const { profile } = useProfile();
   const [suggestions, setSuggestions] = useState<SuggestionProfile[]>([]);
@@ -94,7 +98,7 @@ const PeopleYouMightKnow = ({ className, hideHeader, fullHeight }: PeopleYouMigh
     try {
       await api.post("/chat/connections/request", {
         recipientId: userId,
-        requestMessage: message
+        requestMessage: message,
       });
       toast.success("Connection request sent");
       fetchSuggestions();
@@ -121,16 +125,14 @@ const PeopleYouMightKnow = ({ className, hideHeader, fullHeight }: PeopleYouMigh
   }
 
   return (
-    <div className={cn("rounded-xl border border-white/10 bg-white/5 p-4 backdrop-blur-md w-full md:max-w-xs md:ml-auto", className)}>
-      {!hideHeader && (
-        <div className="flex items-center justify-between mb-3">
-          <h3 className="text-lg font-semibold text-white">
-            People you might know
-          </h3>
-        </div>
-      )}
+    <div className="rounded-xl border border-white/10 bg-white/5 p-3 backdrop-blur-md w-full max-w-xs ml-auto">
+      <div className="flex items-center justify-between mb-2">
+        <h3 className="text-base font-semibold text-white">
+          People you might know
+        </h3>
+      </div>
 
-      <div className={cn("flex flex-col space-y-1 pr-2", !fullHeight && "max-h-96 overflow-y-auto")}>
+      <div className="flex flex-col space-y-2 max-h-[240px] overflow-y-auto pr-2">
         {filteredSuggestions.map((profile) => {
           // Skip if user data is null or undefined
           if (!profile.user || !profile.user._id) {
@@ -141,50 +143,37 @@ const PeopleYouMightKnow = ({ className, hideHeader, fullHeight }: PeopleYouMigh
             <div
               key={profile._id}
               onClick={() => navigate(`/dashboard/alumni/${profile.user._id}`)}
-              className="w-full cursor-pointer rounded-xl border border-white/10 bg-white/5 p-2.5 shadow-md transition hover:-translate-y-1 hover:border-blue-500/30 hover:shadow-blue-500/10"
+              className="w-full cursor-pointer rounded-lg border border-white/10 bg-white/5 p- shadow-md transition hover:-translate-y-0.5 hover:border-blue-500/30 hover:shadow-blue-500/10"
             >
-              <div className="flex items-center gap-2.5 mb-3">
-                <UserAvatar
-                  src={profile.profile_picture}
-                  name={profile.user.name}
-                  size="sm"
-                />
-                <div>
-                  <p className="text-white font-semibold leading-tight line-clamp-1">
-                    {profile.user.name}
-                  </p>
-                  {profile.batch && (
-                    <div className="flex items-center text-xs text-gray-400 gap-1">
-                      <GraduationCap className="h-3 w-3" />
-                      <span>Batch {profile.batch}</span>
-                    </div>
-                  )}
+              <div className="flex items-center justify-between gap-2">
+                <div className="flex items-center gap-1.5 min-w-0">
+                  <UserAvatar
+                    src={profile.profile_picture}
+                    name={profile.user.name}
+                    size="sm"
+                  />
+                  <div className="min-w-0">
+                    <p className="text-white font-semibold text-sm leading-tight line-clamp-1">
+                      {profile.user.name}
+                    </p>
+                    {profile.batch && (
+                      <div className="flex items-center text-xs text-gray-400 gap-1">
+                        <GraduationCap className="h-3 w-3" />
+                        <span>{profile.batch}</span>
+                      </div>
+                    )}
+                  </div>
                 </div>
-              </div>
-
-              <div className="space-y-1 text-sm text-gray-300">
-                {profile.branch && (
-                  <div className="flex items-center gap-1">
-                    <BadgeIcon className="h-4 w-4 text-blue-400" />
-                    <span className="line-clamp-1">{profile.branch}</span>
-                  </div>
-                )}
-                {profile.campus && (
-                  <div className="flex items-center gap-1">
-                    <MapPin className="h-4 w-4 text-emerald-400" />
-                    <span className="line-clamp-1">{profile.campus}</span>
-                  </div>
-                )}
-              </div>
-
-              <div className="mt-4" onClick={(e) => e.stopPropagation()}>
-                <ConnectionButton
-                  status={profile.connectionStatus || "not_connected"}
-                  userId={profile.user._id}
-                  onConnect={handleConnect}
-                  fullWidth
-                  recipientName={profile.user.name}
-                />
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleConnect(profile.user._id);
+                  }}
+                  className="p-1 text-white bg-blue-600 hover:bg-blue-700 rounded-full transition-colors flex-shrink-0"
+                  title="Connect"
+                >
+                  <UserPlus className="h-3.5 w-3.5" />
+                </button>
               </div>
             </div>
           );

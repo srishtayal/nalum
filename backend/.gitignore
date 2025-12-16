@@ -1,2 +1,6 @@
 # env files
 .env
+
+# uploads
+uploads/posts/*
+!uploads/posts/.gitkeep
