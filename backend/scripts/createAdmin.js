@@ -18,11 +18,11 @@ const connectDB = async () => {
     const mongoUri = process.env.NODE_ENV !== 'production'
       ? process.env.MONGODB_URI_DEV
       : process.env.MONGODB_URI_PROD;
-    
+
     if (!mongoUri) {
       throw new Error('MongoDB URI not found. Check MONGODB_URI_DEV or MONGODB_URI_PROD in .env');
     }
-    
+
     await mongoose.connect(mongoUri, {
       useNewUrlParser: true,
       useUnifiedTopology: true,
@@ -37,20 +37,26 @@ const connectDB = async () => {
 // Create admin user
 const createAdmin = async () => {
   try {
-    // Admin user details - CHANGE THESE VALUES
+    // Get arguments from command line
+    const args = process.argv.slice(2);
+    const emailArg = args[0];
+    const passwordArg = args[1];
+    const nameArg = args[2];
+
+    // Admin user details - Use args or defaults
     const adminData = {
-      name: 'Admin User',
-      email: 'admin@nsut.ac.in',
-      password: 'Admin@123', // CHANGE THIS to a secure password
+      name: nameArg || 'Admin User',
+      email: emailArg || 'admin@n.ac.in', // Using generic domain for admin or allowing any
+      password: passwordArg || 'Admin@123',
       role: 'admin',
       email_verified: true, // Admin accounts are pre-verified
       profileCompleted: true, // Skip profile form for admins
-      verified_alumni: undefined, // Admins don't need alumni verification
+      verified_alumni: true, // Admins don't need alumni verification, but set true to be safe
       banned: false,
     };
 
     console.log('\n🔍 Checking if admin already exists...');
-    
+
     // Check if admin already exists
     const existingAdmin = await User.findOne({ email: adminData.email });
     if (existingAdmin) {
@@ -58,14 +64,14 @@ const createAdmin = async () => {
       console.log(`   Email: ${existingAdmin.email}`);
       console.log(`   Name: ${existingAdmin.name}`);
       console.log(`   Role: ${existingAdmin.role}`);
-      
+
       // Ask if they want to update the password
       console.log('\n💡 To update password, delete the existing user first or change the email in this script.');
       return;
     }
 
     console.log('✨ Creating new admin user...');
-    
+
     // Hash the password
     const saltRounds = 10;
     const hashedPassword = await bcrypt.hash(adminData.password, saltRounds);
@@ -93,7 +99,7 @@ const createAdmin = async () => {
     console.log('\n🔐 Security Note:');
     console.log('   Remember to change the password in this script or delete it');
     console.log('   after creating the admin to avoid security risks.');
-    
+
   } catch (error) {
     console.error('❌ Error creating admin:', error.message);
     if (error.code === 11000) {
@@ -107,10 +113,10 @@ const createAdmin = async () => {
 const main = async () => {
   console.log('🚀 Admin User Creation Script');
   console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n');
-  
+
   await connectDB();
   await createAdmin();
-  
+
   console.log('\n✨ Script completed!');
   process.exit(0);
 };

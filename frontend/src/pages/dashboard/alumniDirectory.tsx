@@ -25,7 +25,6 @@ import { AlumniCard } from "@/components/alumni/AlumniCard";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { SmartPagination } from "@/components/ui/pagination";
 import { BRANCHES, CAMPUSES } from "@/constants/branches";
-import PeopleYouMightKnow from "./PeopleYouMightKnow";
 import UserAvatar from "@/components/UserAvatar";
 
 const AlumniDirectory = () => {
@@ -463,23 +462,13 @@ const AlumniDirectory = () => {
               title="Searching alumni..."
             />
           ) : !hasSearched ? (
-            <>
-              {/* Mobile: Show People You Might Know */}
-              <div className="md:hidden">
-                <PeopleYouMightKnow />
-              </div>
-
-              {/* Desktop: Show Empty State */}
-              <div className="hidden md:block">
-                <EmptyState
-                  icon={
-                    <GraduationCap className="h-20 w-20 text-blue-500/30 mx-auto" />
-                  }
-                  title="Ready to Connect? 🎓"
-                  description="Use the search bar and filters above to find alumni"
-                />
-              </div>
-            </>
+            <EmptyState
+              icon={
+                <GraduationCap className="h-20 w-20 text-blue-500/30 mx-auto" />
+              }
+              title="Ready to Connect? 🎓"
+              description="Use the search bar and filters above to find alumni"
+            />
           ) : alumni.length === 0 ? (
             <EmptyState
               icon={<Search className="h-12 w-12 text-gray-400 mx-auto" />}
@@ -549,8 +538,8 @@ const AlumniDirectory = () => {
             </>
           )}
         </div>
-      </div>
-    </div>
+      </div >
+    </div >
   );
 };
 
