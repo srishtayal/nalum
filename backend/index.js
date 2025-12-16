@@ -22,9 +22,15 @@ const morgan = require("morgan");
 const redisConfig = require("./config/redis.config.js");
 const { initializeSocket } = require("./sockets/chatSocket.js");
 app.use(morgan("dev"));
+app.use((req, res, next) => {
+  console.log(`[DEBUG] Method: ${req.method} URL: ${req.url} Origin: ${req.headers.origin}`);
+  next();
+});
 app.use(cors({
-  origin: ['https://nalum.vercel.app', 'http://localhost:8080', 'http://localhost:5173'],
+  origin: ['https://nalum.vercel.app', 'http://localhost:8080', 'http://localhost:5173', 'https://unseeing-malaya-unprejudicedly.ngrok-free.dev', 'http://10.12.114.3:5173'],
   credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'ngrok-skip-browser-warning'],
 }));
 app.use(helmet({
   crossOriginResourcePolicy: { policy: "cross-origin" },

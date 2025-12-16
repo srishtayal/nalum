@@ -14,7 +14,8 @@ exports.getConversations = async (req, res) => {
 
     const conversations = await Conversation.find({
       participants: userId,
-      [`archived.${userId}`]: { $ne: true }
+      [`archived.${userId}`]: { $ne: true },
+      [`deletedBy.${userId}`]: { $ne: true }
     })
       .populate('participants', 'name email profilePicture')
       .populate('lastMessage.sender', 'name')
@@ -41,7 +42,8 @@ exports.getConversations = async (req, res) => {
         const unreadCount = await Message.countDocuments({
           conversation: conv._id,
           sender: { $ne: userId },
-          'readBy.user': { $ne: userId }
+          'readBy.user': { $ne: userId },
+          deleted: { $ne: true } // Exclude deleted messages
         });
 
         // Attach profile pictures to participants
@@ -55,18 +57,32 @@ exports.getConversations = async (req, res) => {
           p => p._id.toString() !== userId.toString()
         );
 
+        // Check for connection status
+        const connection = await Connection.findOne({
+          $or: [
+            { requester: userId, recipient: otherParticipant._id },
+            { requester: otherParticipant._id, recipient: userId }
+          ]
+        });
+
         return {
           ...conv.toObject(),
           participants: participantsWithPics,
           otherParticipant,
-          unreadCount
+          unreadCount,
+          unreadCount,
+          connectionStatus: connection ? connection.status : 'none',
+          connectionRequester: connection ? connection.requester : null,
+          connectionId: connection ? connection._id : null,
+          blockedBy: connection ? connection.blockedBy : null
         };
       })
     );
 
     const total = await Conversation.countDocuments({
       participants: userId,
-      [`archived.${userId}`]: { $ne: true }
+      [`archived.${userId}`]: { $ne: true },
+      [`deletedBy.${userId}`]: { $ne: true }
     });
 
     res.json({
@@ -130,12 +146,24 @@ exports.getConversation = async (req, res) => {
       p => p._id.toString() !== userId.toString()
     );
 
+    // Check for connection status
+    const connection = otherParticipant ? await Connection.findOne({
+      $or: [
+        { requester: userId, recipient: otherParticipant._id },
+        { requester: otherParticipant._id, recipient: userId }
+      ]
+    }) : null;
+
     res.json({
       conversation: {
         ...conversation.toObject(),
         participants: participantsWithPics,
         otherParticipant, // Add this for easier frontend consumption
-        unreadCount: unreadCount
+        unreadCount: unreadCount,
+        connectionStatus: connection ? connection.status : 'none',
+        connectionRequester: connection ? connection.requester : null,
+        connectionId: connection ? connection._id : null,
+        blockedBy: connection ? connection.blockedBy : null
       }
     });
 
@@ -160,10 +188,11 @@ exports.createConversation = async (req, res) => {
     }
 
     // Check if users are connected
+    // Check if users are connected or pending
     const connection = await Connection.findOne({
       $or: [
-        { requester: userId, recipient: participantId, status: 'accepted' },
-        { requester: participantId, recipient: userId, status: 'accepted' }
+        { requester: userId, recipient: participantId, status: { $in: ['accepted', 'pending'] } },
+        { requester: participantId, recipient: userId, status: { $in: ['accepted', 'pending'] } }
       ]
     });
 
@@ -184,6 +213,12 @@ exports.createConversation = async (req, res) => {
       conversation = new Conversation({
         participants
       });
+      await conversation.save();
+    }
+
+    // If conversation was "deleted" by this user, un-delete it (they are sending a new message or opening it)
+    if (conversation.deletedBy && conversation.deletedBy.get(userId.toString())) {
+      conversation.deletedBy.set(userId.toString(), false);
       await conversation.save();
     }
 
@@ -215,7 +250,11 @@ exports.createConversation = async (req, res) => {
       data: {
         ...conversation.toObject(),
         participants: participantsWithPics,
-        otherParticipant
+        otherParticipant,
+        connectionStatus: connection ? connection.status : 'none',
+        connectionRequester: connection ? connection.requester : null,
+        connectionId: connection ? connection._id : null,
+        blockedBy: connection ? connection.blockedBy : null
       }
     });
 
@@ -286,5 +325,42 @@ exports.markConversationRead = async (req, res) => {
   } catch (error) {
     console.error('Mark conversation read error:', error);
     res.status(500).json({ error: 'Failed to mark conversation as read' });
+  }
+};
+
+// Delete conversation (soft delete/hide)
+exports.deleteConversation = async (req, res) => {
+  try {
+    const userId = req.user.user_id;
+    const { conversationId } = req.params;
+
+    const conversation = await Conversation.findById(conversationId);
+
+    if (!conversation) {
+      return res.status(404).json({ error: 'Conversation not found' });
+    }
+
+    console.log('Delete Chat Debug:', {
+      userId,
+      participants: conversation.participants,
+      match: conversation.participants.some(p => p.toString() === userId)
+    });
+
+    if (!conversation.participants.some(p => p.toString() === userId.toString())) {
+      return res.status(403).json({ error: 'Not authorized for this conversation' });
+    }
+
+    // Set deletedBy flag for this user
+    if (!conversation.deletedBy) {
+      conversation.deletedBy = new Map();
+    }
+    conversation.deletedBy.set(userId, true);
+    await conversation.save();
+
+    res.json({ message: 'Conversation deleted successfully' });
+
+  } catch (error) {
+    console.error('Delete conversation error:', error);
+    res.status(500).json({ error: 'Failed to delete conversation' });
   }
 };

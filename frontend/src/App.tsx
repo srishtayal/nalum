@@ -18,6 +18,7 @@ import ShowProfile from "@/pages/dashboard/showProfile";
 import UpdateProfile from "@/pages/dashboard/updateProfile";
 import AlumniDirectory from "@/pages/dashboard/alumniDirectory";
 import ViewProfile from "@/pages/dashboard/viewProfile";
+import ConnectionsPage from "@/pages/dashboard/ConnectionsPage";
 import VerifyAlumni from "@/pages/dashboard/verifyAlumni";
 import { ChatPage } from "@/pages/dashboard/chat/ChatPage";
 import Events from "@/pages/dashboard/Events";
@@ -131,7 +132,9 @@ function AppContent() {
           <Route path="/dashboard/update-profile" element={<UpdateProfile />} />
           <Route path="/dashboard/alumni" element={<AlumniDirectory />} />
           <Route path="/dashboard/alumni/:userId" element={<ViewProfile />} />
+          <Route path="/dashboard/connections" element={<ConnectionsPage />} />
           <Route path="/dashboard/chat" element={<ChatPage />} />
+          <Route path="/dashboard/chat/:conversationId" element={<ChatPage />} />
           <Route path="/dashboard/events" element={<Events />} />
           <Route path="/dashboard/host-event" element={<HostEvent />} />
         </Route>
@@ -172,6 +175,10 @@ function AppContent() {
   );
 }
 
+import { ChatProvider } from "@/context/ChatContext";
+
+// ... (existing imports)
+
 function App() {
   useEffect(() => {
     // Start keep-alive when app mounts
@@ -186,7 +193,9 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
-        <AppContent />
+        <ChatProvider>
+          <AppContent />
+        </ChatProvider>
       </AuthProvider>
     </QueryClientProvider>
   );

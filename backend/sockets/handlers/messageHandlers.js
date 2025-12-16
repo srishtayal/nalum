@@ -45,6 +45,23 @@ async function handleSendMessage(io, socket, data) {
       return socket.emit('message:error', { error: 'Not authorized for this conversation' });
     }
 
+    // Check for blocking
+    const participantIds = conversation.participants.map(p => p.toString());
+    const otherUserId = participantIds.find(id => id !== userId.toString());
+
+    if (otherUserId) {
+      const connection = await Connection.findOne({
+        $or: [
+          { requester: userId, recipient: otherUserId },
+          { requester: otherUserId, recipient: userId }
+        ]
+      });
+
+      if (connection && connection.status === 'blocked') {
+        return socket.emit('message:error', { error: 'You cannot send messages to this user' });
+      }
+    }
+
     // Create message
     const message = new Message({
       conversation: conversationId,

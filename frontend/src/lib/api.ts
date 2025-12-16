@@ -10,11 +10,17 @@ export const setAuthToken = (token: string | null) => {
 const api = axios.create({
   baseURL: BASE_URL,
   timeout: 60000, // 60 seconds timeout for slow Render cold starts
+  headers: {
+    "ngrok-skip-browser-warning": "true",
+  },
 });
 
 const refreshApi = axios.create({
   baseURL: BASE_URL,
   timeout: 60000, // 60 seconds timeout
+  headers: {
+    "ngrok-skip-browser-warning": "true",
+  },
 });
 
 api.interceptors.request.use((config) => {
@@ -80,6 +86,10 @@ export const confirmAlumniMatch = async (payload: { roll_no: string }) => {
 
 export const getUserProfile = async () => {
   return api.get("/profile");
+};
+
+export const searchUsers = async (query: string) => {
+  return api.get(`/profile/search?name=${encodeURIComponent(query)}&limit=5`);
 };
 
 export default api;

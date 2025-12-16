@@ -19,5 +19,6 @@ router.delete(
 router.delete("/:connectionId", connectionController.removeConnection);
 router.post("/:connectionId/block", connectionController.blockUser);
 router.post("/block-user", connectionController.blockUserByUserId);
+router.post("/unblock-user", connectionController.unblockUser);
 
 module.exports = router;

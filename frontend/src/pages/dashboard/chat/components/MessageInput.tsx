@@ -27,15 +27,15 @@ export const MessageInput = ({
 
   const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setMessage(e.target.value);
-    
+
     // Emit typing start
     emitTyping(true, receiverId);
-    
+
     // Clear existing timeout
     if (typingTimeoutRef.current) {
       clearTimeout(typingTimeoutRef.current);
     }
-    
+
     // Set timeout to emit typing stop
     typingTimeoutRef.current = setTimeout(() => {
       emitTyping(false, receiverId);
@@ -70,14 +70,14 @@ export const MessageInput = ({
 
   return (
     <div className="p-3 border-t border-white/10 bg-black/20 backdrop-blur-md">
-      <div className="flex gap-2 items-end">
+      <div className="flex gap-2 items-center">
         <Textarea
           value={message}
           onChange={handleInputChange}
           onKeyDown={handleKeyDown}
           onFocus={onInputFocus}
           placeholder="Type a message..."
-          className="min-h-[44px] max-h-[120px] resize-none bg-white/5 border-white/10 focus:bg-white/10 backdrop-blur-sm rounded-lg transition-all shadow-sm text-sm text-white placeholder:text-gray-400"
+          className="flex-1 min-h-[44px] max-h-[120px] resize-none bg-white/5 border-white/10 focus:bg-white/10 backdrop-blur-sm rounded-lg transition-all shadow-sm text-sm text-white placeholder:text-gray-400"
           disabled={disabled}
         />
         <Button

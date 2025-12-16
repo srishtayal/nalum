@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -24,9 +25,12 @@ import { AlumniCard } from "@/components/alumni/AlumniCard";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { SmartPagination } from "@/components/ui/pagination";
 import { BRANCHES, CAMPUSES } from "@/constants/branches";
+import PeopleYouMightKnow from "./PeopleYouMightKnow";
+import UserAvatar from "@/components/UserAvatar";
 
 const AlumniDirectory = () => {
   const navigate = useNavigate();
+  const [isSearchFocused, setIsSearchFocused] = useState(false);
   const {
     alumni,
     isLoading,
@@ -83,16 +87,67 @@ const AlumniDirectory = () => {
                       onKeyPress={(e) => {
                         if (e.key === "Enter") handleSearch();
                       }}
+                      onFocus={() => setIsSearchFocused(true)}
+                      onBlur={() => setTimeout(() => setIsSearchFocused(false), 200)}
                       className="pl-10 bg-black/20 border-white/10 text-white placeholder:text-gray-500 focus:border-blue-500/50 focus:ring-blue-500/20"
                     />
+
+                    {/* Mobile Search Dropdown */}
+                    {isSearchFocused && filters.name && (
+                      <div className="md:hidden absolute top-full mt-2 left-0 right-0 bg-slate-900/95 backdrop-blur-xl border border-white/10 rounded-xl shadow-2xl z-50 overflow-hidden max-h-80 overflow-y-auto">
+                        {isLoading ? (
+                          <div className="p-4 flex items-center justify-center text-gray-400">
+                            <Loader2 className="h-5 w-5 animate-spin mr-2" />
+                            Searching...
+                          </div>
+                        ) : alumni.length > 0 ? (
+                          <div className="py-2">
+                            {alumni.slice(0, 5).map((profile) => (
+                              <div
+                                key={profile._id}
+                                onClick={() => navigate(`/dashboard/alumni/${profile.user._id}`)}
+                                className="flex items-center gap-3 px-4 py-3 hover:bg-white/5 cursor-pointer transition-colors"
+                              >
+                                <UserAvatar
+                                  src={profile.profile_picture}
+                                  name={profile.user.name}
+                                  size="sm"
+                                />
+                                <div className="min-w-0">
+                                  <p className="text-sm font-medium text-white truncate">
+                                    {profile.user.name}
+                                  </p>
+                                  <p className="text-xs text-gray-400 truncate">
+                                    {profile.batch} • {profile.branch}
+                                  </p>
+                                </div>
+                              </div>
+                            ))}
+                            <div
+                              onClick={() => {
+                                setIsSearchFocused(false);
+                                // The main grid will show all results
+                              }}
+                              className="px-4 py-2 text-center text-xs text-blue-400 font-medium cursor-pointer border-t border-white/5 hover:bg-white/5"
+                            >
+                              View all {alumni.length} results
+                            </div>
+                          </div>
+                        ) : hasSearched ? (
+                          <div className="p-4 text-center text-gray-400 text-sm">
+                            No alumni found matching "{filters.name}"
+                          </div>
+                        ) : null}
+                      </div>
+                    )}
                   </div>
                   <Button
                     onClick={() => setShowFilters(!showFilters)}
                     variant="outline"
-                    className="gap-2 border-white/10 bg-white/5 text-gray-300 hover:bg-white/10 hover:text-white"
+                    size="icon"
+                    className="border-white/10 bg-white/5 text-gray-300 hover:bg-white/10 hover:text-white shrink-0 w-10 h-10 relative"
                   >
                     <Filter className="h-4 w-4" />
-                    Filters
                     {(filters.batch ||
                       filters.branch ||
                       filters.campus ||
@@ -100,42 +155,25 @@ const AlumniDirectory = () => {
                       filters.connectionFilter !== "all" ||
                       filters.roleFilter !== "all" ||
                       filters.skills.length > 0) && (
-                      <Badge
-                        variant="secondary"
-                        className="ml-1 bg-blue-500/20 text-blue-300"
-                      >
-                        {
-                          [
-                            filters.batch,
-                            filters.branch,
-                            filters.campus,
-                            filters.company,
-                            filters.connectionFilter !== "all"
-                              ? "connection"
-                              : "",
-                            filters.roleFilter !== "all" ? "role" : "",
-                            ...filters.skills,
-                          ].filter(Boolean).length
-                        }
-                      </Badge>
-                    )}
+                        <div className="absolute -top-1 -right-1 h-3 w-3 bg-blue-500 rounded-full border-2 border-slate-900" />
+                      )}
                   </Button>
                   {showClearButton ? (
                     <Button
                       onClick={handleClearResults}
                       variant="outline"
-                      className="gap-2 border-red-500/30 text-red-400 hover:bg-red-500/10 hover:text-red-300 bg-transparent"
+                      size="icon"
+                      className="border-red-500/30 text-red-400 hover:bg-red-500/10 hover:text-red-300 bg-transparent shrink-0 w-10 h-10"
                     >
                       <X className="h-4 w-4" />
-                      Clear Results
                     </Button>
                   ) : (
                     <Button
                       onClick={handleSearch}
-                      className="gap-2 bg-blue-600 hover:bg-blue-500 text-white"
+                      size="icon"
+                      className="bg-blue-600 hover:bg-blue-500 text-white shrink-0 w-10 h-10"
                     >
                       <Search className="h-4 w-4" />
-                      Search
                     </Button>
                   )}
                 </div>
@@ -425,25 +463,35 @@ const AlumniDirectory = () => {
               title="Searching alumni..."
             />
           ) : !hasSearched ? (
-            <EmptyState
-              icon={
-                <GraduationCap className="h-20 w-20 text-blue-500/30 mx-auto" />
-              }
-              title="Ready to Connect? 🎓"
-              description="Use the search bar and filters above to find alumni"
-            />
+            <>
+              {/* Mobile: Show People You Might Know */}
+              <div className="md:hidden">
+                <PeopleYouMightKnow />
+              </div>
+
+              {/* Desktop: Show Empty State */}
+              <div className="hidden md:block">
+                <EmptyState
+                  icon={
+                    <GraduationCap className="h-20 w-20 text-blue-500/30 mx-auto" />
+                  }
+                  title="Ready to Connect? 🎓"
+                  description="Use the search bar and filters above to find alumni"
+                />
+              </div>
+            </>
           ) : alumni.length === 0 ? (
             <EmptyState
-              icon="🔍"
-              title="Oops! No Alumni Found"
-              description="We couldn't find anyone matching these criteria"
+              icon={<Search className="h-12 w-12 text-gray-400 mx-auto" />}
+              title="No Results Found"
+              description="We couldn't find any alumni matching your search."
               action={
                 <Button
                   onClick={handleClearResults}
                   variant="outline"
-                  className="border-blue-500/50 text-blue-400 hover:bg-blue-500/10 hover:text-blue-300 bg-transparent"
+                  className="mt-4 border-white/10 hover:bg-white/5"
                 >
-                  Clear All Filters
+                  Clear Search
                 </Button>
               }
             />

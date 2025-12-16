@@ -38,7 +38,7 @@ const Login = () => {
           const profileStatusResponse = await apiClient.get("/profile/status", {
             headers: { Authorization: `Bearer ${accessToken}` },
           });
-          
+
           if (!profileStatusResponse.data.profileCompleted) {
             navigate('/profile-form', { replace: true });
           } else {
@@ -84,10 +84,10 @@ const Login = () => {
       const response = await apiClient.post("/auth/sign-in", formData);
       const { access_token, email, user } = response.data.data;
       const verified_alumni = user?.verified_alumni || false;
-      
+
       // Set full user data in auth context
       setAuth(access_token, email, verified_alumni, user);
-      
+
       toast.success("Login Successful!", {
         description: "Welcome back to the NSUT Alumni Portal 🎉",
         style: {
@@ -112,7 +112,7 @@ const Login = () => {
       const profileStatusResponse = await apiClient.get("/profile/status", {
         headers: { Authorization: `Bearer ${access_token}` },
       });
-      
+
       if (!profileStatusResponse.data.profileCompleted) {
         navigate("/profile-form");
       } else {
@@ -203,9 +203,9 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen w-full lg:grid lg:grid-cols-2 pt-16 lg:pt-0">
+    <div className="flex flex-col min-h-[100dvh] w-full bg-gray-50 lg:grid lg:grid-cols-2 lg:h-screen lg:overflow-hidden">
       {/* Left Column: Image */}
-      <div className="relative hidden lg:flex flex-col items-start justify-between p-10">
+      <div className="relative hidden lg:flex flex-col items-start justify-between p-10 h-full">
         <img
           src={nsutCampusHero}
           alt="NSUT Campus"
@@ -227,7 +227,7 @@ const Login = () => {
       </div>
 
       {/* Right Column: Form */}
-      <div className="relative flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 bg-gray-50 min-h-screen lg:min-h-full">
+      <div className="flex-1 relative flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 bg-gray-50 lg:h-full lg:overflow-y-auto">
         {/* Subtle Pattern Background */}
         <div className="absolute inset-0 opacity-5">
           <div className="absolute inset-0" style={{

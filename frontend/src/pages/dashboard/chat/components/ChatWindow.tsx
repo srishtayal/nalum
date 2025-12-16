@@ -115,18 +115,19 @@ export const ChatWindow = ({ conversation, onBack }: ChatWindowProps) => {
 
   const markAsRead = useCallback(() => {
     if (activeConversationId && socket && isConnected) {
-      // Only mark as read if the document is visible and focused
-      if (document.visibilityState === 'visible' && document.hasFocus()) {
-        socket.emit('message:read', { conversationId: activeConversationId });
+      // Optimistically update conversations list to show as read (gray)
+      queryClient.setQueryData(["conversations"], (old: any[]) => {
+        if (!old) return old;
+        return old.map((c: any) =>
+          c._id === activeConversationId ? { ...c, unreadCount: 0 } : c
+        );
+      });
 
-        // Optimistically update conversations list to show as read (gray)
-        queryClient.setQueryData(["conversations"], (old: any[]) => {
-          if (!old) return old;
-          return old.map((c: any) =>
-            c._id === activeConversationId ? { ...c, unreadCount: 0 } : c
-          );
-        });
-      }
+      // Emit with callback to ensure server has processed it before we refetch
+      socket.emit('message:read', { conversationId: activeConversationId }, (response: any) => {
+        // Force a refetch to ensure server state is synced ONLY after server confirms
+        queryClient.invalidateQueries({ queryKey: ["conversations"] });
+      });
     }
   }, [activeConversationId, socket, isConnected, queryClient]);
 
@@ -195,7 +196,14 @@ export const ChatWindow = ({ conversation, onBack }: ChatWindowProps) => {
     setFirstUnreadMessageId(null);
   };
 
+
   const [showBlockDialog, setShowBlockDialog] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [showUnblockDialog, setShowUnblockDialog] = useState(false);
+
+  const isBlocked = conversation.connectionStatus === 'blocked';
+  // Check if blocked by ME
+  const isBlockedByMe = isBlocked && conversation.blockedBy === user?.id;
 
   const handleBlockUser = async () => {
     try {
@@ -203,13 +211,47 @@ export const ChatWindow = ({ conversation, onBack }: ChatWindowProps) => {
         userId: conversation.otherParticipant._id
       });
       toast.success("User blocked successfully");
-      navigate("/dashboard/chat"); // Redirect to chat list
+      queryClient.invalidateQueries({ queryKey: ["conversations"] });
+      navigate("/dashboard/chat");
     } catch (error) {
       console.error("Failed to block user:", error);
       toast.error("Failed to block user");
     }
     setShowBlockDialog(false);
   };
+
+  const handleUnblockUser = async () => {
+    try {
+      await api.post("/chat/connections/unblock-user", {
+        userId: conversation.otherParticipant._id
+      });
+      toast.success("User unblocked successfully");
+      queryClient.invalidateQueries({ queryKey: ["conversations"] });
+      navigate("/dashboard/chat");
+    } catch (error) {
+      console.error("Failed to unblock user:", error);
+      toast.error("Failed to unblock user");
+    }
+    setShowUnblockDialog(false);
+  };
+
+  const handleDeleteChat = async () => {
+    try {
+      if (activeConversationId) {
+        await api.delete(`/chat/conversations/${activeConversationId}`);
+        toast.success("Chat deleted successfully");
+        queryClient.invalidateQueries({ queryKey: ["conversations"] });
+        navigate("/dashboard/chat");
+        onBack(); // Clear selection
+      }
+    } catch (error) {
+      console.error("Failed to delete chat:", error);
+      toast.error("Failed to delete chat");
+    }
+    setShowDeleteDialog(false);
+  };
+
+
 
   return (
     <div className="flex-1 h-full flex flex-col min-h-0 bg-transparent">
@@ -244,11 +286,26 @@ export const ChatWindow = ({ conversation, onBack }: ChatWindowProps) => {
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-48 bg-slate-900 border-white/10 text-gray-200">
             <DropdownMenuItem
-              className="text-red-400 focus:text-red-400 focus:bg-red-500/10 cursor-pointer"
-              onClick={() => setShowBlockDialog(true)}
+              className="focus:bg-white/10 cursor-pointer"
+              onClick={() => setShowDeleteDialog(true)}
             >
-              Block User
+              Delete Chat
             </DropdownMenuItem>
+            {isBlockedByMe ? (
+              <DropdownMenuItem
+                className="text-blue-400 focus:text-blue-400 focus:bg-blue-500/10 cursor-pointer"
+                onClick={() => setShowUnblockDialog(true)}
+              >
+                Unblock User
+              </DropdownMenuItem>
+            ) : (
+              <DropdownMenuItem
+                className="text-red-400 focus:text-red-400 focus:bg-red-500/10 cursor-pointer"
+                onClick={() => setShowBlockDialog(true)}
+              >
+                Block User
+              </DropdownMenuItem>
+            )}
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
@@ -319,16 +376,69 @@ export const ChatWindow = ({ conversation, onBack }: ChatWindowProps) => {
       </ScrollArea>
 
       {/* Typing Indicator */}
-      {activeConversationId && <TypingIndicator conversationId={activeConversationId} />}
+      {activeConversationId && !isBlocked && <TypingIndicator conversationId={activeConversationId} />}
 
-      {/* Input */}
-      <MessageInput
-        onSendMessage={handleSendMessage}
-        disabled={sendMessage.isPending || createConversation.isPending}
-        conversationId={activeConversationId || 'temp'}
-        receiverId={conversation.otherParticipant._id}
-        onInputFocus={handleInputFocus}
-      />
+      {/* Input or Blocked/Pending Message */}
+      {isBlocked ? (
+        <div className="p-4 bg-black/20 backdrop-blur-sm border-t border-white/10 text-center">
+          {isBlockedByMe ? (
+            <div className="text-gray-400 text-sm">
+              You have blocked this user. <span className="text-blue-400 cursor-pointer hover:underline" onClick={() => setShowUnblockDialog(true)}>Unblock</span> to send messages.
+            </div>
+          ) : (
+            <div className="text-gray-400 text-sm">
+              You cannot send messages to this user.
+            </div>
+          )}
+        </div>
+      ) : conversation.connectionStatus === 'pending' && conversation.connectionRequester && (typeof conversation.connectionRequester === 'string' ? conversation.connectionRequester : conversation.connectionRequester._id) !== user?.id ? (
+        <div className="p-4 bg-black/40 backdrop-blur-md border-t border-white/10">
+          <div className="flex flex-col items-center gap-3">
+            <p className="text-sm text-gray-300">
+              {conversation.otherParticipant?.name} sent you a connection request.
+            </p>
+            <div className="flex gap-3 w-full max-w-sm">
+              <Button
+                variant="outline"
+                className="flex-1 border-red-500/50 text-red-500 hover:bg-red-500/10 hover:text-red-400 hover:border-red-500"
+                onClick={async () => {
+                  try {
+                    if (conversation.connectionId) {
+                      await api.post("/chat/connections/respond", { connectionId: conversation.connectionId, action: "reject" });
+                      toast.success("Request rejected");
+                      queryClient.invalidateQueries({ queryKey: ["conversations"] });
+                    }
+                  } catch (e) { console.error(e); toast.error("Failed to reject request"); }
+                }}
+              >
+                Ignore
+              </Button>
+              <Button
+                className="flex-1 bg-blue-600 hover:bg-blue-700 text-white"
+                onClick={async () => {
+                  try {
+                    if (conversation.connectionId) {
+                      await api.post("/chat/connections/respond", { connectionId: conversation.connectionId, action: "accept" });
+                      toast.success("Request accepted");
+                      queryClient.invalidateQueries({ queryKey: ["conversations"] });
+                    }
+                  } catch (e) { console.error(e); toast.error("Failed to accept request"); }
+                }}
+              >
+                Accept
+              </Button>
+            </div>
+          </div>
+        </div>
+      ) : (
+        <MessageInput
+          onSendMessage={handleSendMessage}
+          disabled={sendMessage.isPending || createConversation.isPending}
+          conversationId={activeConversationId || 'temp'}
+          receiverId={conversation.otherParticipant._id}
+          onInputFocus={handleInputFocus}
+        />
+      )}
 
       <AlertDialog open={!!messageToDelete} onOpenChange={(open) => !open && setMessageToDelete(null)}>
         <AlertDialogContent className="bg-slate-900 border-white/10 text-white">
@@ -356,6 +466,36 @@ export const ChatWindow = ({ conversation, onBack }: ChatWindowProps) => {
           <AlertDialogFooter>
             <AlertDialogCancel className="bg-transparent border-white/10 text-white hover:bg-white/10 hover:text-white">Cancel</AlertDialogCancel>
             <AlertDialogAction onClick={handleBlockUser} className="bg-red-600 hover:bg-red-700 text-white border-none">Block</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <AlertDialogContent className="bg-slate-900 border-white/10 text-white">
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Chat?</AlertDialogTitle>
+            <AlertDialogDescription className="text-gray-400">
+              This will remove the chat from your list. It will reappear if a new message is sent.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="bg-transparent border-white/10 text-white hover:bg-white/10 hover:text-white">Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeleteChat} className="bg-red-600 hover:bg-red-700 text-white border-none">Delete</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog open={showUnblockDialog} onOpenChange={setShowUnblockDialog}>
+        <AlertDialogContent className="bg-slate-900 border-white/10 text-white">
+          <AlertDialogHeader>
+            <AlertDialogTitle>Unblock User?</AlertDialogTitle>
+            <AlertDialogDescription className="text-gray-400">
+              Are you sure you want to unblock {conversation.otherParticipant?.name}? You will be able to send messages again.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="bg-transparent border-white/10 text-white hover:bg-white/10 hover:text-white">Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleUnblockUser} className="bg-blue-600 hover:bg-blue-700 text-white border-none">Unblock</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>

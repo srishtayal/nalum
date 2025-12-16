@@ -1,10 +1,13 @@
-import { useState } from "react";
-import { ChatProvider } from "@/context/ChatContext";
+import { useState, useEffect, useMemo } from "react";
+import { useLocation, useParams, useNavigate } from "react-router-dom";
+
 import { ChatList } from "./components/ChatList";
 import { ChatWindow } from "./components/ChatWindow";
 
 import { Button } from "@/components/ui/button";
 import { MessageSquare } from "lucide-react";
+
+import { useMergedChats } from "@/hooks/useMergedChats";
 
 /**
  * ChatPageContent Component
@@ -17,7 +20,28 @@ import { MessageSquare } from "lucide-react";
  * - Right Area: ChatWindow (active conversation) or placeholder.
  */
 const ChatPageContent = () => {
-  const [selectedConversation, setSelectedConversation] = useState<any>(null);
+  const { conversationId } = useParams();
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { allChats } = useMergedChats();
+
+  const selectedConversation = useMemo(() =>
+    allChats.find((c: any) => c._id === conversationId) || null,
+    [allChats, conversationId]
+  );
+
+  useEffect(() => {
+    if (location.state?.conversation) {
+      // If passing a conversation object, navigate to its URL
+      const conv = location.state.conversation;
+      if (conv._id && conv._id !== conversationId) {
+        navigate(`/dashboard/chat/${conv._id}`, { replace: true });
+      }
+
+      // Clear state so it doesn't persist if we navigate away and back without intent
+      window.history.replaceState({}, document.title);
+    }
+  }, [location.state, conversationId, navigate]);
 
 
   return (
@@ -31,8 +55,9 @@ const ChatPageContent = () => {
               <div className="h-full flex flex-col">
                 <div className="flex-1 mt-0 overflow-hidden min-h-0">
                   <ChatList
-                    onSelectConversation={setSelectedConversation}
+                    onSelectConversation={(chat: any) => navigate(`/dashboard/chat/${chat._id}`)}
                     selectedConversation={selectedConversation}
+                    chats={allChats}
                   />
                 </div>
               </div>
@@ -45,7 +70,7 @@ const ChatPageContent = () => {
               {selectedConversation ? (
                 <ChatWindow
                   conversation={selectedConversation}
-                  onBack={() => setSelectedConversation(null)}
+                  onBack={() => navigate("/dashboard/chat")}
                 />
               ) : (
                 <div className="h-full flex items-center justify-center">
@@ -68,8 +93,6 @@ const ChatPageContent = () => {
 
 export const ChatPage = () => {
   return (
-    <ChatProvider>
-      <ChatPageContent />
-    </ChatProvider>
+    <ChatPageContent />
   );
 };

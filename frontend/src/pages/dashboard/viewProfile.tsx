@@ -17,11 +17,14 @@ import {
   Loader2,
   Mail,
   UserPlus,
+  MessageSquare,
 } from "lucide-react";
+import { useConversations } from "@/hooks/useConversations";
 import { useAuth } from "@/context/AuthContext";
 import api from "@/lib/api";
 import UserAvatar from "@/components/UserAvatar";
 import { toast } from "sonner";
+import { ConnectionMessageDialog } from "@/components/ConnectionMessageDialog";
 
 interface Profile {
   user: {
@@ -37,6 +40,7 @@ interface Profile {
   current_role?: string;
   profile_picture?: string;
   connectionStatus?: string;
+  blockedBy?: string;
   social_media?: {
     linkedin?: string;
     github?: string;
@@ -57,12 +61,24 @@ const ViewProfile = () => {
   const { userId } = useParams<{ userId: string }>();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [showConnectionDialog, setShowConnectionDialog] = useState(false);
+  const { createConversation } = useConversations();
 
-  const handleConnect = async (recipientId: string) => {
+  const handleMessage = async () => {
+    if (!profile) return;
+    try {
+      const conversation = await createConversation.mutateAsync(profile.user._id);
+      navigate("/dashboard/chat", { state: { conversation } });
+    } catch (error) {
+      console.error("Failed to start conversation:", error);
+    }
+  };
+
+  const handleConnect = async (recipientId: string, message?: string) => {
     try {
       await api.post(
         "/chat/connections/request",
-        { recipientId },
+        { recipientId, requestMessage: message },
         { headers: { Authorization: `Bearer ${accessToken}` } }
       );
 
@@ -91,6 +107,27 @@ const ViewProfile = () => {
           },
         }
       );
+    }
+  };
+
+  const handleUnblock = async (recipientId: string) => {
+    try {
+      await api.post(
+        "/chat/connections/unblock-user",
+        { userId: recipientId },
+        { headers: { Authorization: `Bearer ${accessToken}` } }
+      );
+
+      // Refresh profile to update connection status
+      const response = await api.get(`/profile/user/${userId}`, {
+        headers: { Authorization: `Bearer ${accessToken}` },
+      });
+      setProfile(response.data.profile);
+
+      toast.success("User unblocked successfully");
+    } catch (error) {
+      console.error("Error unblocking user:", error);
+      toast.error("Failed to unblock user");
     }
   };
 
@@ -214,12 +251,16 @@ const ViewProfile = () => {
                     </Button>
                   ) : profile.connectionStatus === "accepted" ? (
                     <Button
-                      size="default"
-                      variant="ghost"
-                      disabled
-                      className="text-green-400 bg-green-500/10 cursor-not-allowed"
+                      onClick={handleMessage}
+                      className="bg-blue-600 hover:bg-blue-700 text-white"
+                      disabled={createConversation.isPending}
                     >
-                      Connected
+                      {createConversation.isPending ? (
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      ) : (
+                        <MessageSquare className="h-4 w-4 mr-2" />
+                      )}
+                      Message
                     </Button>
                   ) : profile.connectionStatus === "pending" ? (
                     <Button
@@ -232,12 +273,36 @@ const ViewProfile = () => {
                     </Button>
                   ) : (
                     <Button
-                      onClick={() => handleConnect(profile.user._id)}
+                      onClick={() => setShowConnectionDialog(true)}
                       className="bg-indigo-600 hover:bg-indigo-700 text-white"
                     >
                       <UserPlus className="h-4 w-4 mr-2" />
                       Connect
                     </Button>
+                  )}
+
+                  {/* Handle Blocked State */}
+                  {profile.connectionStatus === "blocked" && (
+                    <>
+                      {profile.blockedBy === profile.user._id ? (
+                        <Button
+                          size="default"
+                          variant="ghost"
+                          disabled
+                          className="text-red-400 bg-red-500/10 cursor-not-allowed border border-red-500/20"
+                        >
+                          Unavailable
+                        </Button>
+                      ) : (
+                        // I blocked them -> Show Unblock
+                        <Button
+                          onClick={() => handleUnblock(profile.user._id)}
+                          className="bg-red-600 hover:bg-red-700 text-white"
+                        >
+                          Unblock
+                        </Button>
+                      )}
+                    </>
                   )}
 
                   {/* Social Media Buttons */}
@@ -403,6 +468,15 @@ const ViewProfile = () => {
           )}
         </div>
       </div>
+
+      {profile && (
+        <ConnectionMessageDialog
+          isOpen={showConnectionDialog}
+          onClose={() => setShowConnectionDialog(false)}
+          onConfirm={(message) => handleConnect(profile.user._id, message)}
+          recipientName={profile.user.name}
+        />
+      )}
     </div>
   );
 };
