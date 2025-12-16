@@ -40,7 +40,7 @@ const DashboardHome = () => {
       </div>
 
       {/* Upcoming Events Section */}
-      <div className="w-full">
+      <div className="w-full hidden md:block">
         <UpcomingEvents />
       </div>
     </div>

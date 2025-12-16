@@ -88,8 +88,20 @@ export const getUserProfile = async () => {
   return api.get("/profile");
 };
 
-export const searchUsers = async (query: string) => {
-  return api.get(`/profile/search?name=${encodeURIComponent(query)}&limit=5`);
+export const searchUsers = async (query: string, filters: any = {}) => {
+  const params = new URLSearchParams();
+  params.append("name", query);
+  params.append("limit", "15");
+
+  if (filters.batch) params.append("batch", filters.batch);
+  if (filters.branch) params.append("branch", filters.branch);
+  if (filters.campus) params.append("campus", filters.campus);
+  if (filters.company) params.append("company", filters.company);
+  if (filters.skills && filters.skills.length > 0) {
+    filters.skills.forEach((skill: string) => params.append("skills[]", skill));
+  }
+
+  return api.get(`/profile/search?${params.toString()}`);
 };
 
 export default api;

@@ -274,7 +274,6 @@ export const ChatWindow = ({ conversation, onBack }: ChatWindowProps) => {
 
           <div className="flex-1 min-w-0">
             <p className="font-semibold text-sm truncate text-gray-200">{conversation.otherParticipant?.name || "Unknown User"}</p>
-            <p className="text-xs text-gray-400 truncate">{conversation.otherParticipant?.email}</p>
           </div>
         </div>
 
@@ -367,6 +366,15 @@ export const ChatWindow = ({ conversation, onBack }: ChatWindowProps) => {
                     isStacked={isStacked}
                     isLastInStack={isLastInStack}
                   />
+                  {index === 0 && conversation.connectionStatus === 'accepted' && (
+                    <div className="flex items-center gap-4 my-6">
+                      <div className="h-px bg-green-500/30 flex-1" />
+                      <span className="text-xs font-medium text-green-400 bg-green-500/10 px-3 py-1 rounded-full border border-green-500/20">
+                        You both have been connected. Start your conversation.
+                      </span>
+                      <div className="h-px bg-green-500/30 flex-1" />
+                    </div>
+                  )}
                 </div>
               );
             })}
@@ -390,6 +398,12 @@ export const ChatWindow = ({ conversation, onBack }: ChatWindowProps) => {
               You cannot send messages to this user.
             </div>
           )}
+        </div>
+      ) : conversation.connectionStatus !== 'accepted' && conversation.connectionStatus !== 'pending' ? (
+        <div className="p-4 bg-black/20 backdrop-blur-sm border-t border-white/10 text-center">
+          <div className="text-gray-400 text-sm">
+            You are not connected with this user.
+          </div>
         </div>
       ) : conversation.connectionStatus === 'pending' && conversation.connectionRequester && (typeof conversation.connectionRequester === 'string' ? conversation.connectionRequester : conversation.connectionRequester._id) !== user?.id ? (
         <div className="p-4 bg-black/40 backdrop-blur-md border-t border-white/10">
@@ -428,6 +442,12 @@ export const ChatWindow = ({ conversation, onBack }: ChatWindowProps) => {
                 Accept
               </Button>
             </div>
+          </div>
+        </div>
+      ) : conversation.connectionStatus === 'pending' && conversation.connectionRequester && (typeof conversation.connectionRequester === 'string' ? conversation.connectionRequester : conversation.connectionRequester._id) === user?.id ? (
+        <div className="p-4 bg-black/20 backdrop-blur-sm border-t border-white/10 text-center">
+          <div className="text-gray-400 text-sm">
+            Connection request sent. You can send messages once accepted.
           </div>
         </div>
       ) : (
