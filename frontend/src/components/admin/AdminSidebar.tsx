@@ -4,6 +4,7 @@ import {
   Users,
   CheckCircle,
   Calendar,
+  CalendarCheck,
   FileText,
   Ban,
   LogOut,
@@ -50,6 +51,11 @@ const AdminSidebar = () => {
       name: "Event Approvals",
       path: "/admin-panel/events",
       icon: Calendar,
+    },
+    {
+      name: "Current Events",
+      path: "/admin-panel/current-events",
+      icon: CalendarCheck,
     },
     {
       name: "Newsletters",

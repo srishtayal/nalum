@@ -13,15 +13,22 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@/components/ui/tabs";
+import {
   Dialog,
   DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Calendar, Clock, MapPin, Link as LinkIcon, Phone, Mail, Globe, Image, Loader2, Edit2, Trash2, Eye, RefreshCw, Users } from "lucide-react";
+import { Calendar, Clock, MapPin, Link as LinkIcon, Phone, Mail, Globe, Image, Loader2, Edit2, Trash2, Eye, RefreshCw, Users, X, Plus, List } from "lucide-react";
 import { toast } from "sonner";
 import api from "@/lib/api";
+import { BASE_URL } from "@/lib/constants";
 import { useAuth } from "@/context/AuthContext";
 import { AxiosError } from "axios";
 
@@ -96,6 +103,14 @@ const HostEvent = () => {
   useEffect(() => {
     fetchMyEvents();
     checkHostingStatus();
+
+    // Auto-refresh events every 10 seconds
+    const interval = setInterval(() => {
+      fetchMyEvents();
+    }, 10000);
+
+    // Cleanup interval on unmount
+    return () => clearInterval(interval);
   }, []);
 
   const checkHostingStatus = async () => {
@@ -306,9 +321,14 @@ const HostEvent = () => {
       contact_email: event.contact_info?.email || user?.email || "",
       contact_website: event.contact_info?.website || "",
     });
+    // Set image preview from existing event
     if (event.image_url) {
-      setImagePreview(event.image_url);
+      setImagePreview(`${BASE_URL}${event.image_url}`);
+    } else {
+      setImagePreview("");
     }
+    // Reset image file since we're editing
+    setImageFile(null);
     setEditingEvent(event._id);
     setEditDialogOpen(true);
   };
@@ -406,7 +426,7 @@ const HostEvent = () => {
   };
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       {/* Header */}
       <div className="p-6 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-md">
         <h1 className="text-3xl font-bold text-white mb-2">
@@ -434,67 +454,106 @@ const HostEvent = () => {
 
       {/* Show content only if hosting is allowed */}
       {hostingAllowed && (
-        <>
-          {/* My Events Section */}
-          {myEvents.length > 0 && (
-            <div className="space-y-4">
-          <h2 className="text-2xl font-bold text-white">My Events</h2>
-          <div className="grid gap-4">
-            {myEvents.map((event) => (
-              <div
-                key={event._id}
-                className="p-6 rounded-xl bg-white/5 border border-white/10 backdrop-blur-md hover:border-white/20 transition-all"
-              >
-                <div className="flex justify-between items-start gap-4">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-3 mb-2">
-                      <h3 className="text-xl font-bold text-white">{event.title}</h3>
-                      <span className={`px-3 py-1 rounded-full text-xs font-medium border ${getStatusBadge(event.status)}`}>
-                        {event.status}
-                      </span>
-                    </div>
-                    <p className="text-gray-400 text-sm mb-3 line-clamp-2">{event.description}</p>
-                    <div className="flex flex-wrap gap-4 text-sm text-gray-400">
-                      <div className="flex items-center gap-2">
-                        <Calendar className="h-4 w-4" />
-                        {formatDate(event.event_date)} at {event.event_time}
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <MapPin className="h-4 w-4" />
-                        {event.location}
-                      </div>
-                    </div>
-                  </div>
-                  <div className="flex gap-2">
-                    {event.status === "rejected" ? (
-                      <Button
-                        size="sm"
-                        onClick={() => loadEventForEdit(event)}
-                        className="bg-green-500 hover:bg-green-600 text-white"
-                      >
-                        <RefreshCw className="h-4 w-4 mr-1" />
-                        Reapply
-                      </Button>
-                    ) : (
-                      <Button
-                        size="sm"
-                        onClick={() => loadEventForEdit(event)}
-                        className="bg-blue-500 hover:bg-blue-600 text-white"
-                      >
-                        <Edit2 className="h-4 w-4" />
-                      </Button>
-                    )}
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
+        <Tabs defaultValue="my-events" className="w-full">
+          <TabsList className="grid w-full grid-cols-2 h-16 bg-white/5 border border-purple-500/30 backdrop-blur-md p-1.5 rounded-xl">
+            <TabsTrigger 
+              value="my-events"
+              className="flex items-center justify-center gap-2 text-base font-semibold text-gray-400 data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-blue-600 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-purple-500/50 hover:text-white transition-all duration-300 rounded-lg"
+            >
+              <List className="h-5 w-5" />
+              My Current Events
+            </TabsTrigger>
+            <TabsTrigger 
+              value="create-event"
+              className="flex items-center justify-center gap-2 text-base font-semibold text-gray-400 data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-purple-600 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-blue-500/50 hover:text-white transition-all duration-300 rounded-lg"
+            >
+              <Plus className="h-5 w-5" />
+              Create New Event
+            </TabsTrigger>
+          </TabsList>
 
-      {/* Form */}
-      <Card className="p-8 bg-white/5 border-white/10 backdrop-blur-md">
-        <form onSubmit={handleSubmit} className="space-y-6">
+          {/* My Events Tab */}
+          <TabsContent value="my-events" className="mt-6 space-y-4">
+            {loadingEvents ? (
+              <div className="flex justify-center items-center py-16">
+                <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
+              </div>
+            ) : myEvents.length > 0 ? (
+              <div className="grid gap-4">
+                {myEvents.map((event) => (
+                  <div
+                    key={event._id}
+                    className="p-6 rounded-xl bg-white/5 border border-white/10 backdrop-blur-md hover:border-white/20 transition-all animate-in fade-in slide-in-from-bottom-4 duration-500"
+                  >
+                    <div className="flex justify-between items-start gap-4">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-3 mb-2">
+                          <h3 className="text-xl font-bold text-white">{event.title}</h3>
+                          <span className={`px-3 py-1 rounded-full text-xs font-medium border ${getStatusBadge(event.status)}`}>
+                            {event.status}
+                          </span>
+                        </div>
+                        <p className="text-gray-400 text-sm mb-3 line-clamp-2">{event.description}</p>
+                        <div className="flex flex-wrap gap-4 text-sm text-gray-400">
+                          <div className="flex items-center gap-2">
+                            <Calendar className="h-4 w-4" />
+                            {formatDate(event.event_date)} at {event.event_time}
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <MapPin className="h-4 w-4" />
+                            {event.location}
+                          </div>
+                        </div>
+                      </div>
+                      <div className="flex gap-2">
+                        {event.status === "rejected" ? (
+                          <Button
+                            size="sm"
+                            onClick={() => loadEventForEdit(event)}
+                            className="bg-green-500 hover:bg-green-600 text-white"
+                          >
+                            <RefreshCw className="h-4 w-4 mr-1" />
+                            Reapply
+                          </Button>
+                        ) : (
+                          <Button
+                            size="sm"
+                            onClick={() => loadEventForEdit(event)}
+                            className="bg-blue-500 hover:bg-blue-600 text-white"
+                          >
+                            <Edit2 className="h-4 w-4" />
+                          </Button>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-16 px-6 rounded-xl bg-white/5 border border-white/10 backdrop-blur-md">
+                <Calendar className="h-16 w-16 text-gray-600 mx-auto mb-4" />
+                <h3 className="text-xl font-semibold text-white mb-2">No Events Yet</h3>
+                <p className="text-gray-400 mb-6">
+                  You haven't created any events yet. Get started by creating your first event!
+                </p>
+                <Button
+                  onClick={() => {
+                    const tabTrigger = document.querySelector('[value="create-event"]') as HTMLElement;
+                    tabTrigger?.click();
+                  }}
+                  className="bg-blue-500 hover:bg-blue-600 text-white"
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  Create Your First Event
+                </Button>
+              </div>
+            )}
+          </TabsContent>
+
+          {/* Create Event Tab */}
+          <TabsContent value="create-event" className="mt-6">
+            <Card className="p-8 bg-white/5 border-white/10 backdrop-blur-md animate-in fade-in slide-in-from-bottom-4 duration-500">
+              <form onSubmit={handleSubmit} className="space-y-6">
               {/* Basic Information */}
               <div>
                 <h2 className="text-xl font-semibold text-white mb-4">Basic Information</h2>
@@ -747,6 +806,9 @@ const HostEvent = () => {
               </div>
           </form>
         </Card>
+          </TabsContent>
+        </Tabs>
+      )}
 
       {/* Edit Confirmation Dialog */}
       <Dialog open={editDialogOpen} onOpenChange={(open) => {
@@ -754,6 +816,7 @@ const HostEvent = () => {
         if (!open) {
           // Reset when closing dialog
           setEditingEvent(null);
+          setCurrentEditingEvent(null);
           setFormData({
             title: "",
             description: "",
@@ -769,6 +832,7 @@ const HostEvent = () => {
             contact_website: "",
           });
           setImagePreview("");
+          setImageFile(null);
         }
       }}>
         <DialogContent className="bg-gray-900/95 border-white/10 text-white max-w-3xl max-h-[85vh] overflow-y-auto">
@@ -913,6 +977,50 @@ const HostEvent = () => {
               />
             </div>
 
+            {/* Event Image Upload/Change */}
+            <div className="space-y-3">
+              <Label className="flex items-center gap-2 text-gray-300">
+                <Image className="h-4 w-4" />
+                Event Image
+              </Label>
+              
+              {/* Current Image Preview */}
+              {imagePreview && (
+                <div className="relative">
+                  <img
+                    src={imagePreview}
+                    alt="Event preview"
+                    className="w-full h-48 object-cover rounded-lg border border-white/10"
+                  />
+                  <Button
+                    type="button"
+                    onClick={() => {
+                      setImagePreview("");
+                      setImageFile(null);
+                      setFormData((prev) => ({ ...prev, image_url: "" }));
+                    }}
+                    className="absolute top-2 right-2 bg-red-500/90 hover:bg-red-600 text-white p-2 h-auto"
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
+              )}
+
+              {/* Upload New Image */}
+              <div>
+                <Input
+                  id="dialog-image"
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageUpload}
+                  className="bg-white/5 border-white/10 text-white file:bg-white/10 file:text-white file:border-0 file:mr-4 file:py-2 file:px-4 file:rounded file:cursor-pointer hover:file:bg-white/20"
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  {imagePreview ? "Upload a new image to replace the current one" : "Upload an event banner (Max 5MB)"}
+                </p>
+              </div>
+            </div>
+
             {currentEditingEvent?.status === "rejected" && (
               <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-4">
                 <p className="text-sm text-red-300">
@@ -960,8 +1068,6 @@ const HostEvent = () => {
           </div>
         </DialogContent>
       </Dialog>
-      </>
-      )}
     </div>
   );
 };

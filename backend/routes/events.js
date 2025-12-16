@@ -285,7 +285,34 @@ router.get("/my/events", protect, async (req, res) => {
     console.error("Error fetching user events:", error);
     res.status(500).json({
       success: false,
-      message: "Failed to fetch your events",
+      message: "Failed to fetch events",
+    });
+  }
+});
+
+// Get user's liked events (just the event IDs)
+router.get("/my/liked", protect, async (req, res) => {
+  try {
+    const userId = req.user.user_id;
+
+    // Find all events where the user has liked them
+    const likedEvents = await Event.find({
+      liked_by: userId,
+      is_active: true,
+    }).select("_id");
+
+    // Return just the IDs
+    const likedEventIds = likedEvents.map(event => event._id.toString());
+
+    res.status(200).json({
+      success: true,
+      data: likedEventIds,
+    });
+  } catch (error) {
+    console.error("Error fetching liked events:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch liked events",
     });
   }
 });

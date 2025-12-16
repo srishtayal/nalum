@@ -12,7 +12,8 @@ router.get("/pending", protectAdmin, eventController.getPendingEvents);
 router.get("/:eventId", protectAdmin, eventController.getEventById);
 router.post("/approve/:eventId", protectAdmin, eventController.approveEvent);
 router.post("/reject/:eventId", protectAdmin, eventController.rejectEvent);
-router.delete("/:eventId", protectAdmin, eventController.deleteEvent);
+router.put("/update/:eventId", protectAdmin, uploadEventImage.single("event_image"), eventController.updateEvent);
+router.delete("/delete/:eventId", protectAdmin, eventController.deleteEvent);
 
 // Create event as admin (auto-approved)
 router.post("/create", protectAdmin, uploadEventImage.single("event_image"), async (req, res) => {

@@ -121,6 +121,12 @@ exports.approveEvent = async (req, res) => {
       req.ip
     );
 
+    // Emit socket event to notify all clients about new approved event
+    const io = req.app.get('io');
+    if (io) {
+      io.emit('event:approved', { eventId: event._id, title: event.title });
+    }
+
     // TODO: Send email notification to event creator
 
     res.status(200).json({
@@ -271,6 +277,92 @@ exports.deleteEvent = async (req, res) => {
     res.status(500).json({
       success: false,
       message: "An error occurred while deleting event",
+    });
+  }
+};
+
+// Update event (admin can update any field)
+exports.updateEvent = async (req, res) => {
+  try {
+    const { eventId } = req.params;
+
+    const event = await Event.findById(eventId);
+    if (!event) {
+      return res.status(404).json({
+        success: false,
+        message: "Event not found",
+      });
+    }
+
+    const {
+      title,
+      description,
+      event_date,
+      event_time,
+      location,
+      event_type,
+      registration_link,
+      max_participants,
+      contact_info,
+      creator_name,
+      creator_email,
+      status,
+    } = req.body;
+
+    // Parse contact_info if it's a string
+    let parsedContactInfo = contact_info;
+    if (typeof contact_info === 'string') {
+      try {
+        parsedContactInfo = JSON.parse(contact_info);
+      } catch (e) {
+        parsedContactInfo = contact_info;
+      }
+    }
+
+    // Update fields
+    if (title) event.title = title;
+    if (description) event.description = description;
+    if (event_date) event.event_date = event_date;
+    if (event_time) event.event_time = event_time;
+    if (location) event.location = location;
+    if (event_type) event.event_type = event_type;
+    if (registration_link !== undefined) event.registration_link = registration_link;
+    if (max_participants !== undefined) event.max_participants = max_participants ? parseInt(max_participants) : null;
+    if (parsedContactInfo) event.contact_info = parsedContactInfo;
+    if (creator_name) event.creator_name = creator_name;
+    if (creator_email) event.creator_email = creator_email;
+    if (status) event.status = status;
+
+    // Handle image upload
+    if (req.file) {
+      event.image_url = `/uploads/event-images/${req.file.filename}`;
+    }
+
+    await event.save();
+
+    // Log activity
+    await logAdminActivity(
+      req.admin.email,
+      "update_event",
+      "event",
+      eventId,
+      {
+        event_title: event.title,
+        changes: req.body,
+      },
+      req.ip
+    );
+
+    res.status(200).json({
+      success: true,
+      message: "Event updated successfully",
+      data: event,
+    });
+  } catch (error) {
+    console.error("Error updating event:", error);
+    res.status(500).json({
+      success: false,
+      message: "An error occurred while updating event",
     });
   }
 };

@@ -1,7 +1,9 @@
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import api from "@/lib/api";
+import { BASE_URL } from "@/lib/constants";
 import { useAuth } from "@/context/AuthContext";
+import io from "socket.io-client";
 import {
   Calendar,
   MapPin,
@@ -98,9 +100,42 @@ export default function Events() {
     }
   };
 
+  // Fetch user's liked events
+  const fetchLikedEvents = async () => {
+    try {
+      const response = await api.get("/events/my/liked");
+      if (response.data.success) {
+        setLikedEvents(new Set(response.data.data));
+      }
+    } catch (error) {
+      console.error("Error fetching liked events:", error);
+    }
+  };
+
   useEffect(() => {
     fetchMostLikedEvents();
     fetchEvents(currentPage, filterType);
+    fetchLikedEvents();
+  }, [currentPage, filterType]);
+
+  // Socket.io listener for real-time event approvals
+  useEffect(() => {
+    const socket = io(BASE_URL, {
+      transports: ['websocket', 'polling'],
+      withCredentials: true,
+    });
+
+    socket.on('event:approved', (data) => {
+      console.log('New event approved:', data);
+      // Fetch latest events to show the newly approved one
+      fetchEvents(currentPage, filterType);
+      fetchMostLikedEvents();
+      toast.success(`New event "${data.title}" is now available!`);
+    });
+
+    return () => {
+      socket.disconnect();
+    };
   }, [currentPage, filterType]);
 
   // Auto-rotate carousel every 5 seconds
@@ -144,6 +179,9 @@ export default function Events() {
           )
         );
 
+        // Re-fetch most liked events to update carousel order
+        fetchMostLikedEvents();
+
         toast.success(liked ? "Event liked!" : "Like removed");
       }
     } catch (error) {
@@ -179,7 +217,7 @@ export default function Events() {
       <div className="h-48 overflow-hidden bg-gray-800/50">
         {event.image_url ? (
           <img
-            src={event.image_url}
+            src={`${BASE_URL}${event.image_url}`}
             alt={event.title}
             className="w-full h-full object-contain"
           />
@@ -199,7 +237,10 @@ export default function Events() {
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => handleLike(event._id)}
+              onClick={(e) => {
+                e.stopPropagation();
+                handleLike(event._id);
+              }}
               className="shrink-0 hover:bg-white/10"
             >
               <Heart
@@ -319,11 +360,11 @@ export default function Events() {
               }}
               className="relative bg-white/5 border border-white/10 rounded-2xl overflow-hidden backdrop-blur-md cursor-pointer hover:border-white/20 transition-all"
             >
-            <div className="md:flex">
-              <div className="md:w-1/2 h-80 bg-gray-800/50">
+            <div className="md:flex h-96">
+              <div className="md:w-1/2 h-full bg-gray-800/50 flex items-center justify-center">
                 {mostLikedEvents[carouselIndex]?.image_url ? (
                   <img
-                    src={mostLikedEvents[carouselIndex].image_url}
+                    src={`${BASE_URL}${mostLikedEvents[carouselIndex].image_url}`}
                     alt={mostLikedEvents[carouselIndex].title}
                     className="w-full h-full object-contain"
                   />
@@ -333,46 +374,58 @@ export default function Events() {
                   </div>
                 )}
               </div>
-              <div className="md:w-1/2 p-8">
-                <h3 className="text-3xl font-bold text-white mb-4">
-                  {mostLikedEvents[carouselIndex]?.title}
-                </h3>
-                <p className="text-gray-400 mb-6 line-clamp-4">
-                  {mostLikedEvents[carouselIndex]?.description}
-                </p>
-                <div className="space-y-2 mb-6">
-                  <div className="flex items-center text-gray-300">
-                    <Calendar className="h-5 w-5 mr-2" />
-                    {formatDate(mostLikedEvents[carouselIndex]?.event_date)}{" "}
-                    at {mostLikedEvents[carouselIndex]?.event_time}
+              <div className="md:w-1/2 h-full p-8 flex flex-col justify-between">
+                <div className="space-y-3 flex-shrink-0">
+                  <h3 className="text-2xl font-bold text-white leading-tight" style={{ 
+                    display: '-webkit-box',
+                    WebkitLineClamp: 2,
+                    WebkitBoxOrient: 'vertical',
+                    overflow: 'hidden'
+                  }}>
+                    {mostLikedEvents[carouselIndex]?.title}
+                  </h3>
+                  <p className="text-gray-400 text-sm leading-relaxed" style={{ 
+                    display: '-webkit-box',
+                    WebkitLineClamp: 4,
+                    WebkitBoxOrient: 'vertical',
+                    overflow: 'hidden'
+                  }}>
+                    {mostLikedEvents[carouselIndex]?.description}
+                  </p>
+                </div>
+                <div className="space-y-2 flex-shrink-0 mb-8">
+                  <div className="flex items-center text-gray-300 text-sm">
+                    <Calendar className="h-4 w-4 mr-2 flex-shrink-0" />
+                    <span className="truncate">{formatDate(mostLikedEvents[carouselIndex]?.event_date)}{" "}
+                    at {mostLikedEvents[carouselIndex]?.event_time}</span>
                   </div>
-                  <div className="flex items-center text-gray-300">
-                    <MapPin className="h-5 w-5 mr-2" />
-                    {mostLikedEvents[carouselIndex]?.location}
+                  <div className="flex items-center text-gray-300 text-sm">
+                    <MapPin className="h-4 w-4 mr-2 flex-shrink-0" />
+                    <span className="truncate">{mostLikedEvents[carouselIndex]?.location}</span>
                   </div>
-                  <div className="flex items-center text-gray-300">
-                    <Heart className="h-5 w-5 mr-2 fill-red-500 text-red-500" />
+                  <div className="flex items-center text-gray-300 text-sm">
+                    <Heart className="h-4 w-4 mr-2 fill-red-500 text-red-500 flex-shrink-0" />
                     {mostLikedEvents[carouselIndex]?.likes} likes
                   </div>
                 </div>
-                {mostLikedEvents[carouselIndex]?.registration_link && (
-                  <a
-                    href={ensureUrlProtocol(mostLikedEvents[carouselIndex].registration_link)}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    <Button className="bg-blue-500 hover:bg-blue-600 text-white">
-                      Register Now
-                      <ExternalLink className="ml-2 h-4 w-4" />
-                    </Button>
-                  </a>
-                )}
               </div>
             </div>
 
             {/* Carousel Navigation */}
-            <div className="absolute bottom-4 right-4 flex gap-2" onClick={(e) => e.stopPropagation()}>
+            <div className="absolute bottom-4 right-4 flex gap-2 items-center" onClick={(e) => e.stopPropagation()}>
+              {mostLikedEvents[carouselIndex]?.registration_link && (
+                <a
+                  href={ensureUrlProtocol(mostLikedEvents[carouselIndex].registration_link)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <Button className="bg-blue-500 hover:bg-blue-600 text-white text-sm">
+                    Register Now
+                    <ExternalLink className="ml-2 h-4 w-4" />
+                  </Button>
+                </a>
+              )}
               <Button
                 variant="outline"
                 size="icon"
@@ -523,7 +576,7 @@ export default function Events() {
                 {selectedEvent.image_url ? (
                   <div className="w-full h-64 rounded-lg overflow-hidden bg-gray-800/50">
                     <img
-                      src={selectedEvent.image_url}
+                      src={`${BASE_URL}${selectedEvent.image_url}`}
                       alt={selectedEvent.title}
                       className="w-full h-full object-contain"
                     />

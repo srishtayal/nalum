@@ -29,6 +29,7 @@ import AdminDashboard from "./pages/admin/AdminDashboard";
 import VerificationQueue from "./pages/admin/VerificationQueue";
 import UserManagement from "./pages/admin/UserManagement";
 import EventApprovals from "./pages/admin/EventApprovals";
+import CurrentEvents from "./pages/admin/CurrentEvents";
 import Newsletters from "./pages/admin/Newsletters";
 import BannedUsers from "./pages/admin/BannedUsers";
 import CodeManagement from "./pages/admin/CodeManagement";
@@ -148,6 +149,7 @@ function AppContent() {
           />
           <Route path="/admin-panel/users" element={<UserManagement />} />
           <Route path="/admin-panel/events" element={<EventApprovals />} />
+          <Route path="/admin-panel/current-events" element={<CurrentEvents />} />
           <Route path="/admin-panel/newsletters" element={<Newsletters />} />
           <Route path="/admin-panel/banned" element={<BannedUsers />} />
           <Route path="/admin-panel/codes" element={<CodeManagement />} />
