@@ -39,7 +39,7 @@ const Signup = () => {
           const profileStatusResponse = await api.get("/profile/status", {
             headers: { Authorization: `Bearer ${accessToken}` },
           });
-          
+
           if (!profileStatusResponse.data.profileCompleted) {
             navigate('/profile-form', { replace: true });
           } else {
@@ -86,17 +86,17 @@ const Signup = () => {
     setIsLoading(true);
     try {
       const response = await api.post('/auth/sign-up', formData);
-      
+
       // Check if user exists but needs verification
-      if(response.data.needsVerification){
-        toast({ 
-          title: "Account already exists", 
+      if (response.data.needsVerification) {
+        toast({
+          title: "Account already exists",
           description: "Please verify your email to continue. Redirecting to verification page..."
         });
         navigate("/otp-verification", { state: { email: formData.email } });
         return;
       }
-      
+
       toast({ title: "Registration successful! Please verify your email." });
       navigate("/otp-verification", { state: { email: formData.email } });
     } catch (error: unknown) {
@@ -110,7 +110,7 @@ const Signup = () => {
             variant: "destructive",
           });
         } else if (errorCode === "USER_ALREADY_EXISTS" || error.response?.status === 409) {
-           toast({
+          toast({
             title: "User already exists",
             description: "This email is already registered and verified. Please sign in instead.",
             variant: "destructive",
@@ -130,9 +130,9 @@ const Signup = () => {
   };
 
   return (
-    <div className="min-h-screen w-full lg:grid lg:grid-cols-2 pt-16 lg:pt-0">
+    <div className="flex flex-col min-h-[100dvh] w-full bg-gray-50 lg:grid lg:grid-cols-2 lg:h-screen lg:overflow-hidden">
       {/* Left Column: Image */}
-      <div className="relative hidden lg:flex flex-col items-start justify-between p-10">
+      <div className="relative hidden lg:flex flex-col items-start justify-between p-10 h-full">
         <img
           src={nsutCampusHero}
           alt="NSUT Campus"
@@ -154,7 +154,7 @@ const Signup = () => {
       </div>
 
       {/* Right Column: Form */}
-      <div className="relative flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 bg-gray-50 min-h-screen lg:min-h-full">
+      <div className="flex-1 relative flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 bg-gray-50 lg:h-full lg:overflow-y-auto">
         {/* Subtle Pattern Background */}
         <div className="absolute inset-0 opacity-5">
           <div className="absolute inset-0" style={{

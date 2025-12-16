@@ -104,7 +104,7 @@ const SocialMediaSection = () => {
   ];
 
   return (
-    <div className="relative py-20 bg-gradient-to-b from-white via-gray-50 to-white">
+    <div className="relative py-12 md:py-20 bg-gradient-to-b from-white via-gray-50 to-white">
       {/* Background pattern */}
       <div className="absolute inset-0 opacity-5">
         <div className="absolute inset-0" style={{
@@ -116,14 +116,14 @@ const SocialMediaSection = () => {
         {/* Header */}
         <div className="text-center mb-12 max-w-3xl mx-auto">
           <div className="inline-block mb-3">
-            <span className="text-nsut-maroon text-sm font-semibold tracking-wider uppercase">
+            <span className="text-nsut-maroon text-xs md:text-sm font-semibold tracking-wider uppercase">
               Community Stories
             </span>
           </div>
-          <h2 className="text-3xl md:text-5xl font-serif font-bold text-gray-900 mb-4">
+          <h2 className="text-2xl md:text-5xl font-serif font-bold text-gray-900 mb-4">
             Be <span className="text-transparent bg-clip-text bg-gradient-to-r from-nsut-maroon to-red-600">#TrueNALUM</span>
           </h2>
-          <p className="text-lg text-gray-600 leading-relaxed">
+          <p className="text-base md:text-lg text-gray-600 leading-relaxed">
             Share your journey, inspire others, and stay connected with the NSUT alumni community
           </p>
         </div>
@@ -133,7 +133,7 @@ const SocialMediaSection = () => {
           {demoPosts.map((post) => {
             const PlatformIcon = getPlatformIcon(post.platform);
             const platformGradient = getPlatformColor(post.platform);
-            
+
             return (
               <div
                 key={post.id}
@@ -146,13 +146,13 @@ const SocialMediaSection = () => {
                     <div className="w-10 h-10 rounded-full bg-gradient-to-br from-nsut-maroon to-red-700 flex items-center justify-center text-white font-bold text-sm">
                       {post.avatar}
                     </div>
-                    
+
                     {/* Author info */}
                     <div className="flex-1">
                       <h4 className="font-semibold text-gray-900 text-sm">{post.author}</h4>
                       <p className="text-xs text-gray-500">{post.username} • {post.timestamp}</p>
                     </div>
-                    
+
                     {/* Platform icon */}
                     <div className={`p-2 rounded-lg bg-gradient-to-br ${platformGradient}`}>
                       <PlatformIcon className="h-4 w-4 text-white" />
@@ -165,8 +165,8 @@ const SocialMediaSection = () => {
                   {/* Image if exists */}
                   {post.image && (
                     <div className="relative h-64 overflow-hidden">
-                      <img 
-                        src={post.image} 
+                      <img
+                        src={post.image}
                         alt={`Post by ${post.author}`}
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                       />
@@ -174,7 +174,7 @@ const SocialMediaSection = () => {
                       <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                     </div>
                   )}
-                  
+
                   {/* Text content */}
                   <div className="p-4">
                     <p className="text-gray-700 text-sm leading-relaxed">
@@ -221,8 +221,8 @@ const SocialMediaSection = () => {
           </div>
 
           {/* CTA Button */}
-          <Button 
-            variant="outline" 
+          <Button
+            variant="outline"
             className="border-2 border-nsut-maroon text-nsut-maroon hover:bg-nsut-maroon hover:text-white font-semibold px-8"
           >
             <ExternalLink className="h-4 w-4 mr-2" />

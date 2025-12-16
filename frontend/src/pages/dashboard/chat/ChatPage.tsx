@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation, useParams, useNavigate } from "react-router-dom";
 
 import { ChatList } from "./components/ChatList";
 import { ChatWindow } from "./components/ChatWindow";
@@ -20,34 +20,28 @@ import { useMergedChats } from "@/hooks/useMergedChats";
  * - Right Area: ChatWindow (active conversation) or placeholder.
  */
 const ChatPageContent = () => {
-  const [selectedChatId, setSelectedChatId] = useState<string | null>(null);
+  const { conversationId } = useParams();
+  const navigate = useNavigate();
   const location = useLocation();
   const { allChats } = useMergedChats();
 
   const selectedConversation = useMemo(() =>
-    allChats.find((c: any) => c._id === selectedChatId) || null,
-    [allChats, selectedChatId]
+    allChats.find((c: any) => c._id === conversationId) || null,
+    [allChats, conversationId]
   );
 
   useEffect(() => {
     if (location.state?.conversation) {
-      // If passing a conversation object, we can extract ID to select it
-      // Ideally the object fits the shape in allChats.
-      // If it is a newly created conversation, it might have a real _id.
-      // If it comes from viewProfile, it is the result of createConversation.
+      // If passing a conversation object, navigate to its URL
       const conv = location.state.conversation;
-      // We need to ensure we select the item that corresponds to this conversation.
-      // If allChats has updated, we find it there.
-      // If allChats hasn't updated yet, we might have an issue, but usually cache invalidation happens fast.
-      // However, if we just rely on ID, we are safe once allChats updates.
-      if (conv._id) {
-        setSelectedChatId(conv._id);
+      if (conv._id && conv._id !== conversationId) {
+        navigate(`/dashboard/chat/${conv._id}`, { replace: true });
       }
 
       // Clear state so it doesn't persist if we navigate away and back without intent
       window.history.replaceState({}, document.title);
     }
-  }, [location.state]);
+  }, [location.state, conversationId, navigate]);
 
 
   return (
@@ -61,7 +55,7 @@ const ChatPageContent = () => {
               <div className="h-full flex flex-col">
                 <div className="flex-1 mt-0 overflow-hidden min-h-0">
                   <ChatList
-                    onSelectConversation={(chat: any) => setSelectedChatId(chat._id)}
+                    onSelectConversation={(chat: any) => navigate(`/dashboard/chat/${chat._id}`)}
                     selectedConversation={selectedConversation}
                     chats={allChats}
                   />
@@ -76,7 +70,7 @@ const ChatPageContent = () => {
               {selectedConversation ? (
                 <ChatWindow
                   conversation={selectedConversation}
-                  onBack={() => setSelectedChatId(null)}
+                  onBack={() => navigate("/dashboard/chat")}
                 />
               ) : (
                 <div className="h-full flex items-center justify-center">

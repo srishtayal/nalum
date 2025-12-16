@@ -7,6 +7,7 @@ import { ConnectionButton } from "@/components/ui/ConnectionButton";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { useProfile } from "@/context/ProfileContext";
+import { cn } from "@/lib/utils";
 
 interface SuggestionProfile {
   _id: string;
@@ -23,7 +24,13 @@ interface SuggestionProfile {
   connectionStatus?: string;
 }
 
-const PeopleYouMightKnow = () => {
+interface PeopleYouMightKnowProps {
+  className?: string;
+  hideHeader?: boolean;
+  fullHeight?: boolean;
+}
+
+const PeopleYouMightKnow = ({ className, hideHeader, fullHeight }: PeopleYouMightKnowProps) => {
   const navigate = useNavigate();
   const { profile } = useProfile();
   const [suggestions, setSuggestions] = useState<SuggestionProfile[]>([]);
@@ -83,9 +90,12 @@ const PeopleYouMightKnow = () => {
     return combined.slice(0, 6);
   }, [suggestions, profile]);
 
-  const handleConnect = async (userId: string) => {
+  const handleConnect = async (userId: string, message?: string) => {
     try {
-      await api.post("/chat/connections/request", { recipientId: userId });
+      await api.post("/chat/connections/request", {
+        recipientId: userId,
+        requestMessage: message
+      });
       toast.success("Connection request sent");
       fetchSuggestions();
     } catch (error: any) {
@@ -111,14 +121,16 @@ const PeopleYouMightKnow = () => {
   }
 
   return (
-    <div className="rounded-xl border border-white/10 bg-white/5 p-4 backdrop-blur-md w-full md:max-w-xs md:ml-auto">
-      <div className="flex items-center justify-between mb-3">
-        <h3 className="text-lg font-semibold text-white">
-          People you might know
-        </h3>
-      </div>
+    <div className={cn("rounded-xl border border-white/10 bg-white/5 p-4 backdrop-blur-md w-full md:max-w-xs md:ml-auto", className)}>
+      {!hideHeader && (
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="text-lg font-semibold text-white">
+            People you might know
+          </h3>
+        </div>
+      )}
 
-      <div className="flex flex-col space-y-1 max-h-96 overflow-y-auto pr-2">
+      <div className={cn("flex flex-col space-y-1 pr-2", !fullHeight && "max-h-96 overflow-y-auto")}>
         {filteredSuggestions.map((profile) => {
           // Skip if user data is null or undefined
           if (!profile.user || !profile.user._id) {
@@ -165,12 +177,13 @@ const PeopleYouMightKnow = () => {
                 )}
               </div>
 
-              <div className="mt-4">
+              <div className="mt-4" onClick={(e) => e.stopPropagation()}>
                 <ConnectionButton
                   status={profile.connectionStatus || "not_connected"}
                   userId={profile.user._id}
                   onConnect={handleConnect}
                   fullWidth
+                  recipientName={profile.user.name}
                 />
               </div>
             </div>

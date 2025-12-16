@@ -378,7 +378,7 @@ export const ChatWindow = ({ conversation, onBack }: ChatWindowProps) => {
       {/* Typing Indicator */}
       {activeConversationId && !isBlocked && <TypingIndicator conversationId={activeConversationId} />}
 
-      {/* Input or Blocked Message */}
+      {/* Input or Blocked/Pending Message */}
       {isBlocked ? (
         <div className="p-4 bg-black/20 backdrop-blur-sm border-t border-white/10 text-center">
           {isBlockedByMe ? (
@@ -390,6 +390,45 @@ export const ChatWindow = ({ conversation, onBack }: ChatWindowProps) => {
               You cannot send messages to this user.
             </div>
           )}
+        </div>
+      ) : conversation.connectionStatus === 'pending' && conversation.connectionRequester && (typeof conversation.connectionRequester === 'string' ? conversation.connectionRequester : conversation.connectionRequester._id) !== user?.id ? (
+        <div className="p-4 bg-black/40 backdrop-blur-md border-t border-white/10">
+          <div className="flex flex-col items-center gap-3">
+            <p className="text-sm text-gray-300">
+              {conversation.otherParticipant?.name} sent you a connection request.
+            </p>
+            <div className="flex gap-3 w-full max-w-sm">
+              <Button
+                variant="outline"
+                className="flex-1 border-red-500/50 text-red-500 hover:bg-red-500/10 hover:text-red-400 hover:border-red-500"
+                onClick={async () => {
+                  try {
+                    if (conversation.connectionId) {
+                      await api.post("/chat/connections/respond", { connectionId: conversation.connectionId, action: "reject" });
+                      toast.success("Request rejected");
+                      queryClient.invalidateQueries({ queryKey: ["conversations"] });
+                    }
+                  } catch (e) { console.error(e); toast.error("Failed to reject request"); }
+                }}
+              >
+                Ignore
+              </Button>
+              <Button
+                className="flex-1 bg-blue-600 hover:bg-blue-700 text-white"
+                onClick={async () => {
+                  try {
+                    if (conversation.connectionId) {
+                      await api.post("/chat/connections/respond", { connectionId: conversation.connectionId, action: "accept" });
+                      toast.success("Request accepted");
+                      queryClient.invalidateQueries({ queryKey: ["conversations"] });
+                    }
+                  } catch (e) { console.error(e); toast.error("Failed to accept request"); }
+                }}
+              >
+                Accept
+              </Button>
+            </div>
+          </div>
         </div>
       ) : (
         <MessageInput

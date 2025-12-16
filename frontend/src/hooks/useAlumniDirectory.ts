@@ -194,7 +194,7 @@ export const useAlumniDirectory = () => {
       setCurrentPage(1);
       fetchAlumni(1);
     }
-    
+
   }, [itemsPerPage]); // Only depend on itemsPerPage to avoid infinite loops
 
   const handleFilterChange = (key: keyof Filters, value: string) => {
@@ -276,11 +276,11 @@ export const useAlumniDirectory = () => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  const handleConnect = async (recipientId: string) => {
+  const handleConnect = async (recipientId: string, message?: string) => {
     try {
       await api.post(
         "/chat/connections/request",
-        { recipientId },
+        { recipientId, requestMessage: message },
         { headers: { Authorization: `Bearer ${accessToken}` } }
       );
 

@@ -70,7 +70,10 @@ exports.getConversations = async (req, res) => {
           participants: participantsWithPics,
           otherParticipant,
           unreadCount,
+          unreadCount,
           connectionStatus: connection ? connection.status : 'none',
+          connectionRequester: connection ? connection.requester : null,
+          connectionId: connection ? connection._id : null,
           blockedBy: connection ? connection.blockedBy : null
         };
       })
@@ -158,6 +161,8 @@ exports.getConversation = async (req, res) => {
         otherParticipant, // Add this for easier frontend consumption
         unreadCount: unreadCount,
         connectionStatus: connection ? connection.status : 'none',
+        connectionRequester: connection ? connection.requester : null,
+        connectionId: connection ? connection._id : null,
         blockedBy: connection ? connection.blockedBy : null
       }
     });
@@ -183,10 +188,11 @@ exports.createConversation = async (req, res) => {
     }
 
     // Check if users are connected
+    // Check if users are connected or pending
     const connection = await Connection.findOne({
       $or: [
-        { requester: userId, recipient: participantId, status: 'accepted' },
-        { requester: participantId, recipient: userId, status: 'accepted' }
+        { requester: userId, recipient: participantId, status: { $in: ['accepted', 'pending'] } },
+        { requester: participantId, recipient: userId, status: { $in: ['accepted', 'pending'] } }
       ]
     });
 
@@ -244,7 +250,11 @@ exports.createConversation = async (req, res) => {
       data: {
         ...conversation.toObject(),
         participants: participantsWithPics,
-        otherParticipant
+        otherParticipant,
+        connectionStatus: connection ? connection.status : 'none',
+        connectionRequester: connection ? connection.requester : null,
+        connectionId: connection ? connection._id : null,
+        blockedBy: connection ? connection.blockedBy : null
       }
     });
 

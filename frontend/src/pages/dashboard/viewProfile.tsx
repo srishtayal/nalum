@@ -24,6 +24,7 @@ import { useAuth } from "@/context/AuthContext";
 import api from "@/lib/api";
 import UserAvatar from "@/components/UserAvatar";
 import { toast } from "sonner";
+import { ConnectionMessageDialog } from "@/components/ConnectionMessageDialog";
 
 interface Profile {
   user: {
@@ -60,6 +61,7 @@ const ViewProfile = () => {
   const { userId } = useParams<{ userId: string }>();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [showConnectionDialog, setShowConnectionDialog] = useState(false);
   const { createConversation } = useConversations();
 
   const handleMessage = async () => {
@@ -72,11 +74,11 @@ const ViewProfile = () => {
     }
   };
 
-  const handleConnect = async (recipientId: string) => {
+  const handleConnect = async (recipientId: string, message?: string) => {
     try {
       await api.post(
         "/chat/connections/request",
-        { recipientId },
+        { recipientId, requestMessage: message },
         { headers: { Authorization: `Bearer ${accessToken}` } }
       );
 
@@ -271,7 +273,7 @@ const ViewProfile = () => {
                     </Button>
                   ) : (
                     <Button
-                      onClick={() => handleConnect(profile.user._id)}
+                      onClick={() => setShowConnectionDialog(true)}
                       className="bg-indigo-600 hover:bg-indigo-700 text-white"
                     >
                       <UserPlus className="h-4 w-4 mr-2" />
@@ -466,6 +468,15 @@ const ViewProfile = () => {
           )}
         </div>
       </div>
+
+      {profile && (
+        <ConnectionMessageDialog
+          isOpen={showConnectionDialog}
+          onClose={() => setShowConnectionDialog(false)}
+          onConfirm={(message) => handleConnect(profile.user._id, message)}
+          recipientName={profile.user.name}
+        />
+      )}
     </div>
   );
 };

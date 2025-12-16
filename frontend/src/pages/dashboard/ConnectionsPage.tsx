@@ -26,6 +26,7 @@ import { toast } from "sonner";
 import { useConversations } from "@/hooks/useConversations";
 import { useAuth } from "@/context/AuthContext";
 import { cn } from "@/lib/utils";
+import PeopleYouMightKnow from "./PeopleYouMightKnow";
 
 const ConnectionsPage = () => {
     const { user } = useAuth();
@@ -139,10 +140,18 @@ const ConnectionsPage = () => {
 
     const displayData = getDisplayData();
 
+    const handleItemClick = (conn: any) => {
+        if (activeTab === "received") {
+            handleMessage(conn.otherUser._id);
+        } else {
+            navigate(`/dashboard/alumni/${conn.otherUser._id}`);
+        }
+    };
+
     if (!user) return null; // Should be handled by protected route
 
     return (
-        <div className="min-h-screen bg-slate-950 pb-20">
+        <div className="min-h-screen bg-slate-950 pb-32 md:pb-20">
             {/* Header */}
             <div className="sticky top-0 z-10 bg-slate-950/80 backdrop-blur-md border-b border-white/10 p-4 pb-0">
                 <div className="flex items-center gap-3 mb-4">
@@ -165,7 +174,11 @@ const ConnectionsPage = () => {
                     {(["connections", "received", "sent"] as const).map((tab) => (
                         <button
                             key={tab}
-                            onClick={() => setActiveTab(tab)}
+                            onClick={() => {
+                                setActiveTab(tab);
+                                window.scrollTo(0, 0);
+                                document.querySelector('main')?.scrollTo(0, 0);
+                            }}
                             className={cn(
                                 "flex-1 py-2 text-sm font-medium rounded-lg transition-all",
                                 activeTab === tab
@@ -205,28 +218,28 @@ const ConnectionsPage = () => {
                     </div>
                 ) : (
                     displayData.map((conn: any) => (
-                        <div key={conn._id} className="flex items-center gap-4 p-4 rounded-xl bg-white/5 border border-white/10">
-                            <div onClick={() => navigate(`/dashboard/alumni/${conn.otherUser._id}`)} className="cursor-pointer">
+                        <div
+                            key={conn._id}
+                            onClick={() => handleItemClick(conn)}
+                            className="flex items-center gap-4 p-4 rounded-xl bg-white/5 border border-white/10 cursor-pointer hover:bg-white/10 transition-colors"
+                        >
+                            <div>
                                 <UserAvatar
                                     src={conn.otherUser.profilePicture || conn.otherUser.profile_picture}
                                     name={conn.otherUser.name}
                                     size="md"
                                 />
                             </div>
-                            <div className="flex-1 min-w-0" onClick={() => navigate(`/dashboard/alumni/${conn.otherUser._id}`)}>
-                                <h3 className="font-semibold text-white truncate cursor-pointer hover:text-blue-400 transition-colors">
+                            <div className="flex-1 min-w-0">
+                                <h3 className="font-semibold text-white truncate group-hover:text-blue-400 transition-colors">
                                     {conn.otherUser.name}
                                 </h3>
                                 {conn.otherUser.email && activeTab !== "connections" && (
                                     <p className="text-xs text-gray-500 truncate">{conn.otherUser.email}</p>
                                 )}
-                                {/* Show message context if available? Not usually for connections list but maybe request message */}
-                                {conn.requestMessage && activeTab === "received" && (
-                                    <p className="text-xs text-gray-400 italic mt-1 truncate">"{conn.requestMessage}"</p>
-                                )}
                             </div>
 
-                            <div className="flex items-center gap-2">
+                            <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
                                 {/* Actions based on Tab */}
                                 {activeTab === "connections" && (
                                     <>
@@ -291,6 +304,16 @@ const ConnectionsPage = () => {
                         </div>
                     ))
                 )}
+
+                {/* Recommended Connections Section */}
+                <div className="mt-8 pt-8 border-t border-white/10">
+                    <h2 className="text-xl font-bold text-white mb-4 px-2">Recommended for you</h2>
+                    <PeopleYouMightKnow
+                        className="w-full max-w-none ml-0 bg-transparent border-0 p-0 shadow-none"
+                        hideHeader
+                        fullHeight
+                    />
+                </div>
             </div>
         </div>
     );

@@ -5,7 +5,7 @@ import { Play, Pause } from 'lucide-react';
 const Hero = () => {
   // Default main image
   const defaultImage = '/src/assets/nsut-campus-hero.png';
-  
+
   // Slideshow images from public/homeGallery folder
   const images = [
     '/homeGallery/Om (2).JPG',
@@ -29,7 +29,7 @@ const Hero = () => {
       if (heroRef.current) {
         const heroBottom = heroRef.current.offsetHeight;
         const currentScroll = window.scrollY;
-        
+
         // Stop movement when image section ends
         if (currentScroll <= heroBottom) {
           setScrollY(currentScroll);
@@ -86,31 +86,29 @@ const Hero = () => {
   };
 
   return (
-    <div 
+    <div
       ref={heroRef}
-      className="relative h-[140vh] bg-cover bg-center text-white overflow-hidden"
+      className="relative h-screen bg-cover bg-center text-white overflow-hidden"
     >
       {/* Background Images with crossfade */}
       <div className="absolute inset-0">
         {/* Default main image - shown when paused */}
         <div
-          className={`absolute inset-0 bg-cover bg-center transition-opacity duration-1000 ${
-            currentImageIndex === -1 && !isTransitioning
-              ? 'opacity-100'
-              : 'opacity-0'
-          }`}
+          className={`absolute inset-0 bg-cover bg-center transition-opacity duration-1000 ${currentImageIndex === -1 && !isTransitioning
+            ? 'opacity-100'
+            : 'opacity-0'
+            }`}
           style={{ backgroundImage: `url('${defaultImage}')` }}
         />
-        
+
         {/* Slideshow images */}
         {images.map((image, index) => (
           <div
             key={index}
-            className={`absolute inset-0 bg-cover bg-center transition-opacity duration-1000 ${
-              index === currentImageIndex && !isTransitioning
-                ? 'opacity-100'
-                : 'opacity-0'
-            }`}
+            className={`absolute inset-0 bg-cover bg-center transition-opacity duration-1000 ${index === currentImageIndex && !isTransitioning
+              ? 'opacity-100'
+              : 'opacity-0'
+              }`}
             style={{ backgroundImage: `url('${image}')` }}
           />
         ))}
@@ -145,11 +143,10 @@ const Hero = () => {
                   setIsTransitioning(false);
                 }, 300);
               }}
-              className={`w-2 h-2 rounded-full transition-all duration-300 ${
-                index === currentImageIndex
-                  ? 'bg-white w-8'
-                  : 'bg-white/50 hover:bg-white/75'
-              }`}
+              className={`w-2 h-2 rounded-full transition-all duration-300 ${index === currentImageIndex
+                ? 'bg-white w-8'
+                : 'bg-white/50 hover:bg-white/75'
+                }`}
               aria-label={`Go to slide ${index + 1}`}
             />
           ))}
@@ -160,13 +157,13 @@ const Hero = () => {
       <div
         className="relative z-10 h-screen flex flex-col items-center justify-center text-center px-4"
         style={{
-          transform: `translateY(${Math.min(scrollY * 0.9, 600)}px)`, // Limit to 500px shift
+          transform: `translateY(${Math.min(scrollY * 0.5, 200)}px)`, // Limit parallax shift
         }}
       >
-        <h1 className="text-4xl md:text-6xl font-serif font-bold animate-fade-in">
+        <h1 className="text-3xl md:text-6xl font-serif font-bold animate-fade-in drop-shadow-lg">
           Continue your lifelong journey.
         </h1>
-        <p className="mt-4 text-lg md:text-xl max-w-2xl animate-fade-in animation-delay-300">
+        <p className="mt-4 text-base md:text-xl max-w-2xl animate-fade-in animation-delay-300 drop-shadow-md">
           Build connections, explore resources, and find new opportunities.
         </p>
       </div>

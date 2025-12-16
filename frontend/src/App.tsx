@@ -130,6 +130,7 @@ function AppContent() {
           <Route path="/dashboard/alumni/:userId" element={<ViewProfile />} />
           <Route path="/dashboard/connections" element={<ConnectionsPage />} />
           <Route path="/dashboard/chat" element={<ChatPage />} />
+          <Route path="/dashboard/chat/:conversationId" element={<ChatPage />} />
         </Route>
 
         {/* Admin Panel Routes - Use main login, role-based access */}
