@@ -77,6 +77,47 @@ exports.getPosts = async (req, res) => {
   }
 };
 
+exports.searchPosts = async (req, res) => {
+  try {
+    const { query } = req.query;
+
+    if (!query) {
+      return res.status(400).json({
+        success: false,
+        message: "Search query is required",
+      });
+    }
+
+    // Find users matching the name
+    const users = await User.find({
+      name: { $regex: query, $options: "i" },
+    }).select("_id");
+
+    const userIds = users.map((user) => user._id);
+
+    // Find posts matching title OR userId in the found users
+    const posts = await Post.find({
+      $or: [
+        { title: { $regex: query, $options: "i" } },
+        { userId: { $in: userIds } },
+      ],
+    })
+      .sort({ createdAt: -1 })
+      .populate("userId", "name email role");
+
+    return res.status(200).json({
+      success: true,
+      data: posts,
+      message: "Posts found successfully",
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: error.message || "Error searching posts",
+    });
+  }
+};
+
 exports.getPostById = async (req, res) => {
   try {
     const post = await Post.findById(req.params.id).populate(

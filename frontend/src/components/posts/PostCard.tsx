@@ -15,6 +15,7 @@ interface Post {
   };
   images: string[];
   createdAt: string;
+  updatedAt: string;
 }
 
 interface PostCardProps {
@@ -64,7 +65,8 @@ const PostCard = ({ post, onEdit, onDelete }: PostCardProps) => {
           <div className="flex items-center text-xs text-gray-400 gap-1">
             <Clock className="h-3 w-3" />
             <span>
-              {formatDistanceToNow(new Date(post.createdAt), {
+              updated{" "}
+              {formatDistanceToNow(new Date(post.updatedAt), {
                 addSuffix: true,
               })}
             </span>
@@ -82,18 +84,16 @@ const PostCard = ({ post, onEdit, onDelete }: PostCardProps) => {
 
       {/* Images */}
       {post.images && post.images.length > 0 && (
-        <div className="mt-4 flex gap-2">
+        <div className="mt-4 flex flex-col gap-4">
           {post.images.map((image, index) => (
             <div
               key={index}
-              className={`relative overflow-hidden rounded-lg border border-white/10 group ${
-                post.images.length === 1 ? "w-full" : "w-1/2"
-              }`}
+              className="relative overflow-hidden rounded-lg border border-white/10 group w-full"
             >
               <img
                 src={getImageUrl(image)}
                 alt={`Post attachment ${index + 1}`}
-                className="w-full h-64 object-cover transition-transform duration-500 group-hover:scale-105"
+                className="w-full h-auto max-h-[800px] object-contain transition-transform duration-500 group-hover:scale-105"
               />
             </div>
           ))}

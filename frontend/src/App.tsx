@@ -23,6 +23,7 @@ import VerifyAlumni from "@/pages/dashboard/verifyAlumni";
 import { ChatPage } from "@/pages/dashboard/chat/ChatPage";
 import Events from "@/pages/dashboard/Events";
 import HostEvent from "@/pages/dashboard/HostEvent";
+import MyPosts from "@/pages/dashboard/MyPosts";
 import Root from "@/pages/Root";
 import SignUp from "@/pages/auth/SignUp";
 import AdminProtectedRoute from "./components/admin/AdminProtectedRoute";
@@ -136,6 +137,7 @@ function AppContent() {
           <Route path="/dashboard/chat" element={<ChatPage />} />
           <Route path="/dashboard/chat/:conversationId" element={<ChatPage />} />
           <Route path="/dashboard/events" element={<Events />} />
+          <Route path="/dashboard/posts" element={<MyPosts />} />
           <Route path="/dashboard/host-event" element={<HostEvent />} />
         </Route>
 

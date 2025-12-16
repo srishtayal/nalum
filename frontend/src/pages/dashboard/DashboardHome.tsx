@@ -1,17 +1,34 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useProfile } from "@/context/ProfileContext";
 import PeopleYouMightKnow from "@/pages/dashboard/PeopleYouMightKnow";
 import UpcomingEvents from "@/pages/dashboard/UpcomingEvents";
 import ConnectionsPopover from "@/components/ConnectionsPopover";
 import CreatePostModal from "@/components/posts/CreatePostModal";
 import PostsFeed from "@/components/posts/PostsFeed";
-import { PenSquare, Search } from "lucide-react";
+import { PenSquare, Search, X, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
 const DashboardHome = () => {
   const { profile } = useProfile();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [debouncedQuery, setDebouncedQuery] = useState("");
+  const [isSearching, setIsSearching] = useState(false);
+
+  useEffect(() => {
+    if (searchQuery !== debouncedQuery) {
+      setIsSearching(true);
+      const handler = setTimeout(() => {
+        setDebouncedQuery(searchQuery);
+        setIsSearching(false);
+      }, 500);
+
+      return () => {
+        clearTimeout(handler);
+      };
+    }
+  }, [searchQuery, debouncedQuery]);
 
   const handleStartPost = () => {
     const isAlumni = (profile?.user as any)?.role === "alumni";
@@ -41,7 +58,10 @@ const DashboardHome = () => {
             </span>
           </button>
 
-          <PostsFeed refreshTrigger={refreshTrigger} />
+          <PostsFeed
+            refreshTrigger={refreshTrigger}
+            searchQuery={debouncedQuery}
+          />
         </div>
 
         {/* Right Column: Search, People & Events */}
@@ -53,8 +73,23 @@ const DashboardHome = () => {
               <input
                 type="text"
                 placeholder="Search posts..."
-                className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 pl-12 pr-4 text-base text-white placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500/50 transition-all"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 pl-12 pr-10 text-base text-white placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500/50 transition-all"
               />
+              <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center gap-2">
+                {isSearching && (
+                  <Loader2 className="h-4 w-4 animate-spin text-blue-500" />
+                )}
+                {searchQuery && (
+                  <button
+                    onClick={() => setSearchQuery("")}
+                    className="p-1 hover:bg-white/10 rounded-full transition-colors"
+                  >
+                    <X className="h-4 w-4 text-gray-400 hover:text-white" />
+                  </button>
+                )}
+              </div>
             </div>
             <ConnectionsPopover />
           </div>

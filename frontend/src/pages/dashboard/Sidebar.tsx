@@ -1,5 +1,5 @@
 import { Link, useLocation } from "react-router-dom";
-import { Home, Edit2, Users, LogOut, MessageSquare, Calendar, Sparkles } from "lucide-react";
+import { Home, Edit2, Users, LogOut, MessageSquare, Calendar, Sparkles, FileText } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { useProfile } from "@/context/ProfileContext";
 import { cn } from "@/lib/utils";
@@ -16,7 +16,7 @@ const Sidebar = ({ onNavigate }: SidebarProps) => {
   const location = useLocation();
   const { profile } = useProfile();
   const { conversations } = useConversations(); // Restored hook usage
-  
+
   // Calculate total unread count
   const unreadCount = conversations.reduce((acc: number, conv: any) => acc + (conv.unreadCount || 0), 0);
 
@@ -45,6 +45,11 @@ const Sidebar = ({ onNavigate }: SidebarProps) => {
     },
     ...(user?.role === "alumni"
       ? [
+          {
+            to: "/dashboard/posts",
+            icon: FileText,
+            label: "My Posts",
+          },
           {
             to: "/dashboard/host-event",
             icon: Sparkles,
