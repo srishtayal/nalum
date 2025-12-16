@@ -4,10 +4,12 @@ import {
   Users,
   CheckCircle,
   Calendar,
+  CalendarCheck,
   FileText,
   Ban,
   LogOut,
   Key,
+  Database,
 } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
 
@@ -36,6 +38,11 @@ const AdminSidebar = () => {
       icon: Key,
     },
     {
+      name: "Alumni Database",
+      path: "/admin-panel/alumni-database",
+      icon: Database,
+    },
+    {
       name: "User Management",
       path: "/admin-panel/users",
       icon: Users,
@@ -44,6 +51,11 @@ const AdminSidebar = () => {
       name: "Event Approvals",
       path: "/admin-panel/events",
       icon: Calendar,
+    },
+    {
+      name: "Current Events",
+      path: "/admin-panel/current-events",
+      icon: CalendarCheck,
     },
     {
       name: "Newsletters",

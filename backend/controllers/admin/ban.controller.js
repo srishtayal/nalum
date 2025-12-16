@@ -181,15 +181,36 @@ exports.unbanUser = async (req, res) => {
 // Get all banned users
 exports.getBannedUsers = async (req, res) => {
   try {
-    const { page = 1, limit = 10 } = req.query;
+    const { page = 1, limit = 100 } = req.query;
 
-    const bannedUsers = await User.find({ banned: true })
-      .select("name email role ban_reason ban_expires_at createdAt")
-      .sort({ updatedAt: -1 })
+    // Find active bans with user data
+    const bans = await Ban.find({ is_active: true })
+      .populate({
+        path: "user",
+        select: "name email role createdAt",
+      })
+      .sort({ createdAt: -1 })
       .skip((page - 1) * limit)
       .limit(parseInt(limit));
 
-    const total = await User.countDocuments({ banned: true });
+    // Format the response to match frontend expectations
+    const bannedUsers = bans
+      .filter(ban => ban.user) // Filter out bans where user might be deleted
+      .map(ban => ({
+        _id: ban._id,
+        user_id: ban.user._id,
+        user_name: ban.user.name,
+        user_email: ban.user.email,
+        banned_by: ban.banned_by,
+        banned_by_name: ban.banned_by, // Using email as name for now
+        reason: ban.reason,
+        duration: ban.duration,
+        ban_expires_at: ban.ban_expires_at,
+        is_active: ban.is_active,
+        created_at: ban.createdAt,
+      }));
+
+    const total = await Ban.countDocuments({ is_active: true });
 
     res.status(200).json({
       success: true,

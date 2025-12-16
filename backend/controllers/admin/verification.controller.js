@@ -46,7 +46,7 @@ exports.getVerificationQueue = async (req, res) => {
 exports.approveVerification = async (req, res) => {
   try {
     const { userId } = req.params;
-    const { notes } = req.body;
+    const notes = req.body?.notes || "";
 
     // Find the verification request
     const verificationRequest = await VerificationQueue.findOne({
@@ -85,7 +85,7 @@ exports.approveVerification = async (req, res) => {
       {
         user_name: user.name,
         user_email: user.email,
-        notes: notes || "",
+        notes: notes,
       },
       req.ip
     );
@@ -192,6 +192,66 @@ exports.getVerificationStats = async (req, res) => {
     res.status(500).json({
       success: false,
       message: "An error occurred while fetching statistics",
+    });
+  }
+};
+
+// Search alumni database (for admin use)
+exports.searchAlumniDatabase = async (req, res) => {
+  try {
+    const { name, roll_no, batch, branch } = req.body;
+
+    // This endpoint would call the alumni service microservice
+    // For now, we'll return an empty array with a message
+    // When the alumni service is configured, this will search the PostgreSQL database
+    
+    const ALUMNI_SERVICE_URL = process.env.ALUMNI_VERIFY_SERVICE_URL;
+    
+    if (!ALUMNI_SERVICE_URL) {
+      return res.status(200).json({
+        success: true,
+        matches: [],
+        message: "Alumni database service is not configured. Please set ALUMNI_VERIFY_SERVICE_URL in environment variables.",
+      });
+    }
+
+    // When alumni service is available, make the API call
+    const axios = require("axios");
+    
+    try {
+      const response = await axios.post(
+        `${ALUMNI_SERVICE_URL}/api/alumni/search`,
+        {
+          name,
+          roll_no,
+          batch,
+          branch,
+        },
+        {
+          timeout: 10000,
+        }
+      );
+
+      const matches = response.data.matches || [];
+      
+      res.status(200).json({
+        success: true,
+        matches,
+      });
+    } catch (serviceError) {
+      console.error("Alumni service error:", serviceError.message);
+      
+      res.status(200).json({
+        success: true,
+        matches: [],
+        message: "Alumni database service is currently unavailable.",
+      });
+    }
+  } catch (error) {
+    console.error("Error searching alumni database:", error);
+    res.status(500).json({
+      success: false,
+      message: "An error occurred while searching the database",
     });
   }
 };

@@ -19,6 +19,11 @@ interface VerificationQueueItem {
     batch: string;
     branch: string;
   };
+  contact_info?: {
+    phone?: string;
+    alternate_email?: string;
+    linkedin?: string;
+  };
   createdAt: string;
 }
 
@@ -154,6 +159,40 @@ const VerificationQueue = () => {
                         </div>
                       )}
                     </div>
+
+                    {/* Contact Information */}
+                    {item.contact_info && (item.contact_info.phone || item.contact_info.alternate_email || item.contact_info.linkedin) && (
+                      <div className="mt-4 p-3 bg-blue-50 rounded-lg border border-blue-100">
+                        <p className="text-xs font-semibold text-blue-900 mb-2">Contact Information</p>
+                        <div className="space-y-1">
+                          {item.contact_info.phone && (
+                            <div className="flex items-center gap-2 text-sm">
+                              <span className="text-blue-700 font-medium">Phone:</span>
+                              <span className="text-gray-700">{item.contact_info.phone}</span>
+                            </div>
+                          )}
+                          {item.contact_info.alternate_email && (
+                            <div className="flex items-center gap-2 text-sm">
+                              <span className="text-blue-700 font-medium">Alt Email:</span>
+                              <span className="text-gray-700">{item.contact_info.alternate_email}</span>
+                            </div>
+                          )}
+                          {item.contact_info.linkedin && (
+                            <div className="flex items-center gap-2 text-sm">
+                              <span className="text-blue-700 font-medium">LinkedIn:</span>
+                              <a 
+                                href={item.contact_info.linkedin} 
+                                target="_blank" 
+                                rel="noopener noreferrer"
+                                className="text-blue-600 hover:underline"
+                              >
+                                View Profile
+                              </a>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )}
                     
                     <p className="text-xs text-gray-500 mt-4">
                       Submitted: {new Date(item.createdAt).toLocaleString()}

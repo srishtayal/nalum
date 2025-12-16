@@ -25,6 +25,17 @@ const VerificationQueueSchema = new Schema(
         required: true,
       },
     },
+    contact_info: {
+      phone: {
+        type: String,
+      },
+      alternate_email: {
+        type: String,
+      },
+      linkedin: {
+        type: String,
+      },
+    },
   },
   {
     timestamps: true,

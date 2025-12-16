@@ -141,6 +141,27 @@ const Login = () => {
         navigate("/otp-verification", { state: { email: formData.email } });
       } else if (
         axios.isAxiosError(error) &&
+        error.response?.status === 403 &&
+        error.response?.data?.banned
+      ) {
+        // Handle banned user
+        const banMessage = error.response.data.message || "Your account has been banned.";
+        toast.error("Account Banned", {
+          description: banMessage,
+          duration: 8000,
+          style: {
+            background: "#dc2626",
+            color: "white",
+            border: "2px solid #991b1b",
+            fontSize: "16px",
+          },
+          classNames: {
+            title: "text-xl font-bold text-white",
+            description: "text-base text-white",
+          },
+        });
+      } else if (
+        axios.isAxiosError(error) &&
         error.response?.status === 401 &&
         error.response?.data?.message === "No User"
       ) {
@@ -158,8 +179,12 @@ const Login = () => {
           },
         });
       } else {
+        const errorMessage = axios.isAxiosError(error) 
+          ? error.response?.data?.message || "Invalid email or password"
+          : "Invalid email or password";
+        
         toast.error("Login Failed", {
-          description: "Invalid email or password",
+          description: errorMessage,
           style: {
             background: "#800000",
             color: "white",
@@ -188,7 +213,7 @@ const Login = () => {
         />
         <div className="absolute inset-0 bg-black/50" />
         <Link to="/" className="relative z-10 flex items-center gap-3 text-white">
-          <img src={nsutLogo} alt="NSUT Logo" className="h-10 w-10 invert" />
+          <img src={nsutLogo} alt="NSUT Logo" className="h-10 w-10 " />
           <span className="text-2xl font-serif font-semibold">NALUM</span>
         </Link>
         <div className="relative z-10 text-white">

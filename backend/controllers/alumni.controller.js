@@ -123,51 +123,47 @@ exports.verifyCode = async (req, res) => {
 
 exports.checkManualVerification = async (req, res) => {
   try {
-    const { name, roll_no, batch, branch } = req.body;
+    const { name, roll_no, batch, branch, contact_info } = req.body;
     const { user_id } = req.user;
 
-    // Get the microservice URL from environment variable
-    const serviceUrl = process.env.ALUMNI_VERIFY_SERVICE_URL;
-    const endpoint = `${serviceUrl}/alumni/verify`;
-
-    // Call the alumni verification microservice
-    const response = await axios.post(endpoint, {
-      name,
-      roll_no,
-      batch,
-      branch,
-    });
-
-    // Extract matches from the microservice response
-    const matches = response.data.matches;
-
-    // If no matches found, add to admin verification queue
-    if (!matches || matches.length === 0) {
-      // Check if user already has a pending request
-      const existingRequest = await VerificationQueue.findOne({ user: user_id });
-      
-      if (!existingRequest) {
-        await VerificationQueue.create({
-          user: user_id,
-          details_provided: {
-            name,
-            roll_no,
-            batch,
-            branch,
-          },
-        });
-      }
+    // Manual review goes directly to admin verification queue
+    // No database checking - admin will manually verify
+    
+    // Check if user already has a pending request
+    const existingRequest = await VerificationQueue.findOne({ user: user_id });
+    
+    if (existingRequest) {
+      return res.status(200).json({
+        success: true,
+        message: "You already have a pending verification request",
+        matches: [],
+      });
     }
+
+    // Create verification queue entry
+    await VerificationQueue.create({
+      user: user_id,
+      details_provided: {
+        name,
+        roll_no,
+        batch,
+        branch,
+      },
+      contact_info: contact_info || {},
+    });
+    
+    console.log(`Added user ${user_id} to manual verification queue`);
 
     return res.status(200).json({
       success: true,
-      matches: matches,
+      message: "Verification request submitted to admin for review",
+      matches: [], // No matches - goes directly to manual review
     });
   } catch (error) {
-    console.error("Error checking manual verification:", error);
+    console.error("Error submitting manual verification:", error);
     return res.status(500).json({
       success: false,
-      message: "An error occurred while checking manual verification",
+      message: "An error occurred while submitting verification request",
     });
   }
 };

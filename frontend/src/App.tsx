@@ -20,6 +20,8 @@ import AlumniDirectory from "@/pages/dashboard/alumniDirectory";
 import ViewProfile from "@/pages/dashboard/viewProfile";
 import VerifyAlumni from "@/pages/dashboard/verifyAlumni";
 import { ChatPage } from "@/pages/dashboard/chat/ChatPage";
+import Events from "@/pages/dashboard/Events";
+import HostEvent from "@/pages/dashboard/HostEvent";
 import Root from "@/pages/Root";
 import SignUp from "@/pages/auth/SignUp";
 import AdminProtectedRoute from "./components/admin/AdminProtectedRoute";
@@ -27,9 +29,11 @@ import AdminDashboard from "./pages/admin/AdminDashboard";
 import VerificationQueue from "./pages/admin/VerificationQueue";
 import UserManagement from "./pages/admin/UserManagement";
 import EventApprovals from "./pages/admin/EventApprovals";
+import CurrentEvents from "./pages/admin/CurrentEvents";
 import Newsletters from "./pages/admin/Newsletters";
 import BannedUsers from "./pages/admin/BannedUsers";
 import CodeManagement from "./pages/admin/CodeManagement";
+import AlumniDatabase from "./pages/admin/AlumniDatabase";
 import NotableAlumni from "./pages/stories/notableAlumni";
 import { startKeepAlive, stopKeepAlive } from "@/lib/keepAlive";
 
@@ -128,6 +132,8 @@ function AppContent() {
           <Route path="/dashboard/alumni" element={<AlumniDirectory />} />
           <Route path="/dashboard/alumni/:userId" element={<ViewProfile />} />
           <Route path="/dashboard/chat" element={<ChatPage />} />
+          <Route path="/dashboard/events" element={<Events />} />
+          <Route path="/dashboard/host-event" element={<HostEvent />} />
         </Route>
 
         {/* Admin Panel Routes - Use main login, role-based access */}
@@ -143,9 +149,11 @@ function AppContent() {
           />
           <Route path="/admin-panel/users" element={<UserManagement />} />
           <Route path="/admin-panel/events" element={<EventApprovals />} />
+          <Route path="/admin-panel/current-events" element={<CurrentEvents />} />
           <Route path="/admin-panel/newsletters" element={<Newsletters />} />
           <Route path="/admin-panel/banned" element={<BannedUsers />} />
           <Route path="/admin-panel/codes" element={<CodeManagement />} />
+          <Route path="/admin-panel/alumni-database" element={<AlumniDatabase />} />
         </Route>
         <Route
           path="/admin-panel"
