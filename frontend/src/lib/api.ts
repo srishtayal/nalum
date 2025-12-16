@@ -71,6 +71,11 @@ export const checkAlumniManual = async (data: {
   roll_no?: string;
   batch: string;
   branch: string;
+  contact_info?: {
+    phone?: string;
+    alternate_email?: string;
+    linkedin?: string;
+  };
 }) => {
   return api.post("/alumni/check-manual", data);
 };

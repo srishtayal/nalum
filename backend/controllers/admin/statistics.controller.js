@@ -8,6 +8,8 @@ const AdminActivity = require("../../models/admin/adminActivity.model");
 // Get dashboard statistics
 exports.getDashboardStats = async (req, res) => {
   try {
+    console.log('[Dashboard Stats] Fetching statistics...');
+    
     // User statistics
     const totalUsers = await User.countDocuments();
     const totalStudents = await User.countDocuments({ role: "student" });
@@ -15,14 +17,19 @@ exports.getDashboardStats = async (req, res) => {
     const verifiedAlumni = await User.countDocuments({ verified_alumni: true });
     const bannedUsers = await User.countDocuments({ banned: true });
 
+    console.log('[Dashboard Stats] User stats:', { totalUsers, totalStudents, totalAlumni, verifiedAlumni, bannedUsers });
+
     // Verification statistics
     const pendingVerifications = await VerificationQueue.countDocuments();
+    console.log('[Dashboard Stats] Pending verifications:', pendingVerifications);
 
     // Event statistics
     const totalEvents = await Event.countDocuments();
     const pendingEvents = await Event.countDocuments({ status: "pending" });
     const approvedEvents = await Event.countDocuments({ status: "approved" });
     const rejectedEvents = await Event.countDocuments({ status: "rejected" });
+
+    console.log('[Dashboard Stats] Event stats:', { totalEvents, pendingEvents, approvedEvents, rejectedEvents });
 
     // Newsletter statistics
     const totalNewsletters = await Newsletter.countDocuments({ is_active: true });
@@ -35,6 +42,8 @@ exports.getDashboardStats = async (req, res) => {
       { $group: { _id: null, total: { $sum: "$download_count" } } },
     ]);
 
+    console.log('[Dashboard Stats] Newsletter stats:', { totalNewsletters, views: totalNewsletterViews, downloads: totalNewsletterDownloads });
+
     // Recent registrations (last 30 days)
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
@@ -42,48 +51,59 @@ exports.getDashboardStats = async (req, res) => {
       createdAt: { $gte: thirtyDaysAgo },
     });
 
-    // Active bans (will expire in the future)
+    console.log('[Dashboard Stats] Recent registrations (30 days):', recentRegistrations);
+
+    // Active bans (current bans that are active)
     const activeBans = await Ban.countDocuments({
       is_active: true,
-      ban_expires_at: { $gt: new Date() },
+      $or: [
+        { ban_expires_at: null }, // permanent bans
+        { ban_expires_at: { $gt: new Date() } } // temporary bans not yet expired
+      ]
     });
+
+    console.log('[Dashboard Stats] Active bans:', activeBans);
 
     // Recent admin activities (last 10)
     const recentActivities = await AdminActivity.find()
       .sort({ createdAt: -1 })
       .limit(10);
 
+    const stats = {
+      users: {
+        total: totalUsers,
+        students: totalStudents,
+        alumni: totalAlumni,
+        verified_alumni: verifiedAlumni,
+        banned: bannedUsers,
+        recent_registrations: recentRegistrations,
+      },
+      verifications: {
+        pending: pendingVerifications,
+        verified: verifiedAlumni,
+      },
+      events: {
+        total: totalEvents,
+        pending: pendingEvents,
+        approved: approvedEvents,
+        rejected: rejectedEvents,
+      },
+      newsletters: {
+        total: totalNewsletters,
+        total_views: totalNewsletterViews[0]?.total || 0,
+        total_downloads: totalNewsletterDownloads[0]?.total || 0,
+      },
+      bans: {
+        active: activeBans,
+        total: bannedUsers,
+      },
+    };
+
+    console.log('[Dashboard Stats] Final stats object:', JSON.stringify(stats, null, 2));
+
     res.status(200).json({
       success: true,
-      stats: {
-        users: {
-          total: totalUsers,
-          students: totalStudents,
-          alumni: totalAlumni,
-          verified_alumni: verifiedAlumni,
-          banned: bannedUsers,
-          recent_registrations: recentRegistrations,
-        },
-        verifications: {
-          pending: pendingVerifications,
-          verified: verifiedAlumni,
-        },
-        events: {
-          total: totalEvents,
-          pending: pendingEvents,
-          approved: approvedEvents,
-          rejected: rejectedEvents,
-        },
-        newsletters: {
-          total: totalNewsletters,
-          total_views: totalNewsletterViews[0]?.total || 0,
-          total_downloads: totalNewsletterDownloads[0]?.total || 0,
-        },
-        bans: {
-          active: activeBans,
-          total: bannedUsers,
-        },
-      },
+      stats: stats,
       recent_activities: recentActivities,
     });
   } catch (error) {
@@ -91,6 +111,7 @@ exports.getDashboardStats = async (req, res) => {
     res.status(500).json({
       success: false,
       message: "An error occurred while fetching statistics",
+      error: error.message,
     });
   }
 };

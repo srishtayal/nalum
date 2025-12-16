@@ -33,6 +33,7 @@ interface AuthContextType {
     isVerified: boolean | null,
     user?: User | null
   ) => void;
+  refreshUser: () => Promise<void>;
   logout: () => void;
 }
 
@@ -152,6 +153,39 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
+  const refreshUser = async () => {
+    if (!accessToken) return;
+    
+    try {
+      const response = await axios.post(
+        `${BASE_URL}/auth/refresh`,
+        {},
+        { withCredentials: true }
+      );
+      const {
+        access_token,
+        email: userEmail,
+        user: userData,
+      } = response.data.data;
+      const verified_alumni = userData?.verified_alumni || false;
+
+      // Update state with fresh data
+      setAccessToken(access_token);
+      setEmail(userEmail);
+      setUser(userData);
+      setIsVerifiedAlumni(verified_alumni);
+      setAuthToken(access_token);
+
+      // Persist to localStorage
+      localStorage.setItem("accessToken", access_token);
+      localStorage.setItem("email", userEmail);
+      localStorage.setItem("user", JSON.stringify(userData));
+      localStorage.setItem("isVerifiedAlumni", String(verified_alumni));
+    } catch (error) {
+      console.error("Failed to refresh user data:", error);
+    }
+  };
+
   const logout = async () => {
     try {
       // Call logout endpoint to clear refresh token cookie on backend
@@ -190,6 +224,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         isAuthenticated,
         isAdmin,
         setAuth,
+        refreshUser,
         logout,
       }}
     >

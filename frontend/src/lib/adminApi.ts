@@ -92,6 +92,14 @@ export interface Event {
   reviewed_by?: string;
   reviewed_at?: string;
   rejection_reason?: string;
+  max_participants?: number;
+  registration_link?: string;
+  contact_info?: {
+    phone?: string;
+    email?: string;
+    website?: string;
+  };
+  likes?: number;
   createdAt: string;
 }
 

@@ -73,6 +73,28 @@ const EventSchema = new Schema(
       type: String,
       default: "",
     },
+    contact_info: {
+      phone: {
+        type: String,
+        default: "",
+      },
+      email: {
+        type: String,
+        default: "",
+      },
+      website: {
+        type: String,
+        default: "",
+      },
+    },
+    likes: {
+      type: Number,
+      default: 0,
+    },
+    liked_by: [{
+      type: Schema.Types.ObjectId,
+      ref: "User",
+    }],
     is_active: {
       type: Boolean,
       default: true,
@@ -85,6 +107,7 @@ const EventSchema = new Schema(
 EventSchema.index({ status: 1, event_date: -1 });
 EventSchema.index({ created_by: 1 });
 EventSchema.index({ is_active: 1, status: 1 });
+EventSchema.index({ likes: -1 }); // For sorting by most liked
 
 const Event = mongoose.model("Event", EventSchema);
 

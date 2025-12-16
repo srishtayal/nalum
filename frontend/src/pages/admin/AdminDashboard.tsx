@@ -66,7 +66,8 @@ const AdminDashboard = () => {
           headers: { Authorization: `Bearer ${accessToken}` }
         }
       );
-      setStats(response.data.data);
+      console.log('Dashboard stats response:', response.data);
+      setStats(response.data.stats);
     } catch (error) {
       console.error('Error fetching dashboard stats:', error);
     } finally {

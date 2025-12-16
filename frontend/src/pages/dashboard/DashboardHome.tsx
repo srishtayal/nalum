@@ -1,6 +1,7 @@
 import { useProfile } from "@/context/ProfileContext";
 import UserAvatar from "@/components/UserAvatar";
 import PeopleYouMightKnow from "@/pages/dashboard/PeopleYouMightKnow";
+import UpcomingEvents from "@/pages/dashboard/UpcomingEvents";
 import ConnectionsPopover from "@/components/ConnectionsPopover";
 
 const DashboardHome = () => {
@@ -36,6 +37,11 @@ const DashboardHome = () => {
       {/* People You Might Know Section */}
       <div className="w-full hidden md:block">
         <PeopleYouMightKnow />
+      </div>
+
+      {/* Upcoming Events Section */}
+      <div className="w-full">
+        <UpcomingEvents />
       </div>
     </div>
   );
