@@ -5,7 +5,13 @@ import { ProfileProvider, useProfile } from "@/context/ProfileContext";
 import { cn } from "@/lib/utils";
 // import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"; // Removed
 // import { Menu } from "lucide-react"; // Removed
-import { Home, MessageSquare, Search, ArrowLeft, Users } from "lucide-react";
+import { Home, MessageSquare, Search, ArrowLeft, Users, SlidersHorizontal, X, GraduationCap, Calendar } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { BRANCHES, CAMPUSES } from "@/constants/branches";
 import UserAvatar from "@/components/UserAvatar";
 import nsutLogo from "@/assets/nsut-logo.svg";
 import { useConversations } from "@/hooks/useConversations"; // Restored import
@@ -25,6 +31,18 @@ const DashboardContent = () => {
   const currentQueryRef = useRef("");
   const inputRef = useRef<HTMLInputElement>(null);
 
+  // Mobile Search Filters
+  const [showMobileFilters, setShowMobileFilters] = useState(false);
+  const [searchFilters, setSearchFilters] = useState({
+    batch: "",
+    branch: "",
+    campus: "",
+    company: "",
+    skills: [] as string[],
+    connectionFilter: "all" as "all" | "connected" | "not_connected",
+  });
+  const [skillInput, setSkillInput] = useState("");
+
   const isChatPage = location.pathname.startsWith("/dashboard/chat");
   const isConnectionsPage = location.pathname.startsWith("/dashboard/connections");
   const { profile } = useProfile();
@@ -39,6 +57,14 @@ const DashboardContent = () => {
       inputRef.current.focus();
     }
   }, [isSearchOpen]);
+
+  // Close search bar when switching tabs/routes
+  useEffect(() => {
+    setIsSearchOpen(false);
+    setSearchQuery("");
+    setSearchResults([]);
+    setShowMobileFilters(false);
+  }, [location.pathname]);
 
   // Calculate total unread count
   const unreadCount = conversations.reduce((acc: number, conv: any) => acc + (conv.unreadCount || 0), 0);
@@ -106,7 +132,7 @@ const DashboardContent = () => {
                     searchDebounceRef.current = setTimeout(async () => {
                       if (currentQueryRef.current !== query) return;
                       try {
-                        const { data } = await searchUsers(query);
+                        const { data } = await searchUsers(query, searchFilters);
                         if (currentQueryRef.current === query) {
                           setSearchResults(data.profiles || []);
                         }
@@ -162,9 +188,222 @@ const DashboardContent = () => {
       )}
 
       {/* Vertical Search Results (Mobile) */}
-      {isSearchOpen && searchResults.length > 0 && (
-        <div className="md:hidden fixed top-16 left-0 right-0 z-40 bg-slate-900/95 backdrop-blur-md border-b border-white/10 shadow-lg animate-in slide-in-from-top-2 duration-200 max-h-[60vh] overflow-y-auto">
+      {isSearchOpen && (searchResults.length > 0 || searchQuery.trim().length > 0) && (
+        <div className="md:hidden fixed top-16 left-0 right-0 z-40 bg-slate-900/95 backdrop-blur-md border-b border-white/10 shadow-lg animate-in slide-in-from-top-2 duration-200 max-h-[70vh] overflow-y-auto">
+
+          {/* Filter Header */}
+          <div className="flex justify-between items-center p-3 border-b border-white/10 bg-black/20">
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-medium text-gray-400">
+                {searchResults.length} result{searchResults.length !== 1 ? 's' : ''}
+              </span>
+              {(searchFilters.batch || searchFilters.branch || searchFilters.campus || searchFilters.company || searchFilters.skills.length > 0 || searchFilters.connectionFilter !== "all") && (
+                <span className="flex items-center gap-1 text-xs text-blue-400">
+                  <span className="h-1.5 w-1.5 rounded-full bg-blue-400" />
+                  filtered
+                </span>
+              )}
+            </div>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setShowMobileFilters(!showMobileFilters)}
+              className="h-7 px-2 text-xs hover:bg-transparent text-blue-400"
+            >
+              <SlidersHorizontal className="w-4 h-4 mr-1.5" />
+              Filters
+            </Button>
+          </div>
+
+          {/* Filter Panel */}
+          {showMobileFilters && (
+            <div className="p-3 bg-black/30 border-b border-white/10 space-y-2">
+              <div className="flex justify-between items-center">
+                <span className="text-xs font-medium text-white">Refine Results</span>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    const emptyFilters = { batch: "", branch: "", campus: "", company: "", skills: [], connectionFilter: "all" as const };
+                    setSearchFilters(emptyFilters);
+                    setSkillInput("");
+                    if (searchQuery.trim()) {
+                      searchUsers(searchQuery, emptyFilters).then(({ data }) => {
+                        setSearchResults(data.profiles || []);
+                      });
+                    }
+                  }}
+                  className="h-5 px-2 text-xs text-red-400 hover:text-red-300"
+                >
+                  Reset
+                </Button>
+              </div>
+
+              {/* Row 1: Batch, Company */}
+              <div className="grid grid-cols-2 gap-2">
+                <Input
+                  placeholder="Batch (2020)"
+                  value={searchFilters.batch}
+                  onChange={(e) => {
+                    const newFilters = { ...searchFilters, batch: e.target.value };
+                    setSearchFilters(newFilters);
+                    if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current);
+                    searchDebounceRef.current = setTimeout(async () => {
+                      const { data } = await searchUsers(searchQuery, newFilters);
+                      setSearchResults(data.profiles || []);
+                    }, 300);
+                  }}
+                  className="h-7 bg-black/30 border-white/10 text-xs text-white"
+                />
+                <Input
+                  placeholder="Company"
+                  value={searchFilters.company}
+                  onChange={(e) => {
+                    const newFilters = { ...searchFilters, company: e.target.value };
+                    setSearchFilters(newFilters);
+                    if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current);
+                    searchDebounceRef.current = setTimeout(async () => {
+                      const { data } = await searchUsers(searchQuery, newFilters);
+                      setSearchResults(data.profiles || []);
+                    }, 300);
+                  }}
+                  className="h-7 bg-black/30 border-white/10 text-xs text-white"
+                />
+              </div>
+
+              {/* Row 2: Branch, Campus */}
+              <div className="grid grid-cols-2 gap-2">
+                <Select
+                  value={searchFilters.branch}
+                  onValueChange={(val) => {
+                    const newFilters = { ...searchFilters, branch: val === "all" ? "" : val };
+                    setSearchFilters(newFilters);
+                    searchUsers(searchQuery, newFilters).then(({ data }) => {
+                      setSearchResults(data.profiles || []);
+                    });
+                  }}
+                >
+                  <SelectTrigger className="h-7 bg-black/30 border-white/10 text-xs text-white">
+                    <SelectValue placeholder="Branch" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-slate-900 border-white/10 text-white max-h-48">
+                    <SelectItem value="all">All Branches</SelectItem>
+                    {BRANCHES.map(b => <SelectItem key={b} value={b}>{b}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+                <Select
+                  value={searchFilters.campus}
+                  onValueChange={(val) => {
+                    const newFilters = { ...searchFilters, campus: val === "all" ? "" : val };
+                    setSearchFilters(newFilters);
+                    searchUsers(searchQuery, newFilters).then(({ data }) => {
+                      setSearchResults(data.profiles || []);
+                    });
+                  }}
+                >
+                  <SelectTrigger className="h-7 bg-black/30 border-white/10 text-xs text-white">
+                    <SelectValue placeholder="Campus" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-slate-900 border-white/10 text-white">
+                    <SelectItem value="all">All Campuses</SelectItem>
+                    {CAMPUSES.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Row 3: Skills */}
+              <div className="flex gap-2">
+                <Input
+                  placeholder="Add skill..."
+                  value={skillInput}
+                  onChange={(e) => setSkillInput(e.target.value)}
+                  onKeyPress={(e) => {
+                    if (e.key === "Enter" && skillInput.trim()) {
+                      e.preventDefault();
+                      const newSkills = [...searchFilters.skills, skillInput.trim()];
+                      const newFilters = { ...searchFilters, skills: newSkills };
+                      setSearchFilters(newFilters);
+                      setSkillInput("");
+                      searchUsers(searchQuery, newFilters).then(({ data }) => {
+                        setSearchResults(data.profiles || []);
+                      });
+                    }
+                  }}
+                  className="h-7 bg-black/30 border-white/10 text-xs text-white flex-1"
+                />
+                <Button
+                  size="sm"
+                  onClick={() => {
+                    if (skillInput.trim()) {
+                      const newSkills = [...searchFilters.skills, skillInput.trim()];
+                      const newFilters = { ...searchFilters, skills: newSkills };
+                      setSearchFilters(newFilters);
+                      setSkillInput("");
+                      searchUsers(searchQuery, newFilters).then(({ data }) => {
+                        setSearchResults(data.profiles || []);
+                      });
+                    }
+                  }}
+                  className="h-7 px-2 text-xs bg-blue-600 hover:bg-blue-500"
+                >
+                  Add
+                </Button>
+              </div>
+              {searchFilters.skills.length > 0 && (
+                <div className="flex flex-wrap gap-1">
+                  {searchFilters.skills.map((skill, i) => (
+                    <Badge
+                      key={i}
+                      variant="secondary"
+                      className="text-xs h-5 bg-white/10 text-gray-200 hover:bg-white/20 cursor-pointer"
+                      onClick={() => {
+                        const newSkills = searchFilters.skills.filter((_, idx) => idx !== i);
+                        const newFilters = { ...searchFilters, skills: newSkills };
+                        setSearchFilters(newFilters);
+                        searchUsers(searchQuery, newFilters).then(({ data }) => {
+                          setSearchResults(data.profiles || []);
+                        });
+                      }}
+                    >
+                      {skill} <X className="w-3 h-3 ml-1" />
+                    </Badge>
+                  ))}
+                </div>
+              )}
+
+              {/* Row 4: Connection Status */}
+              <div className="flex gap-1">
+                {(["all", "connected", "not_connected"] as const).map((status) => (
+                  <Button
+                    key={status}
+                    size="sm"
+                    variant={searchFilters.connectionFilter === status ? "default" : "outline"}
+                    onClick={() => {
+                      const newFilters = { ...searchFilters, connectionFilter: status };
+                      setSearchFilters(newFilters);
+                      searchUsers(searchQuery, newFilters).then(({ data }) => {
+                        setSearchResults(data.profiles || []);
+                      });
+                    }}
+                    className={`h-6 px-2 text-xs flex-1 ${searchFilters.connectionFilter === status
+                      ? "bg-blue-600 text-white"
+                      : "bg-transparent border-white/20 text-gray-400 hover:text-white"
+                      }`}
+                  >
+                    {status === "all" ? "All" : status === "connected" ? "Connected" : "Not Connected"}
+                  </Button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Results List */}
           <div className="flex flex-col p-2 gap-1">
+            {searchResults.length === 0 && searchQuery.trim().length > 0 && !isSearching && (
+              <div className="p-4 text-center text-gray-400 text-sm">
+                No results found. Try adjusting filters.
+              </div>
+            )}
             {searchResults.map((profile) => (
               <Link
                 key={profile._id}
@@ -194,6 +433,19 @@ const DashboardContent = () => {
                 </div>
               </Link>
             ))}
+            {searchResults.length >= 15 && (
+              <Link
+                to={`/dashboard/alumni?search=${encodeURIComponent(searchQuery)}`}
+                onClick={() => {
+                  setIsSearchOpen(false);
+                  setSearchQuery("");
+                  setSearchResults([]);
+                }}
+                className="p-3 text-center text-sm text-blue-400 hover:text-blue-300 hover:bg-white/5 rounded-lg transition-colors"
+              >
+                View all results →
+              </Link>
+            )}
           </div>
         </div>
       )}
@@ -211,7 +463,7 @@ const DashboardContent = () => {
 
       {/* Mobile Bottom Navigation Bar */}
       {!isChatPage && (
-        <div className="fixed bottom-0 left-0 right-0 z-40 bg-slate-900/90 backdrop-blur-lg border-t border-white/10 flex items-center justify-between px-8 py-2 shadow-2xl md:hidden h-16">
+        <div className="fixed bottom-0 left-0 right-0 z-40 bg-slate-900/90 backdrop-blur-lg border-t border-white/10 flex items-center justify-around px-2 py-2 shadow-2xl md:hidden h-16">
           <Link
             to="/dashboard/connections"
             className={cn(
@@ -228,6 +480,18 @@ const DashboardContent = () => {
           </Link>
 
           <Link
+            to="/dashboard/alumni"
+            className={cn(
+              "p-2 rounded-xl transition-all duration-300",
+              location.pathname === "/dashboard/alumni"
+                ? "bg-blue-600/20 text-blue-400"
+                : "text-gray-400 hover:text-white"
+            )}
+          >
+            <GraduationCap className="h-5 w-5" />
+          </Link>
+
+          <Link
             to="/dashboard"
             className={cn(
               "p-2 rounded-xl transition-all duration-300",
@@ -237,6 +501,18 @@ const DashboardContent = () => {
             )}
           >
             <Home className="h-5 w-5" />
+          </Link>
+
+          <Link
+            to="/dashboard/events"
+            className={cn(
+              "p-2 rounded-xl transition-all duration-300",
+              location.pathname === "/dashboard/events"
+                ? "bg-blue-600/20 text-blue-400"
+                : "text-gray-400 hover:text-white"
+            )}
+          >
+            <Calendar className="h-5 w-5" />
           </Link>
 
           <Link
@@ -254,7 +530,6 @@ const DashboardContent = () => {
               size="sm"
               className="h-7 w-7"
             />
-            {/* <span className="text-[10px] font-medium text-gray-400">Profile</span> */}
           </Link>
         </div>
       )}

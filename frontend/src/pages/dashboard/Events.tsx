@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
 import { toast } from "sonner";
 import api from "@/lib/api";
 import { BASE_URL } from "@/lib/constants";
@@ -16,6 +17,7 @@ import {
   Users,
   ChevronLeft,
   ChevronRight,
+  Plus,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -207,7 +209,7 @@ export default function Events() {
   };
 
   const EventCard = ({ event }: { event: Event }) => (
-    <Card 
+    <Card
       onClick={() => {
         setSelectedEvent(event);
         setIsModalOpen(true);
@@ -244,11 +246,10 @@ export default function Events() {
               className="shrink-0 hover:bg-white/10"
             >
               <Heart
-                className={`h-5 w-5 ${
-                  likedEvents.has(event._id)
-                    ? "fill-red-500 text-red-500"
-                    : "text-gray-400"
-                }`}
+                className={`h-5 w-5 ${likedEvents.has(event._id)
+                  ? "fill-red-500 text-red-500"
+                  : "text-gray-400"
+                  }`}
               />
               <span className="ml-1 text-sm text-gray-300">{event.likes}</span>
             </Button>
@@ -353,121 +354,120 @@ export default function Events() {
             🔥 Most Liked Events
           </h2>
           <div className="px-4 md:px-8">
-            <div 
+            <div
               onClick={() => {
                 setSelectedEvent(mostLikedEvents[carouselIndex]);
                 setIsModalOpen(true);
               }}
               className="relative bg-white/5 border border-white/10 rounded-2xl overflow-hidden backdrop-blur-md cursor-pointer hover:border-white/20 transition-all"
             >
-            <div className="md:flex h-96">
-              <div className="md:w-1/2 h-full bg-gray-800/50 flex items-center justify-center">
-                {mostLikedEvents[carouselIndex]?.image_url ? (
-                  <img
-                    src={`${BASE_URL}${mostLikedEvents[carouselIndex].image_url}`}
-                    alt={mostLikedEvents[carouselIndex].title}
-                    className="w-full h-full object-contain"
-                  />
-                ) : (
-                  <div className="w-full h-full bg-gradient-to-br from-blue-500/20 to-purple-500/20 flex items-center justify-center">
-                    <Calendar className="h-24 w-24 text-white/30" />
+              <div className="md:flex h-96">
+                <div className="md:w-1/2 h-full bg-gray-800/50 flex items-center justify-center">
+                  {mostLikedEvents[carouselIndex]?.image_url ? (
+                    <img
+                      src={`${BASE_URL}${mostLikedEvents[carouselIndex].image_url}`}
+                      alt={mostLikedEvents[carouselIndex].title}
+                      className="w-full h-full object-contain"
+                    />
+                  ) : (
+                    <div className="w-full h-full bg-gradient-to-br from-blue-500/20 to-purple-500/20 flex items-center justify-center">
+                      <Calendar className="h-24 w-24 text-white/30" />
+                    </div>
+                  )}
+                </div>
+                <div className="md:w-1/2 h-full p-8 flex flex-col justify-between">
+                  <div className="space-y-3 flex-shrink-0">
+                    <h3 className="text-2xl font-bold text-white leading-tight" style={{
+                      display: '-webkit-box',
+                      WebkitLineClamp: 2,
+                      WebkitBoxOrient: 'vertical',
+                      overflow: 'hidden'
+                    }}>
+                      {mostLikedEvents[carouselIndex]?.title}
+                    </h3>
+                    <p className="text-gray-400 text-sm leading-relaxed" style={{
+                      display: '-webkit-box',
+                      WebkitLineClamp: 4,
+                      WebkitBoxOrient: 'vertical',
+                      overflow: 'hidden'
+                    }}>
+                      {mostLikedEvents[carouselIndex]?.description}
+                    </p>
                   </div>
+                  <div className="space-y-2 flex-shrink-0 mb-8">
+                    <div className="flex items-center text-gray-300 text-sm">
+                      <Calendar className="h-4 w-4 mr-2 flex-shrink-0" />
+                      <span className="truncate">{formatDate(mostLikedEvents[carouselIndex]?.event_date)}{" "}
+                        at {mostLikedEvents[carouselIndex]?.event_time}</span>
+                    </div>
+                    <div className="flex items-center text-gray-300 text-sm">
+                      <MapPin className="h-4 w-4 mr-2 flex-shrink-0" />
+                      <span className="truncate">{mostLikedEvents[carouselIndex]?.location}</span>
+                    </div>
+                    <div className="flex items-center text-gray-300 text-sm">
+                      <Heart className="h-4 w-4 mr-2 fill-red-500 text-red-500 flex-shrink-0" />
+                      {mostLikedEvents[carouselIndex]?.likes} likes
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Carousel Navigation */}
+              <div className="absolute bottom-4 right-4 flex gap-2 items-center" onClick={(e) => e.stopPropagation()}>
+                {mostLikedEvents[carouselIndex]?.registration_link && (
+                  <a
+                    href={ensureUrlProtocol(mostLikedEvents[carouselIndex].registration_link)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <Button className="bg-blue-500 hover:bg-blue-600 text-white text-sm">
+                      Register Now
+                      <ExternalLink className="ml-2 h-4 w-4" />
+                    </Button>
+                  </a>
                 )}
-              </div>
-              <div className="md:w-1/2 h-full p-8 flex flex-col justify-between">
-                <div className="space-y-3 flex-shrink-0">
-                  <h3 className="text-2xl font-bold text-white leading-tight" style={{ 
-                    display: '-webkit-box',
-                    WebkitLineClamp: 2,
-                    WebkitBoxOrient: 'vertical',
-                    overflow: 'hidden'
-                  }}>
-                    {mostLikedEvents[carouselIndex]?.title}
-                  </h3>
-                  <p className="text-gray-400 text-sm leading-relaxed" style={{ 
-                    display: '-webkit-box',
-                    WebkitLineClamp: 4,
-                    WebkitBoxOrient: 'vertical',
-                    overflow: 'hidden'
-                  }}>
-                    {mostLikedEvents[carouselIndex]?.description}
-                  </p>
-                </div>
-                <div className="space-y-2 flex-shrink-0 mb-8">
-                  <div className="flex items-center text-gray-300 text-sm">
-                    <Calendar className="h-4 w-4 mr-2 flex-shrink-0" />
-                    <span className="truncate">{formatDate(mostLikedEvents[carouselIndex]?.event_date)}{" "}
-                    at {mostLikedEvents[carouselIndex]?.event_time}</span>
-                  </div>
-                  <div className="flex items-center text-gray-300 text-sm">
-                    <MapPin className="h-4 w-4 mr-2 flex-shrink-0" />
-                    <span className="truncate">{mostLikedEvents[carouselIndex]?.location}</span>
-                  </div>
-                  <div className="flex items-center text-gray-300 text-sm">
-                    <Heart className="h-4 w-4 mr-2 fill-red-500 text-red-500 flex-shrink-0" />
-                    {mostLikedEvents[carouselIndex]?.likes} likes
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Carousel Navigation */}
-            <div className="absolute bottom-4 right-4 flex gap-2 items-center" onClick={(e) => e.stopPropagation()}>
-              {mostLikedEvents[carouselIndex]?.registration_link && (
-                <a
-                  href={ensureUrlProtocol(mostLikedEvents[carouselIndex].registration_link)}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  onClick={(e) => e.stopPropagation()}
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={() =>
+                    setCarouselIndex(
+                      (prev) =>
+                        (prev - 1 + mostLikedEvents.length) %
+                        mostLikedEvents.length
+                    )
+                  }
+                  className="bg-white/10 border-white/20 hover:bg-white/20 text-white backdrop-blur-md"
                 >
-                  <Button className="bg-blue-500 hover:bg-blue-600 text-white text-sm">
-                    Register Now
-                    <ExternalLink className="ml-2 h-4 w-4" />
-                  </Button>
-                </a>
-              )}
-              <Button
-                variant="outline"
-                size="icon"
-                onClick={() =>
-                  setCarouselIndex(
-                    (prev) =>
-                      (prev - 1 + mostLikedEvents.length) %
-                      mostLikedEvents.length
-                  )
-                }
-                className="bg-white/10 border-white/20 hover:bg-white/20 text-white backdrop-blur-md"
-              >
-                <ChevronLeft className="h-4 w-4" />
-              </Button>
-              <Button
-                variant="outline"
-                size="icon"
-                onClick={() =>
-                  setCarouselIndex((prev) => (prev + 1) % mostLikedEvents.length)
-                }
-                className="bg-white/10 border-white/20 hover:bg-white/20 text-white backdrop-blur-md"
-              >
-                <ChevronRight className="h-4 w-4" />
-              </Button>
-            </div>
+                  <ChevronLeft className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={() =>
+                    setCarouselIndex((prev) => (prev + 1) % mostLikedEvents.length)
+                  }
+                  className="bg-white/10 border-white/20 hover:bg-white/20 text-white backdrop-blur-md"
+                >
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
+              </div>
 
-            {/* Carousel Indicators */}
-            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
-              {mostLikedEvents.map((_, idx) => (
-                <button
-                  key={idx}
-                  onClick={() => setCarouselIndex(idx)}
-                  className={`h-2 rounded-full transition-all ${
-                    idx === carouselIndex
+              {/* Carousel Indicators */}
+              <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
+                {mostLikedEvents.map((_, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => setCarouselIndex(idx)}
+                    className={`h-2 rounded-full transition-all ${idx === carouselIndex
                       ? "bg-blue-500 w-8"
                       : "bg-gray-500 w-2"
-                  }`}
-                />
-              ))}
+                      }`}
+                  />
+                ))}
+              </div>
             </div>
           </div>
-        </div>
         </div>
       )}
 
@@ -682,9 +682,9 @@ export default function Events() {
                       {selectedEvent.contact_info?.website && (
                         <div className="flex items-center gap-2 text-gray-300">
                           <Globe className="h-4 w-4 text-purple-400" />
-                          <a 
-                            href={ensureUrlProtocol(selectedEvent.contact_info.website)} 
-                            target="_blank" 
+                          <a
+                            href={ensureUrlProtocol(selectedEvent.contact_info.website)}
+                            target="_blank"
                             rel="noopener noreferrer"
                             className="text-blue-400 hover:underline"
                           >
@@ -716,6 +716,15 @@ export default function Events() {
           )}
         </DialogContent>
       </Dialog>
+
+      {/* Mobile Floating Action Button for Alumni to Host Event */}
+      {user?.role === "alumni" && (
+        <Link to="/dashboard/host-event" className="md:hidden fixed bottom-20 right-4 z-30">
+          <Button className="h-14 w-14 rounded-full bg-blue-600 hover:bg-blue-500 text-white shadow-xl flex items-center justify-center p-0">
+            <Plus className="h-6 w-6" />
+          </Button>
+        </Link>
+      )}
     </div>
   );
 }
