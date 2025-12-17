@@ -69,6 +69,7 @@ const UpdateProfile = () => {
 
   const [newSkill, setNewSkill] = useState("");
   const [profilePicture, setProfilePicture] = useState<File | null>(null);
+  const [removePhoto, setRemovePhoto] = useState(false);
 
   // Refs for input positioning
   const roleInputRef = useRef<HTMLInputElement>(null);
@@ -144,9 +145,12 @@ const UpdateProfile = () => {
   // Check for unsaved changes
   useEffect(() => {
     if (!initialData) return;
-    const isChanged = JSON.stringify(formData) !== JSON.stringify(initialData) || profilePicture !== null;
+    const isChanged =
+      JSON.stringify(formData) !== JSON.stringify(initialData) ||
+      profilePicture !== null ||
+      removePhoto;
     setIsDirty(isChanged);
-  }, [formData, initialData, profilePicture]);
+  }, [formData, initialData, profilePicture, removePhoto]);
 
   // Autocomplete handlers
   const handleCompanyChange = (value: string) => {
@@ -425,8 +429,15 @@ const UpdateProfile = () => {
         headers: { Authorization: `Bearer ${accessToken}` },
       });
 
-      // Upload profile picture if changed
-      if (profilePicture) {
+      // Handle profile picture changes
+      if (removePhoto) {
+        // Remove profile picture
+        await api.delete("/profile/picture", {
+          headers: { Authorization: `Bearer ${accessToken}` },
+        });
+        setRemovePhoto(false);
+      } else if (profilePicture) {
+        // Upload new profile picture
         const pictureFormData = new FormData();
         pictureFormData.append("profile_picture", profilePicture);
 
@@ -508,12 +519,9 @@ const UpdateProfile = () => {
 
   return (
     <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 text-foreground relative pb-24">
-
       {/* Main Content */}
       <div className="container mx-auto">
         <div className="max-w-4xl mx-auto">
-
-
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Profile Picture */}
             <div className="rounded-xl border border-white/10 bg-white/5 backdrop-blur-md shadow-xl p-6 overflow-visible">
@@ -524,7 +532,15 @@ const UpdateProfile = () => {
                 <ProfilePictureUpload
                   currentImage={contextProfile?.profile_picture}
                   userName={contextProfile?.user.name || "User"}
-                  onImageSelect={(file) => setProfilePicture(file)}
+                  onImageSelect={(file) => {
+                    if (file === null) {
+                      setRemovePhoto(true);
+                      setProfilePicture(null);
+                    } else {
+                      setRemovePhoto(false);
+                      setProfilePicture(file);
+                    }
+                  }}
                 />
               </div>
             </div>

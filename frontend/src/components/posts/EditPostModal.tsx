@@ -24,6 +24,7 @@ interface Post {
     _id: string;
     name: string;
     email: string;
+    profile_picture?: string;
   };
   images: string[];
   createdAt: string;

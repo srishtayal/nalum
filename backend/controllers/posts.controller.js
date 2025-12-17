@@ -28,6 +28,7 @@ exports.createPost = async (req, res) => {
       content,
       images,
       userId: user_id,
+      status: "pending",
     });
 
     return res.status(201).json({
@@ -49,13 +50,23 @@ exports.getPosts = async (req, res) => {
     const limit = parseInt(req.query.limit) || 5;
     const skip = (page - 1) * limit;
 
-    const posts = await Post.find()
+    const posts = await Post.find({ status: "approved" })
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limit)
-      .populate("userId", "name email role");
+      .populate("userId", "name email role")
+      .lean();
 
-    const total = await Post.countDocuments();
+    // Populate profile pictures
+    const Profile = require("../models/user/profile.model");
+    for (let post of posts) {
+      const profile = await Profile.findOne({ user: post.userId._id }).select(
+        "profile_picture"
+      );
+      post.userId.profile_picture = profile?.profile_picture || null;
+    }
+
+    const total = await Post.countDocuments({ status: "approved" });
 
     return res.status(200).json({
       success: true,
@@ -97,13 +108,24 @@ exports.searchPosts = async (req, res) => {
 
     // Find posts matching title OR userId in the found users
     const posts = await Post.find({
+      status: "approved",
       $or: [
         { title: { $regex: query, $options: "i" } },
         { userId: { $in: userIds } },
       ],
     })
       .sort({ createdAt: -1 })
-      .populate("userId", "name email role");
+      .populate("userId", "name email role")
+      .lean();
+
+    // Populate profile pictures
+    const Profile = require("../models/user/profile.model");
+    for (let post of posts) {
+      const profile = await Profile.findOne({ user: post.userId._id }).select(
+        "profile_picture"
+      );
+      post.userId.profile_picture = profile?.profile_picture || null;
+    }
 
     return res.status(200).json({
       success: true,
@@ -120,10 +142,9 @@ exports.searchPosts = async (req, res) => {
 
 exports.getPostById = async (req, res) => {
   try {
-    const post = await Post.findById(req.params.id).populate(
-      "userId",
-      "name email role"
-    );
+    const post = await Post.findById(req.params.id)
+      .populate("userId", "name email role")
+      .lean();
 
     if (!post) {
       return res.status(404).json({
@@ -131,6 +152,23 @@ exports.getPostById = async (req, res) => {
         message: "Post not found",
       });
     }
+
+    // Check if user is post owner or if post is approved
+    const { user_id } = req.user;
+    const isOwner = post.userId._id.toString() === user_id.toString();
+    if (!isOwner && post.status !== "approved") {
+      return res.status(403).json({
+        success: false,
+        message: "Post not found",
+      });
+    }
+
+    // Populate profile picture
+    const Profile = require("../models/user/profile.model");
+    const profile = await Profile.findOne({ user: post.userId._id }).select(
+      "profile_picture"
+    );
+    post.userId.profile_picture = profile?.profile_picture || null;
 
     return res.status(200).json({
       success: true,
@@ -170,6 +208,17 @@ exports.updatePost = async (req, res) => {
     if (title) post.title = title;
     if (content) post.content = content;
     if (newImages.length > 0) post.images = newImages;
+
+    // If post was rejected, reset to pending and clear rejection reason for resubmission
+    if (post.status === "rejected") {
+      post.status = "pending";
+      post.rejection_reason = null;
+    }
+
+    // If post was approved, reset to pending for re-approval
+    if (post.status === "approved") {
+      post.status = "pending";
+    }
 
     await post.save();
 
@@ -216,6 +265,51 @@ exports.deletePost = async (req, res) => {
     return res.status(500).json({
       success: false,
       message: error.message || "Error deleting post",
+    });
+  }
+};
+
+exports.getMyPosts = async (req, res) => {
+  try {
+    const { user_id } = req.user;
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 50;
+    const skip = (page - 1) * limit;
+
+    const posts = await Post.find({ userId: user_id })
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit)
+      .populate("userId", "name email role")
+      .lean();
+
+    // Populate profile pictures
+    const Profile = require("../models/user/profile.model");
+    for (let post of posts) {
+      const profile = await Profile.findOne({ user: post.userId._id }).select(
+        "profile_picture"
+      );
+      post.userId.profile_picture = profile?.profile_picture || null;
+    }
+
+    const total = await Post.countDocuments({ userId: user_id });
+
+    return res.status(200).json({
+      success: true,
+      data: {
+        posts,
+        pagination: {
+          current: page,
+          pages: Math.ceil(total / limit),
+          total,
+        },
+      },
+      message: "Posts fetched successfully",
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: error.message || "Error fetching posts",
     });
   }
 };

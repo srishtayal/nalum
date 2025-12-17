@@ -16,10 +16,13 @@ interface Post {
     _id: string;
     name: string;
     email: string;
+    profile_picture?: string;
   };
   images: string[];
   createdAt: string;
   updatedAt: string;
+  status?: string;
+  rejection_reason?: string;
 }
 
 const MyPosts = () => {
@@ -43,11 +46,8 @@ const MyPosts = () => {
     setIsLoading(true);
     setError(null);
     try {
-      const { data } = await api.get("/posts");
-      const allPosts = data.data.posts;
-      const myPosts = allPosts.filter(
-        (post: Post) => post.userId._id === profile?.user?._id
-      );
+      const { data } = await api.get("/posts/my/all");
+      const myPosts = data.data.posts;
       setPosts(myPosts);
     } catch (err: any) {
       console.error("Error fetching posts:", err);
@@ -159,6 +159,8 @@ const MyPosts = () => {
     );
   }
 
+  const pendingCount = posts.filter((p) => p.status === "pending").length;
+
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
       <div className="flex items-center justify-between">
@@ -168,6 +170,19 @@ const MyPosts = () => {
         </p>
       </div>
 
+      {pendingCount > 0 && (
+        <Alert className="bg-yellow-500/20 border-yellow-500/50 text-yellow-100">
+          <AlertCircle className="h-4 w-4 text-yellow-400" />
+          <AlertTitle className="text-yellow-200">
+            Posts Pending Review
+          </AlertTitle>
+          <AlertDescription className="text-yellow-100">
+            You have {pendingCount} {pendingCount === 1 ? "post" : "posts"}{" "}
+            waiting for admin approval.
+          </AlertDescription>
+        </Alert>
+      )}
+
       <div className="flex flex-col gap-6">
         {posts.map((post) => (
           <PostCard
@@ -175,6 +190,8 @@ const MyPosts = () => {
             post={post}
             onEdit={handleEdit}
             onDelete={handleDelete}
+            showStatus={true}
+            showRejectionReason={true}
           />
         ))}
       </div>

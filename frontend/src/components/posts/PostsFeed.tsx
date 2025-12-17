@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import api from "@/lib/api";
 import PostCard from "./PostCard";
 import EditPostModal from "./EditPostModal";
@@ -15,6 +15,7 @@ interface Post {
     _id: string;
     name: string;
     email: string;
+    profile_picture?: string;
   };
   images: string[];
   createdAt: string;
@@ -38,7 +39,7 @@ const PostsFeed = ({
   const [selectedPost, setSelectedPost] = useState<Post | null>(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
-  const fetchPosts = async () => {
+  const fetchPosts = useCallback(async () => {
     setIsLoading(true);
     setError(null);
     try {
@@ -67,7 +68,7 @@ const PostsFeed = ({
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [currentPage, searchQuery]);
 
   useEffect(() => {
     setCurrentPage(1);
@@ -75,7 +76,7 @@ const PostsFeed = ({
 
   useEffect(() => {
     fetchPosts();
-  }, [refreshTrigger, searchQuery, currentPage]);
+  }, [fetchPosts, refreshTrigger]);
 
   const handleEdit = (post: Post) => {
     setSelectedPost(post);

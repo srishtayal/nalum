@@ -46,17 +46,31 @@ const DashboardHome = () => {
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
       {/* Main Content Flex */}
       <div className="flex flex-col lg:flex-row gap-8">
-        {/* Left Column: Start Post & Feed */}
+        {/* Left Column: Search & Feed */}
         <div className="flex-grow space-y-6">
-          <button
-            onClick={handleStartPost}
-            className="w-full flex items-center gap-3 px-6 py-4 bg-white/5 hover:bg-white/10 border border-white/10 rounded-2xl text-gray-400 transition-all duration-200 group text-left"
-          >
-            <PenSquare className="h-6 w-6 text-gray-400 group-hover:text-white transition-colors" />
-            <span className="text-lg font-medium group-hover:text-white transition-colors">
-              Start a post
-            </span>
-          </button>
+          <div className="relative">
+            <Search className="absolute left-6 top-1/2 -translate-y-1/2 h-6 w-6 text-gray-400 group-hover:text-white transition-colors pointer-events-none" />
+            <input
+              type="text"
+              placeholder="Search posts..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full flex items-center gap-3 px-6 py-4 pl-14 pr-20 bg-white/5 hover:bg-white/10 border border-white/10 rounded-2xl text-gray-400 transition-all duration-200 text-lg font-medium focus:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500/50"
+            />
+            <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center gap-2">
+              {isSearching && (
+                <Loader2 className="h-4 w-4 animate-spin text-blue-500" />
+              )}
+              {searchQuery && (
+                <button
+                  onClick={() => setSearchQuery("")}
+                  className="p-1 hover:bg-white/10 rounded-full transition-colors"
+                >
+                  <X className="h-4 w-4 text-gray-400 hover:text-white" />
+                </button>
+              )}
+            </div>
+          </div>
 
           <PostsFeed
             refreshTrigger={refreshTrigger}
@@ -64,33 +78,17 @@ const DashboardHome = () => {
           />
         </div>
 
-        {/* Right Column: Search, People & Events */}
-        <div className="w-full lg:w-auto flex-shrink-0 space-y-8">
-          {/* Search & Notifications */}
+        {/* Right Column: Start Post, People & Events */}
+        <div className="w-full lg:w-72 flex-shrink-0 space-y-6">
+          {/* Start Post & Notifications */}
           <div className="flex items-center gap-3">
-            <div className="relative flex-grow hidden sm:block">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-500" />
-              <input
-                type="text"
-                placeholder="Search posts..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 pl-12 pr-10 text-base text-white placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500/50 transition-all"
-              />
-              <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center gap-2">
-                {isSearching && (
-                  <Loader2 className="h-4 w-4 animate-spin text-blue-500" />
-                )}
-                {searchQuery && (
-                  <button
-                    onClick={() => setSearchQuery("")}
-                    className="p-1 hover:bg-white/10 rounded-full transition-colors"
-                  >
-                    <X className="h-4 w-4 text-gray-400 hover:text-white" />
-                  </button>
-                )}
-              </div>
-            </div>
+            <button
+              onClick={handleStartPost}
+              className="relative flex-grow hidden sm:block bg-white/5 hover:bg-white/10 border border-white/10 rounded-2xl py-4 pl-12 pr-10 text-base text-white placeholder:text-gray-500 transition-all text-left"
+            >
+              <PenSquare className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-500" />
+              <span>Start a post</span>
+            </button>
             <ConnectionsPopover />
           </div>
 

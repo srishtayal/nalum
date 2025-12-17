@@ -1,6 +1,12 @@
 import { useEffect, useState, useCallback, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { Loader2, MapPin, GraduationCap, BadgeIcon, UserPlus } from "lucide-react";
+import {
+  Loader2,
+  MapPin,
+  GraduationCap,
+  BadgeIcon,
+  UserPlus,
+} from "lucide-react";
 import api from "@/lib/api";
 import UserAvatar from "@/components/UserAvatar";
 import { ConnectionButton } from "@/components/ui/ConnectionButton";
@@ -125,14 +131,14 @@ const PeopleYouMightKnow = ({
   }
 
   return (
-    <div className="rounded-xl border border-white/10 bg-white/5 p-3 backdrop-blur-md w-full max-w-xs ml-auto">
+    <div className="rounded-xl border border-white/10 bg-white/5 p-3 backdrop-blur-md w-full">
       <div className="flex items-center justify-between mb-2">
-        <h3 className="text-base font-semibold text-white">
+        <h3 className="text-xl font-semibold text-white">
           People you might know
         </h3>
       </div>
 
-      <div className="flex flex-col space-y-2 max-h-[240px] overflow-y-auto pr-2">
+      <div className="flex flex-col space-y-2">
         {filteredSuggestions.map((profile) => {
           // Skip if user data is null or undefined
           if (!profile.user || !profile.user._id) {
@@ -143,10 +149,10 @@ const PeopleYouMightKnow = ({
             <div
               key={profile._id}
               onClick={() => navigate(`/dashboard/alumni/${profile.user._id}`)}
-              className="w-full cursor-pointer rounded-lg border border-white/10 bg-white/5 p- shadow-md transition hover:-translate-y-0.5 hover:border-blue-500/30 hover:shadow-blue-500/10"
+              className="w-full cursor-pointer rounded-lg border border-white/10 bg-white/5 p-1.5 shadow-md transition hover:-translate-y-0.5 hover:border-blue-500/30 hover:shadow-blue-500/10"
             >
-              <div className="flex items-center justify-between gap-2">
-                <div className="flex items-center gap-1.5 min-w-0">
+              <div className="flex items-center justify-between gap-2 px-1">
+                <div className="flex items-center gap-1.5 min-w-0 flex-1">
                   <UserAvatar
                     src={profile.profile_picture}
                     name={profile.user.name}

@@ -11,6 +11,7 @@ const {
   updatePost,
   deletePost,
   searchPosts,
+  getMyPosts,
 } = require("../controllers/posts.controller");
 
 // Configure multer
@@ -44,6 +45,7 @@ const upload = multer({
 // Routes
 router.post("/", protect, upload.array("images", 2), createPost);
 router.get("/", protect, getPosts);
+router.get("/my/all", protect, getMyPosts);
 router.get("/search", protect, searchPosts);
 router.get("/:id", protect, getPostById);
 router.put("/:id", protect, upload.array("images", 2), updatePost);

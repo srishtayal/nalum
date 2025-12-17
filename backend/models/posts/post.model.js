@@ -26,8 +26,30 @@ const postSchema = new mongoose.Schema(
         message: "You can upload a maximum of 2 images.",
       },
     },
+    status: {
+      type: String,
+      enum: ["pending", "approved", "rejected"],
+      default: "pending",
+    },
+    reviewed_by: {
+      type: String,
+      default: null,
+    },
+    reviewed_at: {
+      type: Date,
+      default: null,
+    },
+    rejection_reason: {
+      type: String,
+      default: null,
+    },
   },
   { timestamps: true }
 );
+
+// Indexes for efficient queries
+postSchema.index({ status: 1 });
+postSchema.index({ userId: 1 });
+postSchema.index({ status: 1, createdAt: -1 });
 
 module.exports = mongoose.model("Post", postSchema);
