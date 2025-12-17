@@ -58,6 +58,16 @@ const AdminSidebar = () => {
       icon: CalendarCheck,
     },
     {
+      name: "Posts Approval",
+      path: "/admin-panel/posts-approval",
+      icon: FileText,
+    },
+    {
+      name: "Current Posts",
+      path: "/admin-panel/current-posts",
+      icon: FileText,
+    },
+    {
       name: "Newsletters",
       path: "/admin-panel/newsletters",
       icon: FileText,
@@ -71,13 +81,13 @@ const AdminSidebar = () => {
 
   const handleLogout = async () => {
     await logout();
-    navigate('/login');
+    navigate("/login");
   };
 
   return (
-    <div className="w-64 bg-gray-900 text-white min-h-screen flex flex-col">
+    <div className="w-64 bg-gray-900 text-white h-screen flex flex-col fixed left-0 top-0">
       {/* Logo/Brand */}
-      <div className="p-6 border-b border-gray-800">
+      <div className="p-6 border-b border-gray-800 flex-shrink-0">
         <h1 className="text-2xl font-bold">Nalum Admin</h1>
         <p className="text-sm text-gray-400 mt-1">{user?.name}</p>
         <span className="inline-block mt-2 px-2 py-1 bg-blue-600 text-white text-xs font-semibold rounded">
@@ -86,7 +96,7 @@ const AdminSidebar = () => {
       </div>
 
       {/* Menu Items */}
-      <nav className="flex-1 p-4">
+      <nav className="flex-1 p-4 overflow-y-auto">
         <ul className="space-y-2">
           {menuItems.map((item) => {
             const Icon = item.icon;
@@ -112,7 +122,7 @@ const AdminSidebar = () => {
       </nav>
 
       {/* Logout */}
-      <div className="p-4 border-t border-gray-800">
+      <div className="p-4 border-t border-gray-800 flex-shrink-0">
         <button
           onClick={handleLogout}
           className="flex items-center space-x-3 px-4 py-3 rounded-lg text-gray-300 hover:bg-gray-800 w-full transition-colors"

@@ -17,6 +17,7 @@ const alumniRoutes = require("./routes/alumni.js");
 const adminRoutes = require("./routes/admin/index.js");
 const chatRoutes = require("./routes/chat/index.js");
 const eventRoutes = require("./routes/events.js");
+const postsRoutes = require("./routes/posts.js");
 const { checkBanned } = require("./middleware/checkBanned.js");
 const morgan = require("morgan");
 const redisConfig = require("./config/redis.config.js");
@@ -64,6 +65,7 @@ app.use("/parser", checkBanned, pdfParser);
 app.use("/alumni", checkBanned, alumniRoutes);
 app.use("/chat", checkBanned, chatRoutes);
 app.use("/events", checkBanned, eventRoutes);
+app.use("/posts", checkBanned, postsRoutes);
 
 // Admin routes (no checkBanned needed)
 app.use("/admin", adminRoutes);

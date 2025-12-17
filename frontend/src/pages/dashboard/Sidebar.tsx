@@ -1,5 +1,5 @@
 import { Link, useLocation } from "react-router-dom";
-import { Home, Edit2, Users, LogOut, MessageSquare, Calendar, Sparkles } from "lucide-react";
+import { Home, Edit2, Users, LogOut, MessageSquare, Calendar, Sparkles, FileText } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { useProfile } from "@/context/ProfileContext";
 import { cn } from "@/lib/utils";
@@ -18,11 +18,7 @@ const Sidebar = ({ onNavigate }: SidebarProps) => {
   const { conversations } = useConversations(); // Restored hook usage
 
   // Calculate total unread count
-  // Calculate total unread count
   const unreadCount = conversations.reduce((acc: number, conv: any) => acc + (conv.unreadCount || 0), 0);
-
-  // Always collapse sidebar
-  const isCollapsed = true;
 
   const navItems = [
     {
@@ -49,6 +45,11 @@ const Sidebar = ({ onNavigate }: SidebarProps) => {
     },
     ...(user?.role === "alumni"
       ? [
+          {
+            to: "/dashboard/posts",
+            icon: FileText,
+            label: "My Posts",
+          },
           {
             to: "/dashboard/host-event",
             icon: Sparkles,
@@ -89,22 +90,20 @@ const Sidebar = ({ onNavigate }: SidebarProps) => {
           >
             <div className="relative">
               <item.icon className={cn(
-                "h-5 w-5 transition-colors flex-shrink-0",
-                isActive(item.to, item.exact) ? "text-blue-300" : "text-gray-500 group-hover:text-white"
-              )} />
-              {/* Notification Dot */}
+                  "h-5 w-5 transition-colors flex-shrink-0",
+                  isActive(item.to, item.exact) ? "text-blue-300" : "text-gray-500 group-hover:text-white"
+                )} />
               {/* Notification Dot */}
               {item.hasBadge && unreadCount > 0 && (
                 <span className={cn(
-                  "absolute -top-1 -right-1 h-2.5 w-2.5 rounded-full bg-blue-500 border-2 border-slate-900",
-                  "animate-in zoom-in duration-300"
-                )} />
+                    "absolute -top-1 -right-1 h-2.5 w-2.5 rounded-full bg-blue-500 border-2 border-slate-900",
+                    "animate-in zoom-in duration-300"
+                  )} />
               )}
             </div>
             <span className={cn(
-              "font-medium transition-all duration-300 ease-in-out",
-              isCollapsed ? "opacity-0 max-w-0 overflow-hidden" : "opacity-100 max-w-full"
-            )}>{item.label}</span>
+                "font-medium transition-all duration-300 ease-in-out opacity-0 max-w-0 overflow-hidden group-hover/sidebar:opacity-100 group-hover/sidebar:max-w-full"
+              )}>{item.label}</span>
           </Link>
         ))}
       </nav>

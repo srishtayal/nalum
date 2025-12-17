@@ -28,9 +28,7 @@ const UpcomingEvents = () => {
         const { data } = await api.get("/events/most-liked?limit=5");
         setEvents(data?.data || []);
       } catch (error: any) {
-        toast.error(
-          error?.response?.data?.message || "Failed to load events"
-        );
+        toast.error(error?.response?.data?.message || "Failed to load events");
       } finally {
         setIsLoading(false);
       }
@@ -75,7 +73,7 @@ const UpcomingEvents = () => {
   }
 
   return (
-    <div className="rounded-xl border border-white/10 bg-white/5 p-6 backdrop-blur-md w-full max-w-xs ml-auto">
+    <div className="rounded-xl border border-white/10 bg-white/5 p-6 backdrop-blur-md w-full">
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-xl font-bold text-white">Top Events</h3>
         <button
@@ -109,20 +107,26 @@ const UpcomingEvents = () => {
             <div className="space-y-2">
               <div className="flex items-start gap-2">
                 <Calendar className="h-3.5 w-3.5 text-emerald-400 mt-0.5 flex-shrink-0" />
-                <span className="text-xs text-gray-300 leading-tight">{formatDate(event.event_date)}</span>
+                <span className="text-xs text-gray-300 leading-tight">
+                  {formatDate(event.event_date)}
+                </span>
               </div>
-              
+
               {event.event_time && (
                 <div className="flex items-start gap-2">
                   <Clock className="h-3.5 w-3.5 text-purple-400 mt-0.5 flex-shrink-0" />
-                  <span className="text-xs text-gray-300 leading-tight">{formatTime(event.event_time)}</span>
+                  <span className="text-xs text-gray-300 leading-tight">
+                    {formatTime(event.event_time)}
+                  </span>
                 </div>
               )}
-              
+
               {event.location && (
                 <div className="flex items-start gap-2">
                   <MapPin className="h-3.5 w-3.5 text-orange-400 mt-0.5 flex-shrink-0" />
-                  <span className="text-xs text-gray-300 leading-tight line-clamp-1">{event.location}</span>
+                  <span className="text-xs text-gray-300 leading-tight line-clamp-1">
+                    {event.location}
+                  </span>
                 </div>
               )}
             </div>

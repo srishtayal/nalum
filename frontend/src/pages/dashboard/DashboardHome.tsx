@@ -1,48 +1,107 @@
+import { useState, useEffect } from "react";
 import { useProfile } from "@/context/ProfileContext";
-import UserAvatar from "@/components/UserAvatar";
 import PeopleYouMightKnow from "@/pages/dashboard/PeopleYouMightKnow";
 import UpcomingEvents from "@/pages/dashboard/UpcomingEvents";
 import ConnectionsPopover from "@/components/ConnectionsPopover";
+import CreatePostModal from "@/components/posts/CreatePostModal";
+import PostsFeed from "@/components/posts/PostsFeed";
+import { PenSquare, Search, X, Loader2 } from "lucide-react";
+import { toast } from "sonner";
 
 const DashboardHome = () => {
-  const { profile, isLoading } = useProfile();
+  const { profile } = useProfile();
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [debouncedQuery, setDebouncedQuery] = useState("");
+  const [isSearching, setIsSearching] = useState(false);
+
+  useEffect(() => {
+    if (searchQuery !== debouncedQuery) {
+      setIsSearching(true);
+      const handler = setTimeout(() => {
+        setDebouncedQuery(searchQuery);
+        setIsSearching(false);
+      }, 500);
+
+      return () => {
+        clearTimeout(handler);
+      };
+    }
+  }, [searchQuery, debouncedQuery]);
+
+  const handleStartPost = () => {
+    const isAlumni = (profile?.user as any)?.role === "alumni";
+
+    if (isAlumni) {
+      setIsModalOpen(true);
+    } else {
+      toast.info(
+        "Post creation will be available for students soon. Stay tuned!"
+      );
+    }
+  };
 
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-      {/* Welcome Header */}
-      <div className="p-6 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-md">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-white mb-2">
-              Welcome back, {profile?.user.name?.split(" ")[0] || "User"}
-            </h1>
-            <p className="text-gray-400">
-              Manage your profile and connect with the NSUT community.
-            </p>
-          </div>
-          {!isLoading && profile && (
-            <div className="hidden sm:flex items-center gap-4">
-              <UserAvatar
-                src={profile.profile_picture}
-                name={profile.user.name}
-                size="lg"
-                className="border-2 border-white/20 shadow-lg"
-              />
-              <ConnectionsPopover />
+      {/* Main Content Flex */}
+      <div className="flex flex-col lg:flex-row gap-8">
+        {/* Left Column: Search & Feed */}
+        <div className="flex-grow space-y-6">
+          <div className="relative">
+            <Search className="absolute left-6 top-1/2 -translate-y-1/2 h-6 w-6 text-gray-400 group-hover:text-white transition-colors pointer-events-none" />
+            <input
+              type="text"
+              placeholder="Search posts..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full flex items-center gap-3 px-6 py-4 pl-14 pr-20 bg-white/5 hover:bg-white/10 border border-white/10 rounded-2xl text-gray-400 transition-all duration-200 text-lg font-medium focus:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500/50"
+            />
+            <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center gap-2">
+              {isSearching && (
+                <Loader2 className="h-4 w-4 animate-spin text-blue-500" />
+              )}
+              {searchQuery && (
+                <button
+                  onClick={() => setSearchQuery("")}
+                  className="p-1 hover:bg-white/10 rounded-full transition-colors"
+                >
+                  <X className="h-4 w-4 text-gray-400 hover:text-white" />
+                </button>
+              )}
             </div>
-          )}
+          </div>
+
+          <PostsFeed
+            refreshTrigger={refreshTrigger}
+            searchQuery={debouncedQuery}
+          />
+        </div>
+
+        {/* Right Column: Start Post, People & Events */}
+        <div className="w-full lg:w-72 flex-shrink-0 space-y-6">
+          {/* Start Post & Notifications */}
+          <div className="flex items-center gap-3">
+            <button
+              onClick={handleStartPost}
+              className="relative flex-grow hidden sm:block bg-white/5 hover:bg-white/10 border border-white/10 rounded-2xl py-4 pl-12 pr-10 text-base text-white placeholder:text-gray-500 transition-all text-left"
+            >
+              <PenSquare className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-500" />
+              <span>Start a post</span>
+            </button>
+            <ConnectionsPopover />
+          </div>
+
+          <PeopleYouMightKnow />
+          <UpcomingEvents />
         </div>
       </div>
 
-      {/* People You Might Know Section */}
-      <div className="w-full hidden md:block">
-        <PeopleYouMightKnow />
-      </div>
-
-      {/* Upcoming Events Section */}
-      <div className="w-full hidden md:block">
-        <UpcomingEvents />
-      </div>
+      <CreatePostModal
+        open={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onPostCreated={() => setRefreshTrigger((prev) => prev + 1)}
+      />
     </div>
   );
 };

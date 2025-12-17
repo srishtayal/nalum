@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { Loader2, UserCheck, UserX, XCircle, Users } from "lucide-react";
+import { Loader2, UserCheck, UserX, XCircle, Users, Bell } from "lucide-react";
 import api from "@/lib/api";
 import UserAvatar from "@/components/UserAvatar";
 import { Button } from "@/components/ui/button";
@@ -296,8 +296,9 @@ const ConnectionsPopover = () => {
         <Button
           variant="ghost"
           className="relative h-16 w-16 rounded-full border-2 border-white/20 shadow-lg text-gray-400 hover:text-white hover:bg-white/10"
+          title="Notifications"
         >
-          <Users className="h-8 w-8" />
+          <Bell className="h-8 w-8" />
           {receivedRequests.length > 0 && (
             <span className="absolute top-0 right-0 h-4 w-4 rounded-full bg-red-500 border-2 border-slate-950 animate-pulse" />
           )}
