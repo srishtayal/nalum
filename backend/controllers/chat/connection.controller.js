@@ -24,34 +24,97 @@ exports.sendConnectionRequest = async (req, res) => {
       return res.status(404).json({ error: "User not found" });
     }
 
-    // Check if connection already exists
-    const existingConnection = await Connection.findOne({
+    // Check if consumers already exist
+    let connection = await Connection.findOne({
       $or: [
         { requester: requesterId, recipient: recipientId },
         { requester: recipientId, recipient: requesterId },
       ],
     });
 
-    if (existingConnection) {
-      return res.status(400).json({
-        error: "Connection request already exists",
-        status: existingConnection.status,
+    if (connection) {
+      if (connection.status !== "pending" && connection.status !== "rejected" && connection.status !== "cancelled") {
+        return res.status(400).json({
+          error: "Connection already exists",
+          status: connection.status,
+        });
+      }
+      // If pending/rejected/cancelled, retry/update
+      // We will reuse this connection object and proceed
+      connection.status = "pending"; // Reset status to pending
+      connection.requester = requesterId; // Ensure requester is correct (if swapping roles)
+      connection.recipient = recipientId;
+      if (requestMessage) {
+        connection.requestMessage = requestMessage;
+        await connection.save();
+      }
+    } else {
+      // Create connection request
+      connection = new Connection({
+        requester: requesterId,
+        recipient: recipientId,
+        requestMessage: requestMessage || null,
+        status: "pending",
       });
+      await connection.save();
     }
-
-    // Create connection request
-    const connection = new Connection({
-      requester: requesterId,
-      recipient: recipientId,
-      requestMessage: requestMessage || null,
-      status: "pending",
-    });
-
-    await connection.save();
     await connection.populate(
       ["requester", "recipient"],
       "name email profilePicture"
     );
+
+    // Create a conversation for this request
+    const Conversation = require("../../models/chat/conversations.model");
+    const Message = require("../../models/chat/messages.model");
+
+    const participants = [requesterId.toString(), recipientId.toString()].sort();
+
+    let conversation = await Conversation.findOne({
+      participants: { $all: participants, $size: 2 }
+    });
+
+    if (!conversation) {
+      conversation = new Conversation({ participants });
+      await conversation.save();
+    }
+
+    // If there is a request message, save it as a chat message
+    let message;
+    if (requestMessage) {
+      message = new Message({
+        conversation: conversation._id,
+        sender: requesterId,
+        content: requestMessage,
+        readBy: [{ user: requesterId, readAt: new Date() }]
+      });
+      await message.save();
+
+      conversation.lastMessage = {
+        content: requestMessage,
+        sender: requesterId,
+        timestamp: new Date()
+      };
+      await conversation.save();
+    }
+
+    // Emit socket event for real-time notification
+    const io = req.app.get("io");
+    if (io) {
+      io.to(`user:${recipientId}`).emit("connection_request", connection);
+      // Also emit message event so it shows up in chat list immediately
+      if (message) {
+        // Re-fetch message with population for socket
+        const fullMessage = await Message.findById(message._id).populate("sender", "name email profilePicture");
+
+        io.to(`user:${recipientId}`).emit("new_message", fullMessage);
+
+        // Emit conversation update for unread count
+        io.to(`user:${recipientId}`).emit("conversation:update", {
+          conversationId: conversation._id,
+          lastMessage: fullMessage
+        });
+      }
+    }
 
     res.status(201).json({
       message: "Connection request sent successfully",
@@ -103,13 +166,31 @@ exports.respondToConnection = async (req, res) => {
     // Update connection status
     if (action === "accept") {
       connection.status = "accepted";
+      connection.respondedAt = new Date();
+      await connection.save();
     } else if (action === "reject") {
       connection.status = "rejected";
+      connection.respondedAt = new Date();
+      await connection.save();
+
+      // Delete the conversation and messages for both users
+      const Conversation = require("../../models/chat/conversations.model");
+      const Message = require("../../models/chat/messages.model");
+
+      const conversation = await Conversation.findOne({
+        participants: { $all: [connection.requester, connection.recipient] }
+      });
+
+      if (conversation) {
+        await Message.deleteMany({ conversation: conversation._id });
+        await Conversation.findByIdAndDelete(conversation._id);
+      }
     } else if (action === "block") {
       connection.status = "blocked";
+      connection.blockedBy = userId;
+      connection.respondedAt = new Date();
+      await connection.save();
     }
-    connection.respondedAt = new Date();
-    await connection.save();
 
     await connection.populate(
       ["requester", "recipient"],
@@ -320,12 +401,85 @@ exports.blockUser = async (req, res) => {
     }
 
     connection.status = "blocked";
+    connection.blockedBy = userId;
     connection.respondedAt = new Date();
     await connection.save();
 
     res.json({ message: "User blocked successfully", connection });
   } catch (error) {
     console.error("Block user error:", error);
+    res.status(500).json({ error: "Failed to block user" });
+  }
+};
+
+// Unblock user
+exports.unblockUser = async (req, res) => {
+  try {
+    const userId = req.user.user_id;
+    const { userId: targetUserId } = req.body;
+
+    if (!targetUserId) {
+      return res.status(400).json({ error: "Target User ID is required" });
+    }
+
+    // Find connection that is blocked
+    const connection = await Connection.findOne({
+      $or: [
+        { requester: userId, recipient: targetUserId, status: 'blocked' },
+        { requester: targetUserId, recipient: userId, status: 'blocked' }
+      ]
+    });
+
+    if (!connection) {
+      return res.status(404).json({ error: "Blocked connection not found" });
+    }
+
+    // Verify current user is the one who blocked
+    if (connection.blockedBy && connection.blockedBy.toString() !== userId.toString()) {
+      return res.status(403).json({ error: "You cannot unblock this user (they blocked you)" });
+    }
+
+    // Delete the connection entirely upon unblocking (clean slate)
+    await Connection.findByIdAndDelete(connection._id);
+
+    res.json({ message: "User unblocked successfully" });
+
+  } catch (error) {
+    console.error("Unblock user error:", error);
+    res.status(500).json({ error: "Failed to unblock user" });
+  }
+};
+
+// Block user by User ID (for chat window)
+exports.blockUserByUserId = async (req, res) => {
+  try {
+    const requesterId = req.user.user_id;
+    const { userId } = req.body;
+
+    if (!userId) {
+      return res.status(400).json({ error: "User ID is required" });
+    }
+
+    // Find connection
+    const connection = await Connection.findOne({
+      $or: [
+        { requester: requesterId, recipient: userId },
+        { requester: userId, recipient: requesterId },
+      ],
+    });
+
+    if (!connection) {
+      return res.status(404).json({ error: "Connection not found" });
+    }
+
+    connection.status = "blocked";
+    connection.blockedBy = requesterId;
+    connection.respondedAt = new Date();
+    await connection.save();
+
+    res.json({ message: "User blocked successfully", connection });
+  } catch (error) {
+    console.error("Block user by ID error:", error);
     res.status(500).json({ error: "Failed to block user" });
   }
 };

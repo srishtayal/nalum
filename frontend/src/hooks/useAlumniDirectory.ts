@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useAuth } from "@/context/AuthContext";
 import api from "@/lib/api";
 import { toast } from "sonner";
+import { useResponsivePagination } from "./useResponsivePagination";
 
 export interface AlumniProfile {
   _id: string;
@@ -45,6 +46,7 @@ interface SearchParams {
 
 export const useAlumniDirectory = () => {
   const { accessToken } = useAuth();
+  const itemsPerPage = useResponsivePagination(); // Dynamic page size based on screen
   const [profile, setProfile] = useState<any>(null);
   const [alumni, setAlumni] = useState<AlumniProfile[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -100,7 +102,7 @@ export const useAlumniDirectory = () => {
     try {
       const params: SearchParams = {
         page,
-        limit: 12,
+        limit: itemsPerPage, // Use dynamic page size based on screen dimensions
       };
 
       if (filters.name) params.name = filters.name;
@@ -186,6 +188,15 @@ export const useAlumniDirectory = () => {
     return () => clearTimeout(timeoutId);
   }, [filters, profile]);
 
+  // Refetch when itemsPerPage changes (screen resize)
+  useEffect(() => {
+    if (hasSearched && alumni.length > 0) {
+      setCurrentPage(1);
+      fetchAlumni(1);
+    }
+
+  }, [itemsPerPage]); // Only depend on itemsPerPage to avoid infinite loops
+
   const handleFilterChange = (key: keyof Filters, value: string) => {
     setFilters((prev) => ({ ...prev, [key]: value }));
   };
@@ -265,11 +276,11 @@ export const useAlumniDirectory = () => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  const handleConnect = async (recipientId: string) => {
+  const handleConnect = async (recipientId: string, message?: string) => {
     try {
       await api.post(
         "/chat/connections/request",
-        { recipientId },
+        { recipientId, requestMessage: message },
         { headers: { Authorization: `Bearer ${accessToken}` } }
       );
 

@@ -38,6 +38,22 @@ router.post("/", async (req, res) => {
     });
   }
   
+  // Check if user is banned
+  if (data.data.banned) {
+    const banMessage = data.data.ban_expires_at && data.data.ban_expires_at !== null
+      ? `Your account has been banned until ${new Date(data.data.ban_expires_at).toLocaleString()}.`
+      : "Your account has been permanently banned.";
+    
+    return res.status(403).json({
+      err: true,
+      code: 403,
+      message: `${banMessage} Reason: ${data.data.ban_reason || "Not specified"}`,
+      banned: true,
+      ban_expires_at: data.data.ban_expires_at,
+      ban_reason: data.data.ban_reason,
+    });
+  }
+  
   // Check student verification timeout (30 days)
   if (data.data.role === "student" && data.data.isStudentVerificationExpired()) {
     return res.status(403).json({

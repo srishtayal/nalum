@@ -8,9 +8,9 @@ const Footer = () => {
   const socialLinks = [
     { icon: Facebook, href: "#", label: "Facebook" },
     { icon: Twitter, href: "#", label: "Twitter" },
-    { icon: Instagram, href: "#", label: "Instagram" },
-    { icon: Youtube, href: "#", label: "YouTube" },
-    { icon: Linkedin, href: "#", label: "LinkedIn" },
+    { icon: Instagram, href: "https://www.instagram.com/nsut.official?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw==", label: "Instagram" },
+    { icon: Youtube, href: "https://youtube.com/@nsutdelhi?si=GSi2n3m78a3JvbiK", label: "YouTube" },
+    { icon: Linkedin, href: "https://www.linkedin.com/company/officialnsut/", label: "LinkedIn" },
   ];
 
   return (

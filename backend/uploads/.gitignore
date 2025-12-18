@@ -1,8 +1,9 @@
-# Uploads directory for newsletters
-# Files uploaded here should not be committed to git
-*.pdf
-*.doc
-*.docx
+# Ignore all files in upload directories but keep the folders
+event-images/*
+newsletters/*
+profile-pictures/*
 
-# Keep directory structure
-!.gitkeep
+# Keep the directories themselves
+!event-images/.gitkeep
+!newsletters/.gitkeep
+!profile-pictures/.gitkeep

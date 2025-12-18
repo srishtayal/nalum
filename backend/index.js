@@ -16,15 +16,23 @@ const pdfParser = require("./routes/parser.js");
 const alumniRoutes = require("./routes/alumni.js");
 const adminRoutes = require("./routes/admin/index.js");
 const chatRoutes = require("./routes/chat/index.js");
+const eventRoutes = require("./routes/events.js");
+const postsRoutes = require("./routes/posts.js");
 const { checkBanned } = require("./middleware/checkBanned.js");
 const morgan = require("morgan");
 const redisConfig = require("./config/redis.config.js");
 const { initializeSocket } = require("./sockets/chatSocket.js");
 const { initPostgres } = require("./config/postgres.js");
 app.use(morgan("dev"));
+app.use((req, res, next) => {
+  console.log(`[DEBUG] Method: ${req.method} URL: ${req.url} Origin: ${req.headers.origin}`);
+  next();
+});
 app.use(cors({
-  origin: ['https://nalum.vercel.app', 'http://localhost:8080', 'http://localhost:5173'],
+  origin: ['https://nalum.vercel.app', 'http://localhost:8080', 'http://localhost:5173', 'https://unseeing-malaya-unprejudicedly.ngrok-free.dev', 'http://10.12.114.3:5173'],
   credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'ngrok-skip-browser-warning'],
 }));
 app.use(helmet({
   crossOriginResourcePolicy: { policy: "cross-origin" },
@@ -39,9 +47,10 @@ initPostgres();
 // connect to redis server (must be done before Socket.io initialization)
 redisConfig.connectRedis().then(() => {
   console.log('Redis initialization complete');
-  
+
   // Initialize Socket.io for chat after Redis is ready
-  initializeSocket(server).then(() => {
+  initializeSocket(server).then((io) => {
+    app.set('io', io);
     console.log('Socket.io initialization complete');
   }).catch(err => {
     console.error('Socket.io initialization failed:', err);
@@ -56,7 +65,9 @@ app.use("/auth", authRoutes);
 app.use("/profile", checkBanned, profileRoutes);
 app.use("/parser", checkBanned, pdfParser);
 app.use("/alumni", checkBanned, alumniRoutes);
-app.use("/chat", checkBanned,chatRoutes);
+app.use("/chat", checkBanned, chatRoutes);
+app.use("/events", checkBanned, eventRoutes);
+app.use("/posts", checkBanned, postsRoutes);
 
 // Admin routes (no checkBanned needed)
 app.use("/admin", adminRoutes);

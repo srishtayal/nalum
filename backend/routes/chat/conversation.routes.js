@@ -10,7 +10,8 @@ router.use(protect);
 router.get('/', conversationController.getConversations);
 router.get('/:conversationId', conversationController.getConversation);
 router.post('/', conversationController.createConversation);
-router.delete('/:conversationId', conversationController.archiveConversation);
+router.delete('/:conversationId', conversationController.deleteConversation);
+router.post('/:conversationId/archive', conversationController.archiveConversation);
 router.put('/:conversationId/read', conversationController.markConversationRead);
 
 module.exports = router;

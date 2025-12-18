@@ -1,13 +1,13 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import api from "@/lib/api";
 import { toast } from "sonner";
-import { useSocket } from "./useSocket";
+import { useChatContext } from "@/context/ChatContext"; // Changed from useSocket
 import { useEffect } from "react";
 import { useAuth } from "@/context/AuthContext";
 
 export const useConversations = () => {
   const queryClient = useQueryClient();
-  const { socket } = useSocket();
+  const { socket } = useChatContext(); // Changed from useSocket
   const { user } = useAuth();
 
   const { data: conversations = [], isLoading } = useQuery({
@@ -23,12 +23,12 @@ export const useConversations = () => {
 
     const handleConversationUpdate = (data: any) => {
       const { conversationId, lastMessage } = data;
-      
+
       queryClient.setQueryData(["conversations"], (old: any[]) => {
         if (!old) return [];
-        
+
         const index = old.findIndex((c: any) => c._id === conversationId);
-        
+
         if (index === -1) {
           // New conversation, fetch fresh list
           queryClient.invalidateQueries({ queryKey: ["conversations"] });
@@ -37,27 +37,27 @@ export const useConversations = () => {
 
         const newConversations = [...old];
         const updatedConversation = { ...newConversations[index] };
-        
+
         // Prevent duplicate updates for the same message
         if (updatedConversation.lastMessage?._id === lastMessage._id) {
-            return old;
+          return old;
         }
 
         updatedConversation.lastMessage = lastMessage;
-        
+
         const senderId = lastMessage.sender?._id || lastMessage.sender;
         const isOwnMessage = senderId === user.id;
 
         if (isOwnMessage) {
-            updatedConversation.unreadCount = 0;
+          updatedConversation.unreadCount = 0;
         } else {
-            updatedConversation.unreadCount = (updatedConversation.unreadCount || 0) + 1;
+          updatedConversation.unreadCount = (updatedConversation.unreadCount || 0) + 1;
         }
-        
+
         // Remove from old position and add to top
         newConversations.splice(index, 1);
         newConversations.unshift(updatedConversation);
-        
+
         return newConversations;
       });
     };

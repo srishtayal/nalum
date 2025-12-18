@@ -38,7 +38,7 @@ const Login = () => {
           const profileStatusResponse = await apiClient.get("/profile/status", {
             headers: { Authorization: `Bearer ${accessToken}` },
           });
-          
+
           if (!profileStatusResponse.data.profileCompleted) {
             navigate('/profile-form', { replace: true });
           } else {
@@ -84,10 +84,10 @@ const Login = () => {
       const response = await apiClient.post("/auth/sign-in", formData);
       const { access_token, email, user } = response.data.data;
       const verified_alumni = user?.verified_alumni || false;
-      
+
       // Set full user data in auth context
       setAuth(access_token, email, verified_alumni, user);
-      
+
       toast.success("Login Successful!", {
         description: "Welcome back to the NSUT Alumni Portal 🎉",
         style: {
@@ -112,7 +112,7 @@ const Login = () => {
       const profileStatusResponse = await apiClient.get("/profile/status", {
         headers: { Authorization: `Bearer ${access_token}` },
       });
-      
+
       if (!profileStatusResponse.data.profileCompleted) {
         navigate("/profile-form");
       } else {
@@ -141,6 +141,27 @@ const Login = () => {
         navigate("/otp-verification", { state: { email: formData.email } });
       } else if (
         axios.isAxiosError(error) &&
+        error.response?.status === 403 &&
+        error.response?.data?.banned
+      ) {
+        // Handle banned user
+        const banMessage = error.response.data.message || "Your account has been banned.";
+        toast.error("Account Banned", {
+          description: banMessage,
+          duration: 8000,
+          style: {
+            background: "#dc2626",
+            color: "white",
+            border: "2px solid #991b1b",
+            fontSize: "16px",
+          },
+          classNames: {
+            title: "text-xl font-bold text-white",
+            description: "text-base text-white",
+          },
+        });
+      } else if (
+        axios.isAxiosError(error) &&
         error.response?.status === 401 &&
         error.response?.data?.message === "No User"
       ) {
@@ -158,8 +179,12 @@ const Login = () => {
           },
         });
       } else {
+        const errorMessage = axios.isAxiosError(error) 
+          ? error.response?.data?.message || "Invalid email or password"
+          : "Invalid email or password";
+        
         toast.error("Login Failed", {
-          description: "Invalid email or password",
+          description: errorMessage,
           style: {
             background: "#800000",
             color: "white",
@@ -178,9 +203,9 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen w-full lg:grid lg:grid-cols-2 pt-16 lg:pt-0">
+    <div className="flex flex-col min-h-[100dvh] w-full bg-gray-50 lg:grid lg:grid-cols-2 lg:h-screen lg:overflow-hidden">
       {/* Left Column: Image */}
-      <div className="relative hidden lg:flex flex-col items-start justify-between p-10">
+      <div className="relative hidden lg:flex flex-col items-start justify-between p-10 h-full">
         <img
           src={nsutCampusHero}
           alt="NSUT Campus"
@@ -188,7 +213,7 @@ const Login = () => {
         />
         <div className="absolute inset-0 bg-black/50" />
         <Link to="/" className="relative z-10 flex items-center gap-3 text-white">
-          <img src={nsutLogo} alt="NSUT Logo" className="h-10 w-10 invert" />
+          <img src={nsutLogo} alt="NSUT Logo" className="h-10 w-10 " />
           <span className="text-2xl font-serif font-semibold">NALUM</span>
         </Link>
         <div className="relative z-10 text-white">
@@ -202,7 +227,7 @@ const Login = () => {
       </div>
 
       {/* Right Column: Form */}
-      <div className="relative flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 bg-gray-50 min-h-screen lg:min-h-full">
+      <div className="flex-1 relative flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 bg-gray-50 lg:h-full lg:overflow-y-auto">
         {/* Subtle Pattern Background */}
         <div className="absolute inset-0 opacity-5">
           <div className="absolute inset-0" style={{

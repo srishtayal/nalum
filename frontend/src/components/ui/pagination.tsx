@@ -49,9 +49,13 @@ const PaginationLink = ({
     aria-current={isActive ? "page" : undefined}
     className={cn(
       buttonVariants({
-        variant: isActive ? "outline" : "ghost",
+        variant: isActive ? "default" : "ghost",
         size,
       }),
+      isActive
+        ? "bg-black text-white border border-white/20"
+        : "hover:bg-transparent hover:text-gray-300",
+      "focus-visible:ring-0 focus:outline-none",
       className
     )}
     {...props}
@@ -66,7 +70,10 @@ const PaginationPrevious = ({
   <PaginationLink
     aria-label="Go to previous page"
     size="default"
-    className={cn("gap-1 pl-2.5", className)}
+    className={cn(
+      "gap-1 pl-2.5 text-gray-300 hover:bg-transparent hover:text-gray-300 focus-visible:ring-0 focus:outline-none",
+      className
+    )}
     {...props}
   >
     <ChevronLeft className="h-4 w-4" />
@@ -82,7 +89,10 @@ const PaginationNext = ({
   <PaginationLink
     aria-label="Go to next page"
     size="default"
-    className={cn("gap-1 pr-2.5", className)}
+    className={cn(
+      "gap-1 pr-2.5 text-gray-300 hover:bg-transparent hover:text-gray-300 focus-visible:ring-0 focus:outline-none",
+      className
+    )}
     {...props}
   >
     <span>Next</span>
@@ -163,13 +173,15 @@ const SmartPagination = ({
             href="#"
             onClick={(e) => {
               e.preventDefault();
-              if (currentPage > 1) onPageChange(currentPage - 1);
+              if (currentPage > 1) {
+                onPageChange(currentPage - 1);
+              }
             }}
-            className={
+            className={cn(
               currentPage === 1
-                ? "pointer-events-none opacity-50"
-                : "cursor-pointer"
-            }
+                ? "pointer-events-none opacity-50 cursor-not-allowed"
+                : "cursor-pointer hover:bg-white/10"
+            )}
           />
         </PaginationItem>
 
@@ -200,13 +212,15 @@ const SmartPagination = ({
             href="#"
             onClick={(e) => {
               e.preventDefault();
-              if (currentPage < totalPages) onPageChange(currentPage + 1);
+              if (currentPage < totalPages) {
+                onPageChange(currentPage + 1);
+              }
             }}
-            className={
-              currentPage === totalPages
-                ? "pointer-events-none opacity-50"
-                : "cursor-pointer"
-            }
+            className={cn(
+              currentPage >= totalPages
+                ? "pointer-events-none opacity-50 cursor-not-allowed"
+                : "cursor-pointer hover:bg-white/10"
+            )}
           />
         </PaginationItem>
       </PaginationContent>

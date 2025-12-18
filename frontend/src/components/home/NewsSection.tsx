@@ -8,6 +8,9 @@ interface NewsArticle {
   headline: string;
   date?: string;
   description: string;
+  details?: string[];
+  link?: string;
+  cta?: string;
 }
 
 const NewsCard = ({ article }: { article: NewsArticle }) => (
@@ -15,7 +18,7 @@ const NewsCard = ({ article }: { article: NewsArticle }) => (
     <div className="relative bg-white rounded-xl border-2 border-gray-100 hover:border-nsut-maroon/30 transition-all duration-300 overflow-hidden h-full flex flex-col">
       {/* Accent line */}
       <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-nsut-maroon to-nsut-yellow transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left" />
-      
+
       <div className="p-8 flex-grow flex flex-col">
         {/* Icon */}
         <div className="mb-4">
@@ -35,14 +38,14 @@ const NewsCard = ({ article }: { article: NewsArticle }) => (
         <h3 className="font-serif text-2xl font-bold text-gray-900 mb-3 group-hover:text-nsut-maroon transition-colors duration-300">
           {article.headline}
         </h3>
-        
+
         {article.date && (
           <div className="flex items-center text-sm text-gray-500 mb-3">
             <Calendar className="h-4 w-4 mr-2" />
             {article.date}
           </div>
         )}
-        
+
         <p className="text-gray-600 leading-relaxed mb-4 flex-grow">
           {article.description}
         </p>
@@ -109,7 +112,7 @@ const NewsSection = () => {
   ];
 
   return (
-    <div className="relative py-20 bg-white">
+    <div className="relative py-12 md:py-20 bg-white">
       {/* Background pattern */}
       <div className="absolute inset-0 opacity-5">
         <div className="absolute inset-0" style={{
@@ -121,14 +124,14 @@ const NewsSection = () => {
         {/* Section header */}
         <div className="text-center mb-12 max-w-3xl mx-auto">
           <div className="inline-block mb-3">
-            <span className="text-nsut-maroon text-sm font-semibold tracking-wider uppercase">
+            <span className="text-nsut-maroon text-xs md:text-sm font-semibold tracking-wider uppercase">
               News & Updates
             </span>
           </div>
-          <h2 className="text-3xl md:text-4xl font-serif font-bold text-gray-900 mb-4">
+          <h2 className="text-2xl md:text-4xl font-serif font-bold text-gray-900 mb-4">
             Stay Informed
           </h2>
-          <p className="text-lg text-gray-600 leading-relaxed">
+          <p className="text-base md:text-lg text-gray-600 leading-relaxed">
             Latest announcements and upcoming events from the NSUT alumni community
           </p>
         </div>

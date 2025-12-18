@@ -166,6 +166,15 @@ exports.deleteMessage = async (req, res) => {
     message.deleted = true;
     await message.save();
 
+    // Notify conversation participants via socket
+    const io = req.app.get('io');
+    if (io) {
+      io.to(`conversation:${message.conversation}`).emit('message:deleted', {
+        messageId: message._id,
+        conversationId: message.conversation
+      });
+    }
+
     res.json({ message: 'Message deleted successfully' });
 
   } catch (error) {

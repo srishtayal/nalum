@@ -10,11 +10,17 @@ export const setAuthToken = (token: string | null) => {
 const api = axios.create({
   baseURL: BASE_URL,
   timeout: 60000, // 60 seconds timeout for slow Render cold starts
+  headers: {
+    "ngrok-skip-browser-warning": "true",
+  },
 });
 
 const refreshApi = axios.create({
   baseURL: BASE_URL,
   timeout: 60000, // 60 seconds timeout
+  headers: {
+    "ngrok-skip-browser-warning": "true",
+  },
 });
 
 api.interceptors.request.use((config) => {
@@ -65,6 +71,11 @@ export const checkAlumniManual = async (data: {
   roll_no?: string;
   batch: string;
   branch: string;
+  contact_info?: {
+    phone?: string;
+    alternate_email?: string;
+    linkedin?: string;
+  };
 }) => {
   return api.post("/alumni/check-manual", data);
 };
@@ -75,6 +86,22 @@ export const confirmAlumniMatch = async (payload: { roll_no: string }) => {
 
 export const getUserProfile = async () => {
   return api.get("/profile");
+};
+
+export const searchUsers = async (query: string, filters: any = {}) => {
+  const params = new URLSearchParams();
+  params.append("name", query);
+  params.append("limit", "15");
+
+  if (filters.batch) params.append("batch", filters.batch);
+  if (filters.branch) params.append("branch", filters.branch);
+  if (filters.campus) params.append("campus", filters.campus);
+  if (filters.company) params.append("company", filters.company);
+  if (filters.skills && filters.skills.length > 0) {
+    filters.skills.forEach((skill: string) => params.append("skills[]", skill));
+  }
+
+  return api.get(`/profile/search?${params.toString()}`);
 };
 
 export default api;

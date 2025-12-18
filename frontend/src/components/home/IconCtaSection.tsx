@@ -3,18 +3,18 @@ import { Calendar, Users, Megaphone, ArrowRight } from 'lucide-react';
 
 const IconCtaSection = () => {
   const ctaItems = [
-    { 
-      icon: Calendar, 
-      text: "Attend an Event", 
+    {
+      icon: Calendar,
+      text: "Attend an Event",
       description: "Join upcoming reunions, workshops, and campus celebrations",
       link: "/events/events-calendar",
       gradient: "from-nsut-maroon to-red-800",
       bgColor: "bg-red-50",
       hoverColor: "group-hover:bg-red-100"
     },
-    { 
-      icon: Users, 
-      text: "Explore Communities", 
+    {
+      icon: Users,
+      text: "Explore Communities",
       description: "Connect with fellow alumni who share your interests",
       link: "/communities-interests",
       gradient: "from-nsut-yellow to-amber-500",
@@ -24,7 +24,7 @@ const IconCtaSection = () => {
   ];
 
   return (
-    <div className="relative bg-gradient-to-b from-white via-nsut-beige/30 to-white py-20">
+    <div className="relative bg-gradient-to-b from-white via-nsut-beige/30 to-white py-12 md:py-20">
       {/* Background pattern */}
       <div className="absolute inset-0 opacity-5">
         <div className="absolute inset-0" style={{
@@ -34,11 +34,11 @@ const IconCtaSection = () => {
 
       <div className="container mx-auto px-4 relative z-10">
         {/* Section header */}
-        <div className="text-center mb-12">
-          <h2 className="text-3xl md:text-4xl font-serif font-bold text-gray-900 mb-3">
+        <div className="text-center mb-8 md:mb-12">
+          <h2 className="text-2xl md:text-4xl font-serif font-bold text-gray-900 mb-3">
             Get Involved
           </h2>
-          <p className="text-gray-600 text-lg max-w-2xl mx-auto">
+          <p className="text-gray-600 text-base md:text-lg max-w-2xl mx-auto">
             Stay connected and make an impact in the NSUT community
           </p>
         </div>
@@ -46,15 +46,15 @@ const IconCtaSection = () => {
         {/* CTA Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-6xl mx-auto">
           {ctaItems.map((item, index) => (
-            <Link 
-              to={item.link} 
-              key={index} 
+            <Link
+              to={item.link}
+              key={index}
               className="group relative block"
             >
               <div className={`relative overflow-hidden rounded-2xl ${item.bgColor} ${item.hoverColor} border-2 border-transparent hover:border-gray-200 transition-all duration-500 h-full`}>
                 {/* Gradient overlay on hover */}
                 <div className={`absolute inset-0 bg-gradient-to-br ${item.gradient} opacity-0 group-hover:opacity-5 transition-opacity duration-500`} />
-                
+
                 <div className="relative p-8">
                   {/* Icon container with animation */}
                   <div className="mb-6">

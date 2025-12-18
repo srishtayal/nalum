@@ -22,11 +22,11 @@ async function handleSendMessage(io, socket, data) {
       try {
         const rateKey = `ratelimit:message:${userId}`;
         const messageCount = await redisClient.incr(rateKey);
-        
+
         if (messageCount === 1) {
           await redisClient.expire(rateKey, 60);
         }
-        
+
         if (messageCount > 50) {
           return socket.emit('message:error', { error: 'Rate limit exceeded. Please wait.' });
         }
@@ -43,6 +43,23 @@ async function handleSendMessage(io, socket, data) {
 
     if (!conversation.participants.some(p => p.toString() === userId.toString())) {
       return socket.emit('message:error', { error: 'Not authorized for this conversation' });
+    }
+
+    // Check for blocking
+    const participantIds = conversation.participants.map(p => p.toString());
+    const otherUserId = participantIds.find(id => id !== userId.toString());
+
+    if (otherUserId) {
+      const connection = await Connection.findOne({
+        $or: [
+          { requester: userId, recipient: otherUserId },
+          { requester: otherUserId, recipient: userId }
+        ]
+      });
+
+      if (connection && connection.status === 'blocked') {
+        return socket.emit('message:error', { error: 'You cannot send messages to this user' });
+      }
     }
 
     // Create message
@@ -88,7 +105,7 @@ async function handleSendMessage(io, socket, data) {
 
     // Populate message for response
     await message.populate('sender', 'name email profilePicture');
-    
+
     // Notify all participants via their personal rooms (for chat list updates)
     for (const participantId of conversation.participants) {
       io.to(`user:${participantId}`).emit('conversation:update', {
@@ -177,7 +194,36 @@ async function handleMessageRead(io, socket, data) {
   }
 }
 
+async function handleMessageDeleted(io, socket, data) {
+  try {
+    const { messageId, conversationId } = data;
+    const userId = socket.userId;
+
+    // Verify ownership or admin status (optional but recommended)
+    const message = await Message.findById(messageId);
+    if (!message) return;
+
+    if (message.sender.toString() !== userId) {
+      // Only sender can delete (or add admin check here)
+      return;
+    }
+
+    // Perform deletion (or soft delete)
+    await Message.deleteOne({ _id: messageId });
+
+    // Notify conversation participants
+    io.to(`conversation:${conversationId}`).emit('message:deleted', {
+      messageId,
+      conversationId
+    });
+
+  } catch (error) {
+    console.error('Message delete error:', error);
+  }
+}
+
 module.exports = {
   handleSendMessage,
-  handleMessageRead
+  handleMessageRead,
+  handleMessageDeleted
 };
