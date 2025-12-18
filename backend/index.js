@@ -20,6 +20,7 @@ const { checkBanned } = require("./middleware/checkBanned.js");
 const morgan = require("morgan");
 const redisConfig = require("./config/redis.config.js");
 const { initializeSocket } = require("./sockets/chatSocket.js");
+const { initPostgres } = require("./config/postgres.js");
 app.use(morgan("dev"));
 app.use(cors({
   origin: ['https://nalum.vercel.app', 'http://localhost:8080', 'http://localhost:5173'],
@@ -34,6 +35,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
 dbConnect();
+initPostgres();
 // connect to redis server (must be done before Socket.io initialization)
 redisConfig.connectRedis().then(() => {
   console.log('Redis initialization complete');
