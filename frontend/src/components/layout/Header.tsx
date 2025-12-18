@@ -10,12 +10,9 @@ const Header = ({ setHeaderHeight }) => {
 
   // --- Hardcoded Nav Links ---
   const navLinks = {
-    "Communities & Interests": [
+    "Communities": [
       "Clubs",
-      "Classes",
-      "Affinity Groups",
       "Recent Grads",
-      "Families",
       "Industries",
     ],
     Volunteer: ["Opportunities", "Advocacy", "Tools & Resources", "Recognition"],

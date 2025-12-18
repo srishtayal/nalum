@@ -39,6 +39,8 @@ import BannedUsers from "./pages/admin/BannedUsers";
 import CodeManagement from "./pages/admin/CodeManagement";
 import AlumniDatabase from "./pages/admin/AlumniDatabase";
 import NotableAlumni from "./pages/stories/notableAlumni";
+import ClubsPage from "./pages/communities/clubs";
+import LearningPage from "./pages/benefits/learning";
 import { startKeepAlive, stopKeepAlive } from "@/lib/keepAlive";
 
 const queryClient = new QueryClient();
@@ -102,6 +104,8 @@ function AppContent() {
         <Route path="/" element={<Root />}>
           <Route index element={<HomePage />} />
           <Route path="/stories/notable-alumni" element={<NotableAlumni />} />
+          <Route path="/communities/clubs" element={<ClubsPage />} />
+          <Route path="/benefits/learning" element={<LearningPage />} />
         </Route>
 
         {/* Auth Routes (without header/footer) */}
