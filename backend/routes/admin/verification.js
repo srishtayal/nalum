@@ -9,5 +9,6 @@ router.post("/approve/:userId", protectAdmin, verificationController.approveVeri
 router.post("/reject/:userId", protectAdmin, verificationController.rejectVerification);
 router.get("/stats", protectAdmin, verificationController.getVerificationStats);
 router.post("/search-alumni-database", protectAdmin, verificationController.searchAlumniDatabase);
+router.get("/all-alumni", protectAdmin, verificationController.getAllAlumni);
 
 module.exports = router;

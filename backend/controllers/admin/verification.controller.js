@@ -196,62 +196,88 @@ exports.getVerificationStats = async (req, res) => {
   }
 };
 
-// Search alumni database (for admin use)
+// Search alumni database (for admin use) via PostgreSQL
 exports.searchAlumniDatabase = async (req, res) => {
   try {
     const { name, roll_no, batch, branch } = req.body;
 
-    // This endpoint would call the alumni service microservice
-    // For now, we'll return an empty array with a message
-    // When the alumni service is configured, this will search the PostgreSQL database
-    
-    const ALUMNI_SERVICE_URL = process.env.ALUMNI_VERIFY_SERVICE_URL;
-    
-    if (!ALUMNI_SERVICE_URL) {
-      return res.status(200).json({
-        success: true,
-        matches: [],
-        message: "Alumni database service is not configured. Please set ALUMNI_VERIFY_SERVICE_URL in environment variables.",
-      });
+    const { pool } = require("../../config/postgres.js");
+
+    // Build dynamic query based on provided filters
+    const whereParts = [];
+    const values = [];
+
+    if (roll_no && roll_no.trim() !== "") {
+      whereParts.push(`roll_no = $${values.length + 1}`);
+      values.push(roll_no.trim());
+    } else {
+      if (name && name.trim() !== "") {
+        whereParts.push(`full_name ILIKE $${values.length + 1}`);
+        values.push(`%${name.trim()}%`);
+      }
+      if (batch && batch.trim() !== "") {
+        whereParts.push(`passing_year = $${values.length + 1}`);
+        values.push(batch.trim());
+      }
+      if (branch && branch.trim() !== "") {
+        whereParts.push(`branch = $${values.length + 1}`);
+        values.push(branch.trim());
+      }
     }
 
-    // When alumni service is available, make the API call
-    const axios = require("axios");
-    
-    try {
-      const response = await axios.post(
-        `${ALUMNI_SERVICE_URL}/api/alumni/search`,
-        {
-          name,
-          roll_no,
-          batch,
-          branch,
-        },
-        {
-          timeout: 10000,
-        }
-      );
-
-      const matches = response.data.matches || [];
-      
-      res.status(200).json({
-        success: true,
-        matches,
-      });
-    } catch (serviceError) {
-      console.error("Alumni service error:", serviceError.message);
-      
-      res.status(200).json({
-        success: true,
-        matches: [],
-        message: "Alumni database service is currently unavailable.",
-      });
+    if (whereParts.length === 0) {
+      return res.status(200).json({ success: true, matches: [] });
     }
+
+    const sql = `SELECT full_name as name, roll_no, passing_year as batch, branch FROM alumni ${
+      whereParts.length ? `WHERE ${whereParts.join(" AND ")}` : ""
+    } LIMIT 50`;
+
+    const result = await pool.query(sql, values);
+
+    res.status(200).json({
+      success: true,
+      matches: result.rows || [],
+    });
   } catch (error) {
     console.error("Error searching alumni database:", error);
     res.status(500).json({
       success: false,
       message: "An error occurred while searching the database",
+    });
+  }
+};
+
+// Get all alumni from database (for admin use)
+exports.getAllAlumni = async (req, res) => {
+  try {
+    const { pool } = require("../../config/postgres.js");
+    const { limit = 100, offset = 0 } = req.query;
+
+    const sql = `SELECT full_name as name, roll_no, passing_year as batch, branch 
+                 FROM alumni 
+                 ORDER BY passing_year DESC, full_name ASC 
+                 LIMIT $1 OFFSET $2`;
+
+    const countSql = `SELECT COUNT(*) as total FROM alumni`;
+
+    const [result, countResult] = await Promise.all([
+      pool.query(sql, [parseInt(limit), parseInt(offset)]),
+      pool.query(countSql),
+    ]);
+
+    res.status(200).json({
+      success: true,
+      matches: result.rows || [],
+      total: parseInt(countResult.rows[0]?.total || 0),
+      limit: parseInt(limit),
+      offset: parseInt(offset),
+    });
+  } catch (error) {
+    console.error("Error fetching all alumni:", error);
+    res.status(500).json({
+      success: false,
+      message: "An error occurred while fetching alumni records",
     });
   }
 };

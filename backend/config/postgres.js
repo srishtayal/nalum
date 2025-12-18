@@ -50,4 +50,5 @@ async function initPostgres() {
 	}
 }
 
+module.exports.pool = pool;
 module.exports.initPostgres = initPostgres;
