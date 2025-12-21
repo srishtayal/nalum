@@ -22,6 +22,7 @@ import { useAuth } from "@/context/AuthContext";
 import api from "@/lib/api";
 import UserAvatar from "@/components/UserAvatar";
 import { toast } from "sonner";
+import MyPosts from "./MyPosts";
 
 interface Profile {
   user: {
@@ -348,6 +349,11 @@ const ShowProfile = () => {
                 </div>
               </div>
             )}
+          </div>
+
+          {/* My Posts Section (Mobile Only) */}
+          <div className="md:hidden mt-8 pt-8 border-t border-white/10">
+            <MyPosts embedded={true} />
           </div>
         </div>
       </div>

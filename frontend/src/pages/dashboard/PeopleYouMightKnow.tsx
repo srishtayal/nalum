@@ -14,6 +14,7 @@ import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { useProfile } from "@/context/ProfileContext";
 import { cn } from "@/lib/utils";
+import { ConnectionMessageDialog } from "@/components/ConnectionMessageDialog";
 
 interface SuggestionProfile {
   _id: string;
@@ -45,6 +46,8 @@ const PeopleYouMightKnow = ({
   const { profile } = useProfile();
   const [suggestions, setSuggestions] = useState<SuggestionProfile[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [selectedUser, setSelectedUser] = useState<{ id: string; name: string } | null>(null);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   const fetchSuggestions = useCallback(async () => {
     setIsLoading(true);
@@ -100,16 +103,26 @@ const PeopleYouMightKnow = ({
     return combined.slice(0, 6);
   }, [suggestions, profile]);
 
-  const handleConnect = async (userId: string, message?: string) => {
+  const handleConnectClick = (user: { _id: string; name: string }) => {
+    setSelectedUser({ id: user._id, name: user.name });
+    setIsDialogOpen(true);
+  };
+
+  const handleSendRequest = async (message: string) => {
+    if (!selectedUser) return;
+
     try {
       await api.post("/chat/connections/request", {
-        recipientId: userId,
+        recipientId: selectedUser.id,
         requestMessage: message,
       });
       toast.success("Connection request sent");
       fetchSuggestions();
     } catch (error: any) {
       toast.error(error?.response?.data?.message || "Failed to send request");
+    } finally {
+      setIsDialogOpen(false);
+      setSelectedUser(null);
     }
   };
 
@@ -173,7 +186,7 @@ const PeopleYouMightKnow = ({
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
-                    handleConnect(profile.user._id);
+                    handleConnectClick(profile.user);
                   }}
                   className="p-1 text-white bg-blue-600 hover:bg-blue-700 rounded-full transition-colors flex-shrink-0"
                   title="Connect"
@@ -185,6 +198,12 @@ const PeopleYouMightKnow = ({
           );
         })}
       </div>
+      <ConnectionMessageDialog
+        isOpen={isDialogOpen}
+        onClose={() => setIsDialogOpen(false)}
+        onConfirm={handleSendRequest}
+        recipientName={selectedUser?.name || "User"}
+      />
     </div>
   );
 };
