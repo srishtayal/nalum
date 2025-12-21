@@ -1,52 +1,15 @@
 import { useEffect, useState } from "react";
 import AdminLayout from "../../components/admin/AdminLayout";
-import {
-  FileText,
-  Edit,
-  Trash2,
-  RefreshCw,
-  Search,
-  Filter,
-  User,
-} from "lucide-react";
+import { FileText, RefreshCw, Search, Filter, Edit, Trash2 } from "lucide-react";
 import api from "../../lib/api";
-import { BASE_URL } from "../../lib/constants";
 import { Button } from "../../components/ui/button";
 import { Input } from "../../components/ui/input";
 import { Label } from "../../components/ui/label";
 import { Textarea } from "../../components/ui/textarea";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "../../components/ui/select";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "../../components/ui/dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../../components/ui/select";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "../../components/ui/dialog";
 import { toast } from "sonner";
-
-interface Post {
-  _id: string;
-  title: string;
-  content: string;
-  userId: {
-    _id: string;
-    name: string;
-    email: string;
-    profile_picture?: string;
-  };
-  images: string[];
-  createdAt: string;
-  updatedAt: string;
-  status: string;
-  likes?: number;
-}
+import PostCardAdmin, { Post } from "../../components/posts/PostCardAdmin";
 
 const CurrentPosts = () => {
   const [posts, setPosts] = useState<Post[]>([]);
@@ -54,6 +17,8 @@ const CurrentPosts = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [approvalMode, setApprovalMode] = useState(0); // 0=Manual, 1=Auto
+  const [togglingApproval, setTogglingApproval] = useState(false);
 
   // Edit Dialog
   const [editDialogOpen, setEditDialogOpen] = useState(false);
@@ -71,6 +36,7 @@ const CurrentPosts = () => {
 
   useEffect(() => {
     fetchPosts();
+    fetchApprovalMode();
   }, []);
 
   useEffect(() => {
@@ -81,6 +47,36 @@ const CurrentPosts = () => {
 
     return () => clearTimeout(timer);
   }, [posts, searchTerm, statusFilter]);
+
+  const fetchApprovalMode = async () => {
+    try {
+      const response = await api.get("/admin/posts/settings/approval-status");
+      if (response.data.success) {
+        setApprovalMode(response.data.data.mode);
+      }
+    } catch (err) {
+      console.error("Failed to fetch approval mode:", err);
+    }
+  };
+
+  const toggleApprovalMode = async () => {
+    setTogglingApproval(true);
+    try {
+      const newMode = approvalMode === 1 ? 0 : 1;
+      await api.post("/admin/posts/settings/toggle-approval", {
+        mode: newMode,
+      });
+      setApprovalMode(newMode);
+      toast.success(
+        `Post approval mode changed to ${newMode === 1 ? "Auto" : "Manual"}`
+      );
+    } catch (err) {
+      console.error("Failed to toggle approval mode:", err);
+      toast.error("Failed to toggle post approval mode");
+    } finally {
+      setTogglingApproval(false);
+    }
+  };
 
   const fetchPosts = async () => {
     setIsLoading(true);
@@ -186,25 +182,6 @@ const CurrentPosts = () => {
     }
   };
 
-  const getStatusBadge = (status: string) => {
-    const badges = {
-      pending: "bg-yellow-500/20 text-yellow-600 border-yellow-500/30",
-      approved: "bg-green-500/20 text-green-600 border-green-500/30",
-      rejected: "bg-red-500/20 text-red-600 border-red-500/30",
-    };
-    return badges[status as keyof typeof badges] || badges.pending;
-  };
-
-  const truncateContent = (content: string, maxLength: number = 150) => {
-    if (content.length <= maxLength) return content;
-    return content.substring(0, maxLength) + "...";
-  };
-
-  const getImageUrl = (imagePath: string) => {
-    if (imagePath.startsWith("http")) return imagePath;
-    return `${BASE_URL}/uploads/posts/${imagePath}`;
-  };
-
   return (
     <AdminLayout>
       <div className="space-y-6">
@@ -217,14 +194,49 @@ const CurrentPosts = () => {
               found
             </p>
           </div>
-          <Button
-            onClick={fetchPosts}
-            disabled={isLoading}
-            className="flex items-center gap-2"
-          >
-            <RefreshCw size={18} className={isLoading ? "animate-spin" : ""} />
-            Refresh
-          </Button>
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-3 pr-4 border-r border-gray-300">
+              <span className="text-sm font-medium text-gray-700">
+                Post Approval Mode
+              </span>
+              <button
+                onClick={toggleApprovalMode}
+                disabled={togglingApproval}
+                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                  approvalMode === 1 ? "bg-green-600" : "bg-orange-500"
+                } ${
+                  togglingApproval
+                    ? "opacity-50 cursor-not-allowed"
+                    : "cursor-pointer"
+                }`}
+              >
+                <span
+                  className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                    approvalMode === 1 ? "translate-x-6" : "translate-x-1"
+                  }`}
+                />
+              </button>
+              <span
+                className={`text-xs font-medium ${
+                  approvalMode === 1 ? "text-green-600" : "text-orange-600"
+                }`}
+              >
+                {approvalMode === 1 ? "Auto" : "Manual"}
+              </span>
+            </div>
+
+            <Button
+              onClick={fetchPosts}
+              disabled={isLoading}
+              className="flex items-center gap-2"
+            >
+              <RefreshCw
+                size={18}
+                className={isLoading ? "animate-spin" : ""}
+              />
+              Refresh
+            </Button>
+          </div>
         </div>
 
         {/* Filters */}
@@ -287,96 +299,16 @@ const CurrentPosts = () => {
         ) : (
           <div className="grid gap-4">
             {filteredPosts.map((post) => (
-              <div
+              <PostCardAdmin
                 key={post._id}
-                className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 hover:shadow-md transition-shadow"
-              >
-                <div className="flex gap-4">
-                  {/* Post Image */}
-                  {post.images && post.images.length > 0 && (
-                    <div className="flex-shrink-0">
-                      <div className="w-40 h-32 bg-gray-100 rounded-lg overflow-hidden">
-                        <img
-                          src={getImageUrl(post.images[0])}
-                          alt={post.title}
-                          className="w-full h-full object-cover"
-                          onError={(e) => {
-                            e.currentTarget.style.display = "none";
-                            e.currentTarget.parentElement!.innerHTML = `
-                              <div class="w-full h-full flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100">
-                                <svg class="text-gray-400" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                  <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-                                  <circle cx="8.5" cy="8.5" r="1.5"></circle>
-                                  <polyline points="21 15 16 10 5 21"></polyline>
-                                </svg>
-                              </div>
-                            `;
-                          }}
-                        />
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Post Details */}
-                  <div className="flex-1">
-                    <div className="flex justify-between items-start mb-2">
-                      <div>
-                        <h3 className="text-xl font-semibold text-gray-900">
-                          {post.title}
-                        </h3>
-                        <div className="flex gap-2 mt-1">
-                          <span
-                            className={`inline-block px-2 py-1 text-xs font-medium rounded-full border ${getStatusBadge(
-                              post.status
-                            )}`}
-                          >
-                            {post.status}
-                          </span>
-                        </div>
-                      </div>
-                      <div className="flex gap-2">
-                        <Button
-                          onClick={() => handleEditClick(post)}
-                          className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2"
-                        >
-                          <Edit size={16} className="mr-1" />
-                          Edit
-                        </Button>
-                        <Button
-                          onClick={() => handleDeleteClick(post)}
-                          className="bg-red-600 hover:bg-red-700 text-white px-4 py-2"
-                        >
-                          <Trash2 size={16} className="mr-1" />
-                          Delete
-                        </Button>
-                      </div>
-                    </div>
-                    <p className="text-gray-600 text-sm mb-2 line-clamp-2">
-                      {truncateContent(post.content)}
-                    </p>
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-sm">
-                      <div>
-                        <span className="text-gray-500">Author:</span>{" "}
-                        <span className="font-medium">{post.userId.name}</span>
-                      </div>
-                      <div>
-                        <span className="text-gray-500">Email:</span>{" "}
-                        <span className="font-medium">{post.userId.email}</span>
-                      </div>
-                      <div>
-                        <span className="text-gray-500">Created:</span>{" "}
-                        <span className="font-medium">
-                          {new Date(post.createdAt).toLocaleDateString()}
-                        </span>
-                      </div>
-                      <div>
-                        <span className="text-gray-500">Likes:</span>{" "}
-                        <span className="font-medium">{post.likes || 0}</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
+                post={post}
+                onEdit={handleEditClick}
+                onDelete={handleDeleteClick}
+                primaryButtonLabel="Edit"
+                secondaryButtonLabel="Delete"
+                primaryButtonIcon={Edit}
+                secondaryButtonIcon={Trash2}
+              />
             ))}
           </div>
         )}

@@ -43,6 +43,10 @@ const postSchema = new mongoose.Schema(
       type: String,
       default: null,
     },
+    report_count: {
+      type: Number,
+      default: 0,
+    },
   },
   { timestamps: true }
 );

@@ -1,17 +1,13 @@
 import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { formatDistanceToNow } from "date-fns";
-import { Clock, Edit, Trash2, AlertCircle, RefreshCw } from "lucide-react";
+import { Clock, Edit, Trash2, AlertCircle, RefreshCw, ChevronLeft, ChevronRight, X } from "lucide-react";
 import UserAvatar from "@/components/UserAvatar";
 import { BASE_URL } from "@/lib/constants";
 import { useProfile } from "@/context/ProfileContext";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import {
-  Dialog,
-  DialogContent,
-  DialogTrigger,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 
 interface Post {
   _id: string;
@@ -51,6 +47,7 @@ const PostCard = ({
   const [isExpanded, setIsExpanded] = useState(false);
   const [isTruncated, setIsTruncated] = useState(false);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const contentRef = useRef<HTMLDivElement>(null);
 
   const handleUserClick = (e: React.MouseEvent) => {
@@ -93,6 +90,26 @@ const PostCard = ({
     if (!config) return null;
 
     return <Badge className={`${config.color} border`}>{config.text}</Badge>;
+  };
+
+  const goToNextImage = () => {
+    setCurrentImageIndex((prev) =>
+      prev === post.images.length - 1 ? 0 : prev + 1
+    );
+  };
+
+  const goToPreviousImage = () => {
+    setCurrentImageIndex((prev) =>
+      prev === 0 ? post.images.length - 1 : prev - 1
+    );
+  };
+
+  const goToImage = (index: number) => {
+    setCurrentImageIndex(index);
+  };
+
+  const handleImageClick = () => {
+    setSelectedImage(getImageUrl(post.images[currentImageIndex]));
   };
 
   return (
@@ -179,7 +196,7 @@ const PostCard = ({
           <div
             ref={contentRef}
             className={`text-gray-300 whitespace-pre-wrap break-words leading-relaxed ${!isExpanded ? "line-clamp-4" : ""
-              }`}
+            }`}
           >
             {post.content}
           </div>
@@ -204,30 +221,147 @@ const PostCard = ({
 
       {/* Images */}
       {post.images && post.images.length > 0 && (
-        <div className="mt-4 flex flex-col gap-4">
-          {post.images.map((image, index) => (
-            <Dialog key={index}>
-              <DialogTrigger asChild>
+        <div className="mt-4 relative">
+          {/* Progress Indicators - Only show if multiple images */}
+          {post.images.length > 1 && (
+            <div className="absolute top-3 left-1/2 transform -translate-x-1/2 z-10 flex gap-1.5">
+              {post.images.map((_, index) => (
                 <div
-                  className="relative overflow-hidden rounded-lg border border-white/10 group w-full cursor-zoom-in"
-                >
-                  <img
-                    src={getImageUrl(image)}
-                    alt={`Post attachment ${index + 1}`}
-                    className="w-full h-auto max-h-[800px] object-contain transition-transform duration-500 group-hover:scale-105"
-                  />
-                </div>
-              </DialogTrigger>
-              <DialogContent className="max-w-[90vw] max-h-[90vh] bg-transparent border-none p-0 flex items-center justify-center">
-                <img
-                  src={getImageUrl(image)}
-                  alt={`Post attachment ${index + 1}`}
-                  className="w-full h-full max-h-[90vh] object-contain rounded-lg"
+                  key={index}
+                  onClick={() => goToImage(index)}
+                  className={`h-0.5 rounded-full cursor-pointer transition-all duration-300 ${
+                    index === currentImageIndex
+                      ? "bg-white w-8"
+                      : "bg-white/50 w-8 hover:bg-white/70"
+                  }`}
                 />
-              </DialogContent>
-            </Dialog>
-          ))}
+              ))}
+            </div>
+          )}
+
+          {/* Image Container - Single image display */}
+          <div
+            className="relative overflow-hidden rounded-lg border border-white/10 group cursor-pointer"
+            onClick={handleImageClick}
+          >
+            <img
+              src={getImageUrl(post.images[currentImageIndex])}
+              alt={`Post image ${currentImageIndex + 1} of ${
+                post.images.length
+              }`}
+              className="w-full h-auto max-h-[600px] object-contain transition-transform duration-500 group-hover:scale-105"
+            />
+
+            {/* Navigation Arrows - Only show if multiple images */}
+            {post.images.length > 1 && (
+              <>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    goToPreviousImage();
+                  }}
+                  className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+                  aria-label="Previous image"
+                >
+                  <ChevronLeft className="w-5 h-5" />
+                </button>
+
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    goToNextImage();
+                  }}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+                  aria-label="Next image"
+                >
+                  <ChevronRight className="w-5 h-5" />
+                </button>
+              </>
+            )}
+
+            {/* Image Counter - Only show if multiple images */}
+            {post.images.length > 1 && (
+              <div className="absolute bottom-3 right-3 bg-black/70 text-white text-xs px-2.5 py-1 rounded-full font-medium">
+                {currentImageIndex + 1} / {post.images.length}
+              </div>
+            )}
+          </div>
         </div>
+      )}
+
+      {/* Enlarged Image Modal using Dialog */}
+      {selectedImage && post.images && post.images.length > 0 && (
+        <Dialog
+          open={!!selectedImage}
+          onOpenChange={() => setSelectedImage(null)}
+        >
+          <DialogContent className="max-w-[95vw] max-h-[95vh] p-0 bg-black border-none">
+            {/* Close Button - TOP RIGHT */}
+            <button
+              onClick={() => setSelectedImage(null)}
+              className="absolute top-4 right-4 text-white hover:text-gray-300 p-2 bg-black/50 hover:bg-black/70 rounded-full transition-colors z-50"
+              aria-label="Close"
+            >
+              <X className="w-6 h-6" />
+            </button>
+
+            {/* Progress Indicators - TOP CENTER */}
+            {post.images.length > 1 && (
+              <div className="absolute top-4 left-1/2 transform -translate-x-1/2 z-50 flex gap-2">
+                {post.images.map((_, index) => (
+                  <div
+                    key={index}
+                    onClick={() => goToImage(index)}
+                    className={`h-1 rounded-full cursor-pointer transition-all duration-300 ${
+                      index === currentImageIndex
+                        ? "bg-white w-12"
+                        : "bg-white/50 w-12 hover:bg-white/70"
+                    }`}
+                  />
+                ))}
+              </div>
+            )}
+
+            {/* Image Container */}
+            <div className="relative w-full h-[90vh] flex items-center justify-center">
+              <img
+                src={getImageUrl(post.images[currentImageIndex])}
+                alt={`Post image ${currentImageIndex + 1} of ${
+                  post.images.length
+                }`}
+                className="max-w-full max-h-full object-contain"
+              />
+
+              {/* Navigation Arrows */}
+              {post.images.length > 1 && (
+                <>
+                  <button
+                    onClick={goToPreviousImage}
+                    className="absolute left-4 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-3 rounded-full transition-colors"
+                    aria-label="Previous image"
+                  >
+                    <ChevronLeft className="w-6 h-6" />
+                  </button>
+
+                  <button
+                    onClick={goToNextImage}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-3 rounded-full transition-colors"
+                    aria-label="Next image"
+                  >
+                    <ChevronRight className="w-6 h-6" />
+                  </button>
+                </>
+              )}
+
+              {/* Image Counter */}
+              {post.images.length > 1 && (
+                <div className="absolute bottom-4 right-4 bg-black/70 text-white px-3 py-1.5 rounded-full text-sm font-medium">
+                  {currentImageIndex + 1} / {post.images.length}
+                </div>
+              )}
+            </div>
+          </DialogContent>
+        </Dialog>
       )}
     </div>
   );
