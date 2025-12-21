@@ -79,21 +79,25 @@ const DashboardHome = () => {
         </div>
 
         {/* Right Column: Start Post, People & Events */}
-        <div className="w-full lg:w-72 flex-shrink-0 space-y-6">
+        <div className="w-full lg:w-72 flex-shrink-0 space-y-6 order-first lg:order-none">
           {/* Start Post & Notifications */}
           <div className="flex items-center gap-3">
             <button
               onClick={handleStartPost}
-              className="relative flex-grow hidden sm:block bg-white/5 hover:bg-white/10 border border-white/10 rounded-2xl py-4 pl-12 pr-10 text-base text-white placeholder:text-gray-500 transition-all text-left"
+              className="relative flex-grow flex items-center bg-white/5 hover:bg-white/10 border border-white/10 rounded-2xl py-4 pl-12 pr-10 text-base text-white placeholder:text-gray-500 transition-all text-left"
             >
               <PenSquare className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-500" />
               <span>Start a post</span>
             </button>
-            <ConnectionsPopover />
+            <div className="hidden sm:block">
+              <ConnectionsPopover />
+            </div>
           </div>
 
-          <PeopleYouMightKnow />
-          <UpcomingEvents />
+          <div className="hidden lg:block space-y-6">
+            <PeopleYouMightKnow />
+            <UpcomingEvents />
+          </div>
         </div>
       </div>
 

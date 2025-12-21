@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { formatDistanceToNow } from "date-fns";
 import { Clock, Edit, Trash2, AlertCircle, RefreshCw } from "lucide-react";
 import UserAvatar from "@/components/UserAvatar";
@@ -6,6 +7,11 @@ import { BASE_URL } from "@/lib/constants";
 import { useProfile } from "@/context/ProfileContext";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import {
+  Dialog,
+  DialogContent,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 
 interface Post {
   _id: string;
@@ -40,10 +46,17 @@ const PostCard = ({
   showRejectionReason,
 }: PostCardProps) => {
   const { profile } = useProfile();
+  const navigate = useNavigate();
   const isAuthor = profile?.user?._id === post.userId._id;
   const [isExpanded, setIsExpanded] = useState(false);
   const [isTruncated, setIsTruncated] = useState(false);
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const contentRef = useRef<HTMLDivElement>(null);
+
+  const handleUserClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    navigate(`/dashboard/alumni/${post.userId._id}`);
+  };
 
   useEffect(() => {
     if (contentRef.current && !isExpanded) {
@@ -113,15 +126,26 @@ const PostCard = ({
           </button>
         </div>
       )}
+
       {/* Header */}
       <div className="flex items-center gap-3 mb-4">
-        <UserAvatar
-          src={post.userId.profile_picture}
-          name={post.userId.name}
-          size="md"
-        />
+        <div
+          onClick={handleUserClick}
+          className="cursor-pointer hover:opacity-80 transition-opacity"
+        >
+          <UserAvatar
+            src={post.userId.profile_picture}
+            name={post.userId.name}
+            size="md"
+          />
+        </div>
         <div>
-          <h3 className="text-white font-semibold">{post.userId.name}</h3>
+          <h3
+            onClick={handleUserClick}
+            className="text-white font-semibold cursor-pointer hover:text-blue-400 transition-colors"
+          >
+            {post.userId.name}
+          </h3>
           <div className="flex items-center text-xs text-gray-400 gap-1">
             <Clock className="h-3 w-3" />
             <span>
@@ -154,9 +178,8 @@ const PostCard = ({
         <div>
           <div
             ref={contentRef}
-            className={`text-gray-300 whitespace-pre-wrap leading-relaxed ${
-              !isExpanded ? "line-clamp-4" : ""
-            }`}
+            className={`text-gray-300 whitespace-pre-wrap break-words leading-relaxed ${!isExpanded ? "line-clamp-4" : ""
+              }`}
           >
             {post.content}
           </div>
@@ -183,16 +206,26 @@ const PostCard = ({
       {post.images && post.images.length > 0 && (
         <div className="mt-4 flex flex-col gap-4">
           {post.images.map((image, index) => (
-            <div
-              key={index}
-              className="relative overflow-hidden rounded-lg border border-white/10 group w-full"
-            >
-              <img
-                src={getImageUrl(image)}
-                alt={`Post attachment ${index + 1}`}
-                className="w-full h-auto max-h-[800px] object-contain transition-transform duration-500 group-hover:scale-105"
-              />
-            </div>
+            <Dialog key={index}>
+              <DialogTrigger asChild>
+                <div
+                  className="relative overflow-hidden rounded-lg border border-white/10 group w-full cursor-zoom-in"
+                >
+                  <img
+                    src={getImageUrl(image)}
+                    alt={`Post attachment ${index + 1}`}
+                    className="w-full h-auto max-h-[800px] object-contain transition-transform duration-500 group-hover:scale-105"
+                  />
+                </div>
+              </DialogTrigger>
+              <DialogContent className="max-w-[90vw] max-h-[90vh] bg-transparent border-none p-0 flex items-center justify-center">
+                <img
+                  src={getImageUrl(image)}
+                  alt={`Post attachment ${index + 1}`}
+                  className="w-full h-full max-h-[90vh] object-contain rounded-lg"
+                />
+              </DialogContent>
+            </Dialog>
           ))}
         </div>
       )}
