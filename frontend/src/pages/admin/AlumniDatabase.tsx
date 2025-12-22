@@ -146,7 +146,7 @@ const AlumniDatabase = () => {
   };
 
   const handleDatabaseSearch = async () => {
-    if (!searchName.trim() && !searchRollNo.trim() && !searchBatch.trim() && !searchBranch) {
+    if (!searchName.trim() && !searchRollNo.trim() && !searchBatch.trim() && (!searchBranch || searchBranch === "all")) {
       toast.error("Please enter at least one search criteria");
       return;
     }
@@ -162,7 +162,7 @@ const AlumniDatabase = () => {
           name: searchName,
           roll_no: searchRollNo,
           batch: searchBatch,
-          branch: searchBranch,
+          branch: searchBranch === "all" ? "" : searchBranch,
         },
         {
           headers: {
@@ -277,6 +277,7 @@ const AlumniDatabase = () => {
                     <SelectValue placeholder="Select branch (optional)" />
                   </SelectTrigger>
                   <SelectContent>
+                    <SelectItem value="all">All Branches</SelectItem>
                     {BRANCHES.map((branch) => (
                       <SelectItem key={branch} value={branch}>
                         {branch}
