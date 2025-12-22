@@ -19,8 +19,8 @@ export default {
 		},
 		extend: {
 			fontFamily: {
-				sans: ["ui-sans-serif", "system-ui", "sans-serif"],
-				serif: ["ui-serif", "Georgia", "serif"],
+				sans: ["Montserrat", "ui-sans-serif", "system-ui", "sans-serif"],
+				serif: ["Lora", "ui-serif", "Georgia", "serif"],
 			},
 			colors: {
 				"nsut-maroon": "#C00404",

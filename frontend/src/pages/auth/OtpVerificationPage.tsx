@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { CheckCircle } from "lucide-react";
 import nsutLogo from "@/assets/nsut-logo.svg";
-import nsutCampusHero from "@/assets/nsut-campus-hero.png";
+import nsutCampusHero from "@/assets/hero.jpeg";
 
 const OtpVerificationPage = () => {
   const navigate = useNavigate();

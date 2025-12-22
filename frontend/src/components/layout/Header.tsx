@@ -1,13 +1,13 @@
 import { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
-import { Search, Menu, X } from "lucide-react";
+import { Menu, X } from "lucide-react";
+import nsutLogo from "@/assets/logo.png";
 
 const Header = ({ setHeaderHeight }) => {
-  const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const headerRef = useRef<HTMLDivElement>(null);
-
+  const logoRef = useRef<HTMLImageElement>(null);
   // --- Hardcoded Nav Links ---
   const navLinks = {
     "Communities": [
@@ -62,114 +62,6 @@ const Header = ({ setHeaderHeight }) => {
 
   return (
     <>
-      <style>{`
-        .nav-link {
-          position: relative;
-          text-decoration: none;
-          color: #1f2937;
-          transition: color 0.3s ease;
-        }
-        .nav-link span {
-          position: relative;
-        }
-        .nav-link::after {
-          content: "";
-          position: absolute;
-          bottom: -8px;
-          left: 0;
-          width: 0;
-          height: 3px;
-          background: linear-gradient(90deg, #800000 0%, #b8860b 100%);
-          transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-          border-radius: 2px;
-        }
-        .nav-link:hover {
-          color: #800000;
-        }
-        .nav-link:hover::after {
-          width: 100%;
-        }
-        
-        .dropdown-menu {
-          opacity: 0;
-          visibility: hidden;
-          transform: translateY(-10px);
-          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-        .group:hover .dropdown-menu {
-          opacity: 1;
-          visibility: visible;
-          transform: translateY(0);
-        }
-        
-        .dropdown-link {
-          position: relative;
-          overflow: hidden;
-          transition: all 0.2s ease;
-        }
-        .dropdown-link::before {
-          content: "";
-          position: absolute;
-          left: 0;
-          top: 0;
-          height: 100%;
-          width: 3px;
-          background-color: #800000;
-          transform: translateX(-100%);
-          transition: transform 0.3s ease;
-        }
-        .dropdown-link:hover::before {
-          transform: translateX(0);
-        }
-        .dropdown-link:hover {
-          padding-left: 1.25rem;
-          background: linear-gradient(90deg, #fef3c7 0%, transparent 100%);
-        }
-        
-        .top-bar-link {
-          position: relative;
-          transition: color 0.2s ease;
-        }
-        .top-bar-link::after {
-          content: "";
-          position: absolute;
-          bottom: -2px;
-          left: 0;
-          width: 0;
-          height: 1px;
-          background-color: #b8860b;
-          transition: width 0.3s ease;
-        }
-        .top-bar-link:hover::after {
-          width: 100%;
-        }
-        
-        .gift-button {
-          position: relative;
-          overflow: hidden;
-          transition: all 0.3s ease;
-        }
-        .gift-button::before {
-          content: "";
-          position: absolute;
-          top: 50%;
-          left: 50%;
-          width: 0;
-          height: 0;
-          border-radius: 50%;
-          background: rgba(255, 255, 255, 0.3);
-          transform: translate(-50%, -50%);
-          transition: width 0.6s, height 0.6s;
-        }
-        .gift-button:hover::before {
-          width: 300px;
-          height: 300px;
-        }
-        .gift-button:hover {
-          transform: translateY(-2px);
-          box-shadow: 0 4px 12px rgba(184, 134, 11, 0.4);
-        }
-      `}</style>
       <header
         ref={headerRef}
         className="w-full fixed top-0 z-50"
@@ -191,15 +83,15 @@ const Header = ({ setHeaderHeight }) => {
               </span>
             </a>
             <div className="hidden md:flex items-center space-x-4 text-xs">
-              <Link to="/about" className="top-bar-link hover:text-nsut-yellow">
+              <Link to="/about" className="relative transition-colors duration-200 hover:text-nsut-yellow after:content-[''] after:absolute after:-bottom-0.5 after:left-0 after:w-0 after:h-px after:bg-nsut-yellow after:transition-all after:duration-300 hover:after:w-full">
                 About
               </Link>
-              <Link to="/login" className="top-bar-link hover:text-nsut-yellow">
+              <Link to="/login" className="relative transition-colors duration-200 hover:text-nsut-yellow after:content-[''] after:absolute after:-bottom-0.5 after:left-0 after:w-0 after:h-px after:bg-nsut-yellow after:transition-all after:duration-300 hover:after:w-full">
                 myNSUT Login
               </Link>
               <a
                 href="/giving"
-                className="gift-button bg-nsut-yellow text-nsut-maroon font-bold py-1 px-3 rounded text-xs relative z-10"
+                className="bg-nsut-yellow text-nsut-maroon font-bold py-1 px-3 rounded text-xs relative z-10 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-nsut-yellow/40"
               >
                 Make a Gift
               </a>
@@ -215,19 +107,33 @@ const Header = ({ setHeaderHeight }) => {
           <div className="container mx-auto px-4 flex justify-between items-center">
             <Link
               to="/"
-              className="font-serif text-2xl font-bold text-nsut-maroon"
+              className="flex items-center gap-3"
             >
-              NALUM
+              <img
+                ref={logoRef}
+                src={nsutLogo}
+                alt="Logo"
+                className="relative z-20 h-16 md:h-20 w-auto object-contain"
+              />
+              <div className="flex flex-col items-start">
+                <h1 className="text-xl md:text-2xl font-bold leading-none tracking-wide text-gray-800 whitespace-nowrap">
+                  <span className="text-red-600">N</span>SUT
+                  <span className="text-red-600"> ALUM</span>NI
+                </h1>
+                <span className="block text-[8px] md:text-xs text-gray-700 font-bold tracking-widest">
+                  ASSOCIATION
+                </span>
+              </div>
             </Link>
 
             {/* Nav Links */}
             <div className="hidden md:flex items-center space-x-8">
               {Object.entries(navLinks).map(([title, sublinks]) => (
                 <div key={title} className="group relative">
-                  <button className="font-serif nav-link">
-                    <span>{title}</span>
+                  <button className="font-serif relative text-gray-800 transition-colors duration-300 hover:text-nsut-maroon after:content-[''] after:absolute after:-bottom-2 after:left-0 after:w-0 after:h-0.5 after:bg-gradient-to-r after:from-nsut-maroon after:to-nsut-yellow after:transition-all after:duration-[400ms] after:ease-out after:rounded-sm hover:after:w-full">
+                    <span className="relative">{title}</span>
                   </button>
-                  <div className="dropdown-menu absolute bg-white shadow-xl rounded-lg mt-2 py-2 w-48 z-10 border border-gray-100">
+                  <div className="absolute bg-white shadow-xl rounded-lg mt-2 py-2 w-48 z-10 border border-gray-100 opacity-0 invisible -translate-y-2.5 transition-all duration-300 ease-out group-hover:opacity-100 group-hover:visible group-hover:translate-y-0">
                     {sublinks.map((link) => (
                       <Link
                         key={link}
@@ -236,7 +142,7 @@ const Header = ({ setHeaderHeight }) => {
                           .replace(/ & /g, "-")}/${link
                             .toLowerCase()
                             .replace(/ /g, "-")}`}
-                        className="dropdown-link block px-4 py-2 text-sm text-gray-700"
+                        className="block px-4 py-2 text-sm text-gray-700 relative overflow-hidden transition-all duration-200 before:content-[''] before:absolute before:left-0 before:top-0 before:h-full before:w-0.5 before:bg-nsut-maroon before:-translate-x-full before:transition-transform before:duration-300 hover:before:translate-x-0 hover:pl-5 hover:bg-gradient-to-r hover:from-amber-50 hover:to-transparent"
                       >
                         {link}
                       </Link>
@@ -246,38 +152,17 @@ const Header = ({ setHeaderHeight }) => {
               ))}
             </div>
 
-            {/* Search + Mobile Menu */}
-            <div className="flex items-center space-x-4">
+            {/* Mobile Menu */}
+            <div className="md:hidden">
               <button
-                onClick={() => setIsSearchOpen(!isSearchOpen)}
+                onClick={() => setIsMobileMenuOpen(true)}
                 className="text-gray-600 hover:text-nsut-maroon transition-all duration-300 hover:scale-110"
-                aria-label="Toggle search"
+                aria-label="Open mobile menu"
               >
-                <Search />
+                <Menu />
               </button>
-              <div className="md:hidden">
-                <button
-                  onClick={() => setIsMobileMenuOpen(true)}
-                  className="text-gray-600 hover:text-nsut-maroon transition-all duration-300 hover:scale-110"
-                  aria-label="Open mobile menu"
-                >
-                  <Menu />
-                </button>
-              </div>
             </div>
           </div>
-
-          {/* Search Bar */}
-          {isSearchOpen && (
-            <div className="container mx-auto px-4 py-2">
-              <input
-                type="text"
-                placeholder="Search..."
-                className="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:border-nsut-maroon focus:outline-none focus:ring-2 focus:ring-nsut-maroon/20 transition-all duration-300"
-                autoFocus
-              />
-            </div>
-          )}
         </div>
 
         {/* === MOBILE MENU === */}
@@ -291,9 +176,15 @@ const Header = ({ setHeaderHeight }) => {
               onClick={(e) => e.stopPropagation()}
             >
               <div className="flex justify-between items-center mb-6">
-                <span className="font-serif text-lg font-semibold text-nsut-maroon">
-                  NALUM
-                </span>
+                <div className="flex flex-col items-start">
+                  <h1 className="text-lg font-bold leading-none tracking-wide text-gray-800 whitespace-nowrap">
+                    <span className="text-red-600">N</span>SUT
+                    <span className="text-red-600"> ALUM</span>NI
+                  </h1>
+                  <span className="block text-[7px] text-gray-700 font-bold tracking-widest">
+                    ASSOCIATION
+                  </span>
+                </div>
                 <button
                   onClick={() => setIsMobileMenuOpen(false)}
                   className="hover:text-nsut-maroon transition-colors duration-200 hover:scale-110"

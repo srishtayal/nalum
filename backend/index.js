@@ -29,7 +29,7 @@ app.use((req, res, next) => {
   next();
 });
 app.use(cors({
-  origin: ['https://nalum.vercel.app', 'http://localhost:8080', 'http://localhost:5173', 'https://unseeing-malaya-unprejudicedly.ngrok-free.dev', 'http://10.12.114.3:5173'],
+  origin: ['http://localhost:5173','http://nsut.alumninet.in'],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'ngrok-skip-browser-warning'],
