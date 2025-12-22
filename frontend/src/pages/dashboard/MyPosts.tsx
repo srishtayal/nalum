@@ -25,7 +25,11 @@ interface Post {
   rejection_reason?: string;
 }
 
-const MyPosts = () => {
+interface MyPostsProps {
+  embedded?: boolean;
+}
+
+const MyPosts = ({ embedded = false }: MyPostsProps) => {
   const { profile } = useProfile();
   const { user } = useAuth();
   const [posts, setPosts] = useState<Post[]>([]);
@@ -77,9 +81,9 @@ const MyPosts = () => {
 
   if (user?.role === "student") {
     return (
-      <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+      <div className={embedded ? "space-y-6" : "space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500"}>
         <div className="flex items-center justify-between">
-          <h1 className="text-3xl font-bold text-white">My Posts</h1>
+          <h1 className={embedded ? "text-2xl font-bold text-white" : "text-3xl font-bold text-white"}>My Posts</h1>
         </div>
 
         <Alert className="bg-blue-900/20 border-blue-900/50">
@@ -95,9 +99,9 @@ const MyPosts = () => {
 
   if (isLoading) {
     return (
-      <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+      <div className={embedded ? "space-y-6" : "space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500"}>
         <div className="flex items-center justify-between">
-          <h1 className="text-3xl font-bold text-white">My Posts</h1>
+          <h1 className={embedded ? "text-2xl font-bold text-white" : "text-3xl font-bold text-white"}>My Posts</h1>
         </div>
 
         <div className="flex flex-col gap-4">
@@ -114,9 +118,9 @@ const MyPosts = () => {
 
   if (error) {
     return (
-      <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+      <div className={embedded ? "space-y-6" : "space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500"}>
         <div className="flex items-center justify-between">
-          <h1 className="text-3xl font-bold text-white">My Posts</h1>
+          <h1 className={embedded ? "text-2xl font-bold text-white" : "text-3xl font-bold text-white"}>My Posts</h1>
         </div>
 
         <Alert
@@ -133,9 +137,9 @@ const MyPosts = () => {
 
   if (posts.length === 0) {
     return (
-      <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+      <div className={embedded ? "space-y-6" : "space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500"}>
         <div className="flex items-center justify-between">
-          <h1 className="text-3xl font-bold text-white">My Posts</h1>
+          <h1 className={embedded ? "text-2xl font-bold text-white" : "text-3xl font-bold text-white"}>My Posts</h1>
         </div>
 
         <div className="bg-white/5 border border-white/10 backdrop-blur-md rounded-2xl flex flex-col">
@@ -162,9 +166,9 @@ const MyPosts = () => {
   const pendingCount = posts.filter((p) => p.status === "pending").length;
 
   return (
-    <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+    <div className={embedded ? "space-y-6" : "space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500"}>
       <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold text-white">My Posts</h1>
+        <h1 className={embedded ? "text-2xl font-bold text-white" : "text-3xl font-bold text-white"}>My Posts</h1>
         <p className="text-gray-400">
           {posts.length} {posts.length === 1 ? "post" : "posts"}
         </p>
