@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import { Menu, X } from "lucide-react";
-import nsutLogo from "@/assets/logo.png";
+import nsutLogo from "@/assets/logo.webp";
 
 const Header = ({ setHeaderHeight }) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -65,11 +65,13 @@ const Header = ({ setHeaderHeight }) => {
       <header
         ref={headerRef}
         className="w-full fixed top-0 z-50"
+        style={{ minHeight: scrolled ? '80px' : '120px' }}
       >
         {/* === TOP BAR === */}
         <div
           className={`bg-nsut-maroon text-white transition-all duration-300 ${scrolled ? "opacity-0 h-0 overflow-hidden" : "opacity-100 py-1"
             }`}
+          style={{ willChange: scrolled ? 'auto' : 'height, opacity' }}
         >
           <div className="container mx-auto px-4 flex justify-between items-center border-b border-nsut-yellow/30">
             <a
@@ -113,7 +115,9 @@ const Header = ({ setHeaderHeight }) => {
                 ref={logoRef}
                 src={nsutLogo}
                 alt="Logo"
-                className="relative z-20 h-16 md:h-20 w-auto object-contain"
+                width="80"
+                height="80"
+                className="relative z-20 h-16 md:h-20 w-auto object-contain "
               />
               <div className="flex flex-col items-start">
                 <h1 className="text-xl md:text-2xl font-bold leading-none tracking-wide text-gray-800 whitespace-nowrap">

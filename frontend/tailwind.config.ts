@@ -100,4 +100,15 @@ export default {
 		}
 	},
 	plugins: [require("tailwindcss-animate")],
+	// Optimize for production
+	future: {
+		hoverOnlyWhenSupported: true,
+	},
+	// Better purging - remove unused CSS
+	safelist: [
+		// Only safelist classes that are dynamically generated
+		{
+			pattern: /^(bg|text|border)-(nsut-maroon|nsut-yellow|nsut-beige)$/,
+		},
+	],
 } satisfies Config;

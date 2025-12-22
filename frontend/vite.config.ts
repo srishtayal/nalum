@@ -74,6 +74,9 @@ export default defineConfig(({ mode }) => {
       },
       // Increase chunk size warning limit
       chunkSizeWarningLimit: 600,
+      // CSS optimization
+      cssCodeSplit: true,
+      minify: 'esbuild',
     },
   }
 });

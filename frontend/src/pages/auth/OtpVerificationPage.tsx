@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { CheckCircle } from "lucide-react";
 import nsutLogo from "@/assets/nsut-logo.svg";
-import nsutCampusHero from "@/assets/hero.jpeg";
+import nsutCampusHero from "@/assets/hero.webp";
 
 const OtpVerificationPage = () => {
   const navigate = useNavigate();
@@ -27,7 +27,7 @@ const OtpVerificationPage = () => {
         />
         <div className="absolute inset-0 bg-black/50" />
         <Link to="/" className="relative z-10 flex items-center gap-3 text-white">
-          <img src={nsutLogo} alt="NSUT Logo" className="h-10 w-10 invert" />
+          <img src={nsutLogo} alt="NSUT Logo" width="40" height="40" className="h-10 w-10 invert" />
           <span className="text-2xl font-serif font-semibold">NALUM</span>
         </Link>
         <div className="relative z-10 text-white">

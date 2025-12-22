@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import heroImage from '@/assets/hero.jpeg';
+import heroImage from '@/assets/hero.webp';
 
 const Hero = () => {
   // Default main image
@@ -76,14 +76,20 @@ const Hero = () => {
   return (
     <div
       ref={heroRef}
-      className="relative h-screen bg-cover bg-center text-white overflow-hidden"
+      className="relative h-screen text-white overflow-hidden"
+      style={{ contain: 'layout' }}
     >
       {/* Background Images with crossfade */}
       <div className="absolute inset-0">
-        {/* Default main image - permanent */}
-        <div
-          className="absolute inset-0 bg-cover bg-center"
-          style={{ backgroundImage: `url('${defaultImage}')` }}
+        {/* LCP optimized hero image */}
+        <img
+          src={defaultImage}
+          alt="Hero background"
+          width="1920"
+          height="1080"
+          fetchPriority="high"
+          className="absolute inset-0 w-full h-full object-cover"
+          loading="eager"
         />
       </div>
 
@@ -94,7 +100,8 @@ const Hero = () => {
       <div
         className="relative z-10 h-screen flex flex-col items-center justify-center text-center px-4"
         style={{
-          transform: `translateY(${Math.min(scrollY * 0.5, 200)}px)`,
+          transform: `translate3d(0, ${Math.min(scrollY * 0.5, 200)}px, 0)`,
+          willChange: scrollY > 0 && scrollY < 400 ? 'transform' : 'auto',
         }}
       >
         <h1 className="text-3xl md:text-6xl font-serif font-bold animate-fade-in drop-shadow-lg">

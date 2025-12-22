@@ -27,7 +27,7 @@ const NotFound = () => {
         {/* Logo */}
         <div className="flex justify-center">
           <div className="bg-white rounded-full p-4 shadow-lg">
-            <img src={nsutLogo} alt="NSUT Logo" className="h-16 w-16" />
+            <img src={nsutLogo} alt="NSUT Logo" width="64" height="64" className="h-16 w-16" />
           </div>
         </div>
 

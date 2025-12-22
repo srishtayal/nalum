@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import gsap from "gsap";
-import nsutLogo from "@/assets/logo.png";
+import nsutLogo from "@/assets/logo.webp";
 
 interface LoadingAnimationProps {
   onAnimationComplete?: () => void;

@@ -104,7 +104,7 @@ const DashboardContent = () => {
       {!isChatPage && (
         <div className="md:hidden fixed top-0 left-0 right-0 z-50 bg-slate-950/80 backdrop-blur-xl border-b border-white/10 px-4 h-16 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <img src={nsutLogo} alt="NALUM" className="h-8 w-8" />
+            <img src={nsutLogo} alt="NALUM" width="32" height="32" className="h-8 w-8" />
             <span className={`font-bold text-white tracking-wider text-lg transition-all duration-300 ${isSearchOpen ? 'opacity-0 w-0 overflow-hidden' : 'opacity-100 w-auto'}`}>
               NALUM
             </span>
