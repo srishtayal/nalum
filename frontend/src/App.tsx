@@ -38,6 +38,7 @@ import Newsletters from "./pages/admin/Newsletters";
 import BannedUsers from "./pages/admin/BannedUsers";
 import CodeManagement from "./pages/admin/CodeManagement";
 import AlumniDatabase from "./pages/admin/AlumniDatabase";
+import Reports from "./pages/admin/Reports";
 import NotableAlumni from "./pages/stories/notableAlumni";
 import ClubsPage from "./pages/communities/clubs";
 import LearningPage from "./pages/benefits/learning";
@@ -175,21 +176,11 @@ function AppContent() {
           <Route path="/admin-panel/newsletters" element={<Newsletters />} />
           <Route path="/admin-panel/banned" element={<BannedUsers />} />
           <Route path="/admin-panel/codes" element={<CodeManagement />} />
-          <Route
-            path="/admin-panel/alumni-database"
-            element={<AlumniDatabase />}
-          />
+          <Route path="/admin-panel/alumni-database" element={<AlumniDatabase />}/>
+          <Route path="/admin-panel/reports" element={<Reports />} />
         </Route>
-        <Route
-          path="/admin-panel"
-          element={<Navigate to="/admin-panel/dashboard" replace />}
-        />
-        <Route
-          path="/admin-panel/login"
-          element={<Navigate to="/login" replace />}
-        />
-
-        {/* 404 Route */}
+        <Route path="/admin-panel" element={<Navigate to="/admin-panel/dashboard" replace />}/>
+        <Route path="/admin-panel/login" element={<Navigate to="/login" replace />}/>
         <Route path="*" element={<NotFound />} />
       </Routes>
       <Toaster />

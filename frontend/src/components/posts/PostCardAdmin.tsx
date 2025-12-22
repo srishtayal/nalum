@@ -1,5 +1,4 @@
 import { useState, useRef, useEffect } from "react";
-import { formatDistanceToNow } from "date-fns";
 import { LucideIcon, ChevronLeft, ChevronRight, X, AlertCircle, AlertTriangle } from "lucide-react";
 import { BASE_URL } from "@/lib/constants";
 import { Badge } from "@/components/ui/badge";
@@ -33,6 +32,7 @@ interface PostCardAdminProps {
   secondaryButtonLabel: string;
   primaryButtonIcon: LucideIcon;
   secondaryButtonIcon: LucideIcon;
+  isHighlighted?: boolean;
 }
 
 const PostCardAdmin = ({
@@ -43,6 +43,7 @@ const PostCardAdmin = ({
   secondaryButtonLabel,
   primaryButtonIcon: PrimaryIcon,
   secondaryButtonIcon: SecondaryIcon,
+  isHighlighted = false,
 }: PostCardAdminProps) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [isTruncated, setIsTruncated] = useState(false);
@@ -119,7 +120,7 @@ const PostCardAdmin = ({
 
   return (
     <>
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
+      <div id={`post-${post._id}`} className={`bg-white rounded-lg shadow-sm p-6 hover:shadow-md transition-all duration-300 ${isHighlighted? "border-4 border-blue-500 animate-blink-twice": "border border-gray-200"}`}>
         <div className="flex justify-between items-start mb-4">
           <div className="flex items-center gap-3">
             <h2 className="text-2xl font-bold text-gray-900">{post.title}</h2>

@@ -1,13 +1,16 @@
 import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { formatDistanceToNow } from "date-fns";
-import { Clock, Edit, Trash2, AlertCircle, RefreshCw, ChevronLeft, ChevronRight, X } from "lucide-react";
+import { Clock, Edit, Trash2, AlertCircle, ChevronLeft, ChevronRight, X, Flag } from "lucide-react";
 import UserAvatar from "@/components/UserAvatar";
+import api from "@/lib/api";
 import { BASE_URL } from "@/lib/constants";
 import { useProfile } from "@/context/ProfileContext";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import ReportDialog from "@/components/reports/ReportDialog";
 
 interface Post {
   _id: string;
@@ -45,6 +48,8 @@ const PostCard = ({
   const navigate = useNavigate();
   const isAuthor = profile?.user?._id === post.userId._id;
   const [isExpanded, setIsExpanded] = useState(false);
+  const [isReportDialogOpen, setIsReportDialogOpen] = useState(false);
+  const [hasReported, setHasReported] = useState(false);
   const [isTruncated, setIsTruncated] = useState(false);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
@@ -62,6 +67,20 @@ const PostCard = ({
       );
     }
   }, [post.content, isExpanded]);
+
+  useEffect(() => {
+    const checkReportStatus = async () => {
+      if (!isAuthor) {
+        try {
+          const { data } = await api.get(`/reports/post/${post._id}/check`);
+          setHasReported(data.hasReported);
+        } catch (error) {
+          console.error("Error checking report status:", error);
+        }
+      }
+    };
+    checkReportStatus();
+  }, [post._id, isAuthor]);
 
   const getImageUrl = (imagePath: string) => {
     if (imagePath.startsWith("http")) return imagePath;
@@ -114,35 +133,53 @@ const PostCard = ({
 
   return (
     <div className="relative bg-white/5 border border-white/10 backdrop-blur-md rounded-xl p-6 hover:bg-white/10 transition duration-200">
-      {isAuthor && (
-        <div className="absolute top-4 right-4 flex gap-2">
-          {post.status === "rejected" ? (
+      {/* Action buttons in top-right */}
+      <div className="absolute top-4 right-4 flex gap-2">
+        {isAuthor ? (
+          <>
+            {post.status !== "rejected" && (
+              <button
+                onClick={() => onEdit?.(post)}
+                className="p-2 text-gray-400 hover:text-blue-400 hover:bg-blue-500/10 rounded-full transition-colors"
+                title="Edit Post"
+              >
+                <Edit className="w-4 h-4" />
+              </button>
+            )}
             <button
-              onClick={() => onEdit?.(post)}
-              className="px-3 py-1.5 text-sm font-medium text-green-400 bg-green-500/10 hover:bg-green-500/20 border border-green-500/30 rounded-lg transition-colors flex items-center gap-1.5"
-              title="Reapply Post"
+              onClick={() => onDelete?.(post._id)}
+              className="p-2 text-gray-400 hover:text-red-400 hover:bg-red-500/10 rounded-full transition-colors"
+              title="Delete Post"
             >
-              <RefreshCw className="w-3.5 h-3.5" />
-              Reapply
+              <Trash2 className="w-4 h-4" />
             </button>
-          ) : (
-            <button
-              onClick={() => onEdit?.(post)}
-              className="p-2 text-gray-400 hover:text-blue-400 hover:bg-blue-500/10 rounded-full transition-colors"
-              title="Edit Post"
-            >
-              <Edit className="w-4 h-4" />
-            </button>
-          )}
-          <button
-            onClick={() => onDelete?.(post._id)}
-            className="p-2 text-gray-400 hover:text-red-400 hover:bg-red-500/10 rounded-full transition-colors"
-            title="Delete Post"
-          >
-            <Trash2 className="w-4 h-4" />
-          </button>
-        </div>
-      )}
+          </>
+        ) : (
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button
+                  onClick={() => !hasReported && setIsReportDialogOpen(true)}
+                  className={`p-2 rounded-full transition-colors ${
+                    hasReported
+                      ? "text-red-500 cursor-not-allowed"
+                      : "text-gray-400 hover:text-red-400 hover:bg-red-500/10"
+                  }`}
+                  title={hasReported ? "Already reported" : "Report Post"}
+                  disabled={hasReported}
+                >
+                  <Flag className="w-4 h-4" />
+                </button>
+              </TooltipTrigger>
+              {hasReported && (
+                <TooltipContent>
+                  <p>Already reported</p>
+                </TooltipContent>
+              )}
+            </Tooltip>
+          </TooltipProvider>
+        )}
+      </div>
 
       {/* Header */}
       <div className="flex items-center gap-3 mb-4">
@@ -363,6 +400,14 @@ const PostCard = ({
           </DialogContent>
         </Dialog>
       )}
+
+      {/* Report Dialog */}
+      <ReportDialog
+        postId={post._id}
+        isOpen={isReportDialogOpen}
+        onClose={() => setIsReportDialogOpen(false)}
+        onReportSubmitted={() => setHasReported(true)}
+      />
     </div>
   );
 };

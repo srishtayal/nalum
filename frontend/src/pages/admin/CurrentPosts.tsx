@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useLocation } from "react-router-dom";
 import AdminLayout from "../../components/admin/AdminLayout";
 import { FileText, RefreshCw, Search, Filter, Edit, Trash2 } from "lucide-react";
 import api from "../../lib/api";
@@ -12,6 +13,7 @@ import { toast } from "sonner";
 import PostCardAdmin, { Post } from "../../components/posts/PostCardAdmin";
 
 const CurrentPosts = () => {
+  const location = useLocation();
   const [posts, setPosts] = useState<Post[]>([]);
   const [filteredPosts, setFilteredPosts] = useState<Post[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -19,6 +21,7 @@ const CurrentPosts = () => {
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [approvalMode, setApprovalMode] = useState(0); // 0=Manual, 1=Auto
   const [togglingApproval, setTogglingApproval] = useState(false);
+  const [highlightPostId, setHighlightPostId] = useState<string | null>(null);
 
   // Edit Dialog
   const [editDialogOpen, setEditDialogOpen] = useState(false);
@@ -37,6 +40,11 @@ const CurrentPosts = () => {
   useEffect(() => {
     fetchPosts();
     fetchApprovalMode();
+
+    // Check if we have a highlightPostId from navigation state
+    if (location.state?.highlightPostId) {
+      setHighlightPostId(location.state.highlightPostId);
+    }
   }, []);
 
   useEffect(() => {
@@ -47,6 +55,24 @@ const CurrentPosts = () => {
 
     return () => clearTimeout(timer);
   }, [posts, searchTerm, statusFilter]);
+
+  // Scroll to highlighted post when it's available
+  useEffect(() => {
+    if (highlightPostId && filteredPosts.length > 0) {
+      // Wait a bit for the DOM to render
+      setTimeout(() => {
+        const element = document.getElementById(`post-${highlightPostId}`);
+        if (element) {
+          element.scrollIntoView({ behavior: "smooth", block: "center" });
+
+          // Clear highlight after 3 seconds
+          setTimeout(() => {
+            setHighlightPostId(null);
+          }, 3000);
+        }
+      }, 100);
+    }
+  }, [highlightPostId, filteredPosts]);
 
   const fetchApprovalMode = async () => {
     try {
@@ -308,6 +334,7 @@ const CurrentPosts = () => {
                 secondaryButtonLabel="Delete"
                 primaryButtonIcon={Edit}
                 secondaryButtonIcon={Trash2}
+                isHighlighted={post._id === highlightPostId}
               />
             ))}
           </div>
