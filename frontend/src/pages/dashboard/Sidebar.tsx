@@ -69,7 +69,7 @@ const Sidebar = ({ onNavigate }: SidebarProps) => {
   return (
     <aside className="group/sidebar h-screen flex flex-col border-r border-white/10 bg-slate-950/50 backdrop-blur-xl shadow-xl sticky top-0 transition-all duration-300 w-20 hover:w-64">
       <div className="flex items-center border-b border-white/10 justify-center group-hover/sidebar:justify-start p-4 group-hover/sidebar:p-6 transition-all duration-300">
-        <img src={nsutLogo} alt="NALUM" className="h-8 w-8 flex-shrink-0" />
+        <img src={nsutLogo} alt="NALUM" width="32" height="32" className="h-8 w-8 flex-shrink-0" />
         <h1 className="text-2xl font-bold text-white tracking-wider transition-all duration-300 ease-in-out opacity-0 max-w-0 ml-0 overflow-hidden group-hover/sidebar:opacity-100 group-hover/sidebar:max-w-full group-hover/sidebar:ml-3">
           NALUM
         </h1>

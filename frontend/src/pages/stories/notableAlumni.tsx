@@ -29,20 +29,6 @@ const alumniData: AlumniProfile[] = [
     gradientTo: "to-[#600000]",
   },
   {
-    id: 2,
-    name: "Nitin Rakesh",
-    folderName: "Nitin-Rakesh",
-    title: "CEO, Mphasis",
-    description: "Leading global IT services company with innovation and strategic vision. His leadership has transformed Mphasis into a digital transformation powerhouse.",
-    achievements: [
-      "CEO of Fortune 500 company",
-      "20+ years in IT industry",
-      "Digital transformation leader",
-    ],
-    gradientFrom: "from-[#8B0000]",
-    gradientTo: "to-[#660000]",
-  },
-  {
     id: 3,
     name: "Ira Singhal",
     folderName: "Ira-Singhal",
@@ -55,20 +41,6 @@ const alumniData: AlumniProfile[] = [
     ],
     gradientFrom: "from-[#800000]",
     gradientTo: "to-[#5A0000]",
-  },
-  {
-    id: 4,
-    name: "Paavan Nanda",
-    folderName: "Paavan-Nanda",
-    title: "Software Engineer, Google",
-    description: "Working on cutting-edge AI and machine learning projects at Google. His work impacts millions of users worldwide.",
-    achievements: [
-      "Senior Engineer at Google",
-      "Published research papers",
-      "Open source contributor",
-    ],
-    gradientFrom: "from-[#900000]",
-    gradientTo: "to-[#700000]",
   },
   {
     id: 5,
@@ -146,11 +118,11 @@ const alumniData: AlumniProfile[] = [
 const AlumniCard = ({ alumni, index }: { alumni: AlumniProfile; index: number }) => {
   const ref = useRef(null);
   const [imageLoaded, setImageLoaded] = useState(false);
-  const [secondImageLoaded, setSecondImageLoaded] = useState(false);
+  
   
   // Determine image extensions
   const getImagePath = (imageNum: number) => {
-    return `/stories/notableAlumni/${alumni.folderName}/${imageNum}.jpg`;
+    return `/stories/notableAlumni/${alumni.folderName}/${imageNum}.webp`;
   };
 
   const isEven = index % 2 === 0;
@@ -179,15 +151,6 @@ const AlumniCard = ({ alumni, index }: { alumni: AlumniProfile; index: number })
         viewport={{ once: true }}
         transition={{ duration: 0.6, delay: 0.4 }}
       >
-        {/* Number Badge */}
-        <motion.div
-          className={`inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-br ${alumni.gradientFrom} ${alumni.gradientTo} text-white font-bold text-2xl shadow-lg`}
-          whileHover={{ scale: 1.1, rotate: 5 }}
-          transition={{ type: "spring", stiffness: 300 }}
-        >
-          {alumni.id}
-        </motion.div>
-
         {/* Name & Title */}
         <div>
           <h3 className="text-4xl font-bold text-gray-900 mb-2">{alumni.name}</h3>
@@ -280,13 +243,6 @@ const AlumniCard = ({ alumni, index }: { alumni: AlumniProfile; index: number })
             loading={shouldEagerLoad ? "eager" : "lazy"}
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
-          
-          {/* Number Badge on Image */}
-          <div className="absolute top-4 left-4">
-            <div className={`flex items-center justify-center w-12 h-12 rounded-full bg-gradient-to-br ${alumni.gradientFrom} ${alumni.gradientTo} text-white font-bold text-xl shadow-lg`}>
-              {alumni.id}
-            </div>
-          </div>
         </div>
 
         {/* Content */}
@@ -427,14 +383,6 @@ export default function NotableAlumni() {
         <div className="relative z-10">
           {alumniData.map((alumni, index) => (
             <div key={alumni.id} className="relative mb-32">
-              {/* Timeline Dot - Positioned at card center */}
-              <motion.div
-                className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-4 h-4 bg-white border-4 border-[#800000] rounded-full shadow-lg z-20"
-                initial={{ scale: 0 }}
-                whileInView={{ scale: 1 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.5, delay: index * 0.1 }}
-              />
               <AlumniCard alumni={alumni} index={index} />
             </div>
           ))}

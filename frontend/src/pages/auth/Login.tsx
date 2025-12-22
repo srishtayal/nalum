@@ -13,7 +13,7 @@ import {
 import { Eye, EyeOff, Mail, Lock, Briefcase } from "lucide-react";
 import { toast } from "sonner";
 import nsutLogo from "@/assets/nsut-logo.svg";
-import nsutCampusHero from "@/assets/nsut-campus-hero.png";
+import nsutCampusHero from "@/assets/hero.webp";
 import apiClient from "@/lib/api";
 import { useAuth } from "@/context/AuthContext";
 import axios from "axios";
@@ -213,7 +213,7 @@ const Login = () => {
         />
         <div className="absolute inset-0 bg-black/50" />
         <Link to="/" className="relative z-10 flex items-center gap-3 text-white">
-          <img src={nsutLogo} alt="NSUT Logo" className="h-10 w-10 " />
+          <img src={nsutLogo} alt="NSUT Logo" width="40" height="40" className="h-10 w-10 " />
           <span className="text-2xl font-serif font-semibold">NALUM</span>
         </Link>
         <div className="relative z-10 text-white">

@@ -2,66 +2,120 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <!-- Google Tag Manager -->
-    <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
-    new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
-    j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
-    'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
-    })(window,document,'script','dataLayer','GTM-XXXXXXX');</script>
-    <!-- End Google Tag Manager -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>NSUT Alumni Portal - Connect, Grow, Give Back</title>
-    <meta name="description" content="Official NSUT Alumni Portal connecting 15,000+ graduates worldwide. Join our network for career opportunities, mentorship, events, and ways to give back to NSUT." />
-    <meta name="keywords" content="NSUT alumni, university network, career opportunities, mentorship, engineering graduates, technology professionals" />
+    
+    <!-- Primary Meta Tags -->
+    <title>NSUT Alumni Association - Connect, Network, Give Back</title>
+    <meta name="description" content="Official NSUT Alumni Association connecting graduates of Netaji Subhas University of Technology. Join our community for networking, career opportunities, mentorship, and events." />
     <meta name="author" content="NSUT Alumni Association" />
-
-    <!-- Enhanced Open Graph Tags -->
-    <meta property="og:title" content="NSUT Alumni Portal - Connect, Grow, Give Back" />
-    <meta property="og:description" content="Join 15,000+ NSUT alumni worldwide. Access career opportunities, mentorship programs, and exclusive networking events." />
-    <meta property="og:type" content="website" />
-    <meta property="og:url" content="https://nsut-alumni.com" />
-    <meta property="og:image" content="https://nsut-alumni.com/og-image.jpg" />
-    <meta property="og:site_name" content="NSUT Alumni Portal" />
-
-    <!-- Twitter Card Tags -->
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="NSUT Alumni Portal" />
-    <meta name="twitter:description" content="Connect with NSUT alumni worldwide. Career opportunities, mentorship, and networking awaits." />
-    <meta name="twitter:image" content="https://nsut-alumni.com/twitter-image.jpg" />
-
-    <!-- Google Fonts - Montserrat & a Serif font -->
+    
+    <!-- Favicon -->
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+    <link rel="manifest" href="/site.webmanifest">
+    
+    <!-- Critical inline CSS for above-the-fold content -->
+    <style>
+      /* Prevent FOUC and ensure basic layout works immediately */
+      *,::before,::after{box-sizing:border-box;border-width:0;border-style:solid;border-color:currentColor}
+      html{line-height:1.5;-webkit-text-size-adjust:100%;tab-size:4;font-family:ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,"Noto Sans",sans-serif}
+      body{margin:0;line-height:inherit;background-color:#fff;color:#0f172a}
+      #root{min-height:100vh}
+      /* Hero-specific critical styles */
+      .hero-container{position:relative;height:100vh;overflow:hidden;color:#fff}
+      .hero-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+      /* Critical utility classes */
+      .relative{position:relative}
+      .absolute{position:absolute}
+      .inset-0{inset:0}
+      .h-screen{height:100vh}
+      .w-full{width:100%}
+      .h-full{height:100%}
+      .flex{display:flex}
+      .flex-col{flex-direction:column}
+      .items-center{align-items:center}
+      .justify-center{justify-content:center}
+      .text-center{text-align:center}
+      .text-white{color:#fff}
+      .bg-black{background-color:#000}
+      .bg-opacity-50{background-color:rgba(0,0,0,.5)}
+      .object-cover{object-fit:cover}
+      .overflow-hidden{overflow:hidden}
+      .z-10{z-index:10}
+      /* Prevent layout shift from fonts */
+      body{font-display:swap}
+      /* Reserve space for header */
+      header{contain:layout;min-height:120px}
+      /* Optimize text rendering */
+      h1,h2,h3,h4,h5,h6{font-display:swap}
+      /* Critical animations */
+      @keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+      .animate-fade-in{animation:fadeIn 1s ease-in-out}
+    </style>
+    
+    <!-- Preconnect to critical origins -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Lora:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="dns-prefetch" href="https://fonts.googleapis.com">
     
-    <!-- Canonical URL -->
-    <link rel="canonical" href="https://nsut-alumni.com" />
+    <!-- Google Fonts - Optimized with font-display swap -->
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&family=Lora:wght@400;500;600;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'; this.onload=null;">
+    <noscript><link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&family=Lora:wght@400;500;600;700&display=swap" rel="stylesheet"></noscript>
+    
+    <!-- Preload hero image for instant LCP (WebP format) -->
+    <link rel="preload" as="image" href="/assets/hero-B1NWBsy7.webp" fetchpriority="high" type="image/webp">
+    
+    <!-- Open Graph / Facebook (TODO: Update URL and add og-image.jpg to /public) -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="http://nsut.alumninet.in/" />
+    <meta property="og:title" content="NSUT Alumni Association" />
+    <meta property="og:description" content="Connect with NSUT Alumni Association. Access career opportunities, mentorship programs, and exclusive networking events." />
+    <meta property="og:image" content="http://nsut.alumninet.in/og-image.jpg" />
+    <meta property="og:site_name" content="NSUT Alumni Association" />
 
-    <!-- Schema.org for WebPage -->
+    <!-- Twitter Card (TODO: Update URL and add twitter-image.jpg to /public) -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:url" content="http://nsut.alumninet.in/" />
+    <meta name="twitter:title" content="NSUT Alumni Association" />
+    <meta name="twitter:description" content="Connect with NSUT Alumni Association. Career opportunities, mentorship, and networking awaits." />
+    <meta name="twitter:image" content="http://nsut.alumninet.in/twitter-image.jpg" />
+
+    <!-- Canonical URL (TODO: Update with your production domain) -->
+    <link rel="canonical" href="http://nsut.alumninet.in/" />
+
+    <!-- 
+      Google Analytics / Tag Manager
+      TODO: Uncomment and replace GTM-XXXXXXX with your actual tracking ID
+      
+      <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
+      <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-XXXXXXXXXX');
+      </script>
+    -->
+
+    <!-- Schema.org Structured Data (TODO: Update URLs) -->
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
-      "@type": "WebPage",
-      "name": "NSUT Alumni Portal",
-      "url": "https://nsut-alumni.com",
-      "description": "The official portal for alumni of Netaji Subhas University of Technology to connect, network, and engage with the community.",
-      "publisher": {
-        "@type": "Organization",
-        "name": "NSUT Alumni Association",
-        "logo": {
-          "@type": "ImageObject",
-          "url": "https://nsut-alumni.com/logo.png"
-        }
+      "@type": "Organization",
+      "name": "NSUT Alumni Association",
+      "url": "http://nsut.alumninet.in",
+      "logo": "http://nsut.alumninet.in/logo.webp",
+      "description": "The official alumni association for graduates of Netaji Subhas University of Technology (NSUT)",
+      "alumni": {
+        "@type": "EducationalOrganization",
+        "name": "Netaji Subhas University of Technology",
+        "url": "https://www.nsut.ac.in/"
       }
     }
     </script>
   </head>
 
   <body>
-    <!-- Google Tag Manager (noscript) -->
-    <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-XXXXXXX"
-    height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
-    <!-- End Google Tag Manager (noscript) -->
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>

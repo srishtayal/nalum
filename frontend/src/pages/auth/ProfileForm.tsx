@@ -27,7 +27,7 @@ import {
   User,
 } from "lucide-react";
 import nsutLogo from "@/assets/nsut-logo.svg";
-import nsutCampusHero from "@/assets/nsut-campus-hero.png";
+import nsutCampusHero from "@/assets/hero.webp";
 import { useAuth } from "../../context/AuthContext";
 interface Experience {
   company: string;
@@ -687,7 +687,7 @@ const ProfileForm = () => {
           to="/"
           className="relative z-10 flex items-center gap-3 text-white"
         >
-          <img src={nsutLogo} alt="NSUT Logo" className="h-10 w-10 invert" />
+          <img src={nsutLogo} alt="NSUT Logo" width="40" height="40" className="h-10 w-10 invert" />
           <span className="text-2xl font-serif font-semibold">NALUM</span>
         </Link>
         <div className="relative z-10 text-white">
