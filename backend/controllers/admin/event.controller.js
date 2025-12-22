@@ -7,7 +7,7 @@ exports.getAllEvents = async (req, res) => {
   try {
     const { page = 1, limit = 10, status, event_type } = req.query;
 
-    const query = {};
+    const query = { is_active: true };
     if (status) query.status = status;
     if (event_type) query.event_type = event_type;
 
@@ -43,13 +43,13 @@ exports.getPendingEvents = async (req, res) => {
   try {
     const { page = 1, limit = 10 } = req.query;
 
-    const events = await Event.find({ status: "pending" })
+    const events = await Event.find({ status: "pending", is_active: true })
       .populate("created_by", "name email role")
       .sort({ createdAt: -1 })
       .skip((page - 1) * limit)
       .limit(parseInt(limit));
 
-    const total = await Event.countDocuments({ status: "pending" });
+    const total = await Event.countDocuments({ status: "pending", is_active: true });
 
     res.status(200).json({
       success: true,

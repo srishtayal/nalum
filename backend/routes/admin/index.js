@@ -13,6 +13,7 @@ const postsRoutes = require("./posts");
 const newsletterRoutes = require("./newsletters");
 const statisticsRoutes = require("./statistics");
 const codeRoutes = require("./codes");
+const alumniDatabaseRoutes = require("./alumniDatabase");
 
 // Mount routes
 router.use("/verification", verificationRoutes);
@@ -22,6 +23,7 @@ router.use("/posts", postsRoutes);
 router.use("/newsletters", newsletterRoutes);
 router.use("/statistics", statisticsRoutes);
 router.use("/codes", codeRoutes);
+router.use("/alumni-database", alumniDatabaseRoutes);
 
 // Direct route for frontend expectation: /admin/search-alumni-database
 router.post("/search-alumni-database", protectAdmin, verificationController.searchAlumniDatabase);

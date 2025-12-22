@@ -49,6 +49,7 @@ interface Event {
     website?: string;
   };
   status: string;
+  rejection_reason?: string;
   likes: number;
   createdAt: string;
 }
@@ -81,6 +82,11 @@ const HostEvent = () => {
   const [editingEvent, setEditingEvent] = useState<string | null>(null);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [currentEditingEvent, setCurrentEditingEvent] = useState<Event | null>(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [eventToDelete, setEventToDelete] = useState<Event | null>(null);
+  const [deleting, setDeleting] = useState(false);
+  const [reasonDialogOpen, setReasonDialogOpen] = useState(false);
+  const [selectedReason, setSelectedReason] = useState<string>("");
   const [hostingAllowed, setHostingAllowed] = useState(true);
   const [checkingHosting, setCheckingHosting] = useState(true);
 
@@ -137,6 +143,36 @@ const HostEvent = () => {
     } finally {
       setLoadingEvents(false);
     }
+  };
+
+  const handleDeleteClick = (event: Event) => {
+    setEventToDelete(event);
+    setDeleteDialogOpen(true);
+  };
+
+  const confirmDelete = async () => {
+    if (!eventToDelete) return;
+
+    setDeleting(true);
+    try {
+      const response = await api.delete(`/events/delete/${eventToDelete._id}`);
+      if (response.data.success) {
+        toast.success("Event deleted successfully");
+        setDeleteDialogOpen(false);
+        setEventToDelete(null);
+        fetchMyEvents();
+      }
+    } catch (error) {
+      console.error("Failed to delete event:", error);
+      toast.error("Failed to delete event");
+    } finally {
+      setDeleting(false);
+    }
+  };
+
+  const handleShowReason = (reason: string) => {
+    setSelectedReason(reason);
+    setReasonDialogOpen(true);
   };
 
   const handleInputChange = (field: string, value: string) => {
@@ -455,17 +491,17 @@ const HostEvent = () => {
       {/* Show content only if hosting is allowed */}
       {hostingAllowed && (
         <Tabs defaultValue="my-events" className="w-full">
-          <TabsList className="grid w-full grid-cols-2 h-16 bg-white/5 border border-purple-500/30 backdrop-blur-md p-1.5 rounded-xl">
+          <TabsList className="grid w-full grid-cols-2 h-16 bg-white/5 border border-gray-700 backdrop-blur-md p-1.5 rounded-xl">
             <TabsTrigger 
               value="my-events"
-              className="flex items-center justify-center gap-2 text-base font-semibold text-gray-400 data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-blue-600 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-purple-500/50 hover:text-white transition-all duration-300 rounded-lg"
+              className="flex items-center justify-center gap-2 text-base font-semibold text-gray-400 data-[state=active]:bg-blue-600 data-[state=active]:text-white hover:text-white transition-colors rounded-lg"
             >
               <List className="h-5 w-5" />
               My Current Events
             </TabsTrigger>
             <TabsTrigger 
               value="create-event"
-              className="flex items-center justify-center gap-2 text-base font-semibold text-gray-400 data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-purple-600 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-blue-500/50 hover:text-white transition-all duration-300 rounded-lg"
+              className="flex items-center justify-center gap-2 text-base font-semibold text-gray-400 data-[state=active]:bg-blue-600 data-[state=active]:text-white hover:text-white transition-colors rounded-lg"
             >
               <Plus className="h-5 w-5" />
               Create New Event
@@ -483,7 +519,7 @@ const HostEvent = () => {
                 {myEvents.map((event) => (
                   <div
                     key={event._id}
-                    className="p-6 rounded-xl bg-white/5 border border-white/10 backdrop-blur-md hover:border-white/20 transition-all animate-in fade-in slide-in-from-bottom-4 duration-500"
+                    className="p-6 rounded-xl bg-white/5 border border-white/10 backdrop-blur-md hover:border-white/20 transition-all"
                   >
                     <div className="flex justify-between items-start gap-4">
                       <div className="flex-1">
@@ -507,14 +543,23 @@ const HostEvent = () => {
                       </div>
                       <div className="flex gap-2">
                         {event.status === "rejected" ? (
-                          <Button
-                            size="sm"
-                            onClick={() => loadEventForEdit(event)}
-                            className="bg-green-500 hover:bg-green-600 text-white"
-                          >
-                            <RefreshCw className="h-4 w-4 mr-1" />
-                            Reapply
-                          </Button>
+                          <>
+                            <Button
+                              size="sm"
+                              onClick={() => handleShowReason(event.rejection_reason || "No reason provided")}
+                              className="bg-yellow-500 hover:bg-yellow-600 text-white"
+                            >
+                              Reason
+                            </Button>
+                            <Button
+                              size="sm"
+                              onClick={() => loadEventForEdit(event)}
+                              className="bg-green-500 hover:bg-green-600 text-white"
+                            >
+                              <RefreshCw className="h-4 w-4 mr-1" />
+                              Reapply
+                            </Button>
+                          </>
                         ) : (
                           <Button
                             size="sm"
@@ -524,6 +569,13 @@ const HostEvent = () => {
                             <Edit2 className="h-4 w-4" />
                           </Button>
                         )}
+                        <Button
+                          size="sm"
+                          onClick={() => handleDeleteClick(event)}
+                          className="bg-red-500 hover:bg-red-600 text-white"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
                       </div>
                     </div>
                   </div>
@@ -552,7 +604,7 @@ const HostEvent = () => {
 
           {/* Create Event Tab */}
           <TabsContent value="create-event" className="mt-6">
-            <Card className="p-8 bg-white/5 border-white/10 backdrop-blur-md animate-in fade-in slide-in-from-bottom-4 duration-500">
+            <Card className="p-8 bg-white/5 border-white/10 backdrop-blur-md">
               <form onSubmit={handleSubmit} className="space-y-6">
               {/* Basic Information */}
               <div>
@@ -1065,6 +1117,64 @@ const HostEvent = () => {
                 )}
               </Button>
             </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Rejection Reason Dialog */}
+      <Dialog open={reasonDialogOpen} onOpenChange={setReasonDialogOpen}>
+        <DialogContent className="bg-gray-900 text-white border-white/10">
+          <DialogHeader>
+            <DialogTitle>Rejection Reason</DialogTitle>
+            <DialogDescription className="text-gray-400">
+              This event was rejected by the admin for the following reason:
+            </DialogDescription>
+          </DialogHeader>
+          <div className="mt-4 p-4 bg-red-500/10 border border-red-500/30 rounded-lg">
+            <p className="text-red-200">{selectedReason}</p>
+          </div>
+          <div className="flex justify-end mt-4">
+            <Button
+              onClick={() => setReasonDialogOpen(false)}
+              className="bg-blue-600 hover:bg-blue-700"
+            >
+              Close
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <DialogContent className="bg-gray-900 text-white border-white/10">
+          <DialogHeader>
+            <DialogTitle>Delete Event</DialogTitle>
+            <DialogDescription className="text-gray-400">
+              Are you sure you want to delete "{eventToDelete?.title}"? This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex gap-3 mt-4">
+            <Button
+              onClick={() => setDeleteDialogOpen(false)}
+              className="flex-1 bg-gray-600 hover:bg-gray-700"
+              disabled={deleting}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={confirmDelete}
+              disabled={deleting}
+              className="flex-1 bg-red-600 hover:bg-red-700"
+            >
+              {deleting ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Deleting...
+                </>
+              ) : (
+                "Delete"
+              )}
+            </Button>
           </div>
         </DialogContent>
       </Dialog>

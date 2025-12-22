@@ -266,7 +266,7 @@ export const rejectEvent = async (eventId: string, reason: string) => {
 };
 
 export const deleteEvent = async (eventId: string) => {
-  const response = await apiClient.delete(`/admin/events/${eventId}`);
+  const response = await apiClient.delete(`/admin/events/delete/${eventId}`);
   return response.data;
 };
 

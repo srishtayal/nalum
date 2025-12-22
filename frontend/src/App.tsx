@@ -158,7 +158,9 @@ function AppContent() {
           element={
             <ProtectedRoute>
               <ProtectedVerificationRoute>
-                <DashboardLayout />
+                <ChatProvider>
+                  <DashboardLayout />
+                </ChatProvider>
               </ProtectedVerificationRoute>
             </ProtectedRoute>
           }
@@ -172,12 +174,10 @@ function AppContent() {
           <Route
             path="/dashboard/chat/*"
             element={
-              <ChatProvider>
-                <Routes>
-                  <Route index element={<ChatPage />} />
-                  <Route path=":conversationId" element={<ChatPage />} />
-                </Routes>
-              </ChatProvider>
+              <Routes>
+                <Route index element={<ChatPage />} />
+                <Route path=":conversationId" element={<ChatPage />} />
+              </Routes>
             }
           />
           <Route path="/dashboard/events" element={<Events />} />

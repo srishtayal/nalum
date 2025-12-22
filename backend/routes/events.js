@@ -273,7 +273,7 @@ router.get("/my/events", protect, async (req, res) => {
   try {
     const userId = req.user.user_id;
 
-    const events = await Event.find({ created_by: userId })
+    const events = await Event.find({ created_by: userId, is_active: true })
       .sort({ createdAt: -1 })
       .select("-liked_by");
 
@@ -313,6 +313,46 @@ router.get("/my/liked", protect, async (req, res) => {
     res.status(500).json({
       success: false,
       message: "Failed to fetch liked events",
+    });
+  }
+});
+
+// Delete event (Owner only - soft delete)
+router.delete("/delete/:eventId", protect, async (req, res) => {
+  try {
+    const { eventId } = req.params;
+    const userId = req.user.user_id;
+
+    const event = await Event.findById(eventId);
+
+    if (!event) {
+      return res.status(404).json({
+        success: false,
+        message: "Event not found",
+      });
+    }
+
+    // Only event creator can delete
+    if (event.created_by.toString() !== userId.toString()) {
+      return res.status(403).json({
+        success: false,
+        message: "You can only delete your own events",
+      });
+    }
+
+    // Soft delete
+    event.is_active = false;
+    await event.save();
+
+    res.status(200).json({
+      success: true,
+      message: "Event deleted successfully",
+    });
+  } catch (error) {
+    console.error("Error deleting event:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to delete event",
     });
   }
 });
