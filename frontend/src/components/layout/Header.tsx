@@ -130,7 +130,7 @@ const Header = ({ setHeaderHeight }) => {
             <div className="hidden md:flex items-center space-x-8">
               {Object.entries(navLinks).map(([title, sublinks]) => (
                 <div key={title} className="group relative">
-                  <button className="font-serif relative text-gray-800 transition-colors duration-300 hover:text-nsut-maroon after:content-[''] after:absolute after:-bottom-2 after:left-0 after:w-0 after:h-0.5 after:bg-gradient-to-r after:from-nsut-maroon after:to-nsut-yellow after:transition-all after:duration-[400ms] after:ease-out after:rounded-sm hover:after:w-full">
+                  <button className="font-serif relative text-gray-800 transition-colors duration-300 hover:text-nsut-maroon after:content-[''] after:absolute after:-bottom-2 after:left-0 after:w-0 after:h-0.5 after:bg-gradient-to-r after:from-nsut-maroon after:to-nsut-yellow after:transition-all after:duration-400 after:ease-out after:rounded-sm hover:after:w-full">
                     <span className="relative">{title}</span>
                   </button>
                   <div className="absolute bg-white shadow-xl rounded-lg mt-2 py-2 w-48 z-10 border border-gray-100 opacity-0 invisible -translate-y-2.5 transition-all duration-300 ease-out group-hover:opacity-100 group-hover:visible group-hover:translate-y-0">
