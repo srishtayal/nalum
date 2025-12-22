@@ -1,10 +1,9 @@
 import { useState, useEffect, useRef } from 'react';
-import { Button } from '@/components/ui/button';
-import { Play, Pause } from 'lucide-react';
+import heroImage from '@/assets/hero.jpeg';
 
 const Hero = () => {
   // Default main image
-  const defaultImage = '/src/assets/hero.jpeg';
+  const defaultImage = heroImage;
 
   // Slideshow images from public/homeGallery folder
   // const [currentImageIndex, setCurrentImageIndex] = useState(0);
