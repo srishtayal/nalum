@@ -17,7 +17,6 @@ interface ConnectionMessageDialogProps {
     recipientName: string;
 }
 
-const DEFAULT_MESSAGE = "Hi, I'd like to connect with you!";
 
 export const ConnectionMessageDialog = ({
     isOpen,
@@ -25,19 +24,18 @@ export const ConnectionMessageDialog = ({
     onConfirm,
     recipientName,
 }: ConnectionMessageDialogProps) => {
-    const [message, setMessage] = useState(DEFAULT_MESSAGE);
+    const [message, setMessage] = useState("");
 
     // Reset message when dialog opens
     useEffect(() => {
         if (isOpen) {
-            setMessage(DEFAULT_MESSAGE);
+            setMessage("");
         }
     }, [isOpen]);
 
     const handleConfirm = () => {
-        // If empty, use default (though we start with default, user might clear it)
-        const finalMessage = message.trim() || DEFAULT_MESSAGE;
-        onConfirm(finalMessage);
+        if (!message.trim()) return;
+        onConfirm(message.trim());
         onClose();
     };
 
@@ -54,7 +52,7 @@ export const ConnectionMessageDialog = ({
                     <Textarea
                         value={message}
                         onChange={(e) => setMessage(e.target.value)}
-                        placeholder="Write a message..."
+                        placeholder="Hi, I'd like to connect with you!"
                         className="min-h-[100px] bg-black/20 border-white/10 text-white placeholder:text-gray-500 focus:border-blue-500/50"
                     />
                 </div>
@@ -68,7 +66,8 @@ export const ConnectionMessageDialog = ({
                     </Button>
                     <Button
                         onClick={handleConfirm}
-                        className="bg-blue-600 hover:bg-blue-700 text-white"
+                        disabled={!message.trim()}
+                        className="bg-blue-600 hover:bg-blue-700 text-white disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                         Send Request
                     </Button>

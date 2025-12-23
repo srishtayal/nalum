@@ -137,7 +137,7 @@ function AppContent() {
             {/* Main App Routes */}
             <Route path="/" element={<Root />}>
               <Route index element={<HomePage />} />
-          <Route path="/stories/notable-alumni" element={<NotableAlumni />} />
+              <Route path="/stories/notable-alumni" element={<NotableAlumni />} />
               <Route path="/communities/clubs" element={<ClubsPage />} />
               <Route path="/benefits/learning" element={<LearningPage />} />
             </Route>
@@ -172,10 +172,10 @@ function AppContent() {
             >
               <Route path="/dashboard" element={<DashboardHome />} />
               <Route path="/dashboard/profile" element={<ShowProfile />} />
-          <Route path="/dashboard/update-profile" element={<UpdateProfile />} />
+              <Route path="/dashboard/update-profile" element={<UpdateProfile />} />
               <Route path="/dashboard/alumni" element={<AlumniDirectory />} />
-          <Route path="/dashboard/alumni/:userId" element={<ViewProfile />} />
-          <Route path="/dashboard/connections" element={<ConnectionsPage />} />
+              <Route path="/dashboard/alumni/:userId" element={<ViewProfile />} />
+              <Route path="/dashboard/connections" element={<ConnectionsPage />} />
               <Route
                 path="/dashboard/chat/*"
                 element={
@@ -194,7 +194,7 @@ function AppContent() {
 
             {/* Admin Panel Routes - Use main login, role-based access */}
             <Route element={<AdminProtectedRoute />}>
-          <Route path="/admin-panel/dashboard" element={<AdminDashboard />} />
+              <Route path="/admin-panel/dashboard" element={<AdminDashboard />} />
               <Route
                 path="/admin-panel/verification"
                 element={<VerificationQueue />}
