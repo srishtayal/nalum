@@ -1,5 +1,5 @@
 import { Link, useLocation } from "react-router-dom";
-import { Home, Edit2, Users, LogOut, MessageSquare, Calendar, Sparkles, FileText } from "lucide-react";
+import { Home, Edit2, Users, LogOut, MessageSquare, Calendar, Sparkles, FileText, Heart } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { useProfile } from "@/context/ProfileContext";
 import { cn } from "@/lib/utils";
@@ -43,6 +43,11 @@ const Sidebar = ({ onNavigate }: SidebarProps) => {
       icon: Calendar,
       label: "Events",
     },
+    {
+      to: "/dashboard/queries",
+      icon: MessageSquare,
+      label: "Queries",
+    },
     ...(user?.role === "alumni"
       ? [
           {
@@ -54,6 +59,11 @@ const Sidebar = ({ onNavigate }: SidebarProps) => {
             to: "/dashboard/host-event",
             icon: Sparkles,
             label: "Host Event",
+          },
+          {
+            to: "/dashboard/giving",
+            icon: Heart,
+            label: "Giving",
           },
         ]
       : []),

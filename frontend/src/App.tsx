@@ -29,6 +29,8 @@ const ChatPage = lazy(() => import("@/pages/dashboard/chat/ChatPage").then(modul
 const Events = lazy(() => import("@/pages/dashboard/Events"));
 const HostEvent = lazy(() => import("@/pages/dashboard/HostEvent"));
 const MyPosts = lazy(() => import("@/pages/dashboard/MyPosts"));
+const Queries = lazy(() => import("@/pages/dashboard/Queries"));
+const Giving = lazy(() => import("@/pages/dashboard/Giving"));
 const Root = lazy(() => import("@/pages/Root"));
 const SignUp = lazy(() => import("@/pages/auth/SignUp"));
 const AdminProtectedRoute = lazy(() => import("./components/admin/AdminProtectedRoute"));
@@ -44,6 +46,8 @@ const BannedUsers = lazy(() => import("./pages/admin/BannedUsers"));
 const CodeManagement = lazy(() => import("./pages/admin/CodeManagement"));
 const AlumniDatabase = lazy(() => import("./pages/admin/AlumniDatabase"));
 const Reports = lazy(() => import("./pages/admin/Reports"));
+const QueryManagement = lazy(() => import("./pages/admin/QueryManagement"));
+const GivingManagement = lazy(() => import("./pages/admin/GivingManagement"));
 const NotableAlumni = lazy(() => import("./pages/stories/notableAlumni"));
 const ClubsPage = lazy(() => import("./pages/communities/clubs"));
 const LearningPage = lazy(() => import("./pages/benefits/learning"));
@@ -184,6 +188,8 @@ function AppContent() {
               <Route path="/dashboard/events" element={<Events />} />
               <Route path="/dashboard/posts" element={<MyPosts />} />
               <Route path="/dashboard/host-event" element={<HostEvent />} />
+              <Route path="/dashboard/queries" element={<Queries />} />
+              <Route path="/dashboard/giving" element={<Giving />} />
             </Route>
 
             {/* Admin Panel Routes - Use main login, role-based access */}
@@ -216,6 +222,8 @@ function AppContent() {
                 element={<AlumniDatabase />}
               />
               <Route path="/admin-panel/reports" element={<Reports />} />
+              <Route path="/admin-panel/queries" element={<QueryManagement />}/>
+              <Route path="/admin-panel/givings" element={<GivingManagement />}/>
             </Route>
             <Route
               path="/admin-panel"

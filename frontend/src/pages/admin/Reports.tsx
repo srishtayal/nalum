@@ -260,12 +260,7 @@ const Reports = () => {
             {filteredReports.map((report) => (
               <div
                 key={report._id}
-                onClick={() =>
-                  navigate("/admin-panel/current-posts", {
-                    state: { highlightPostId: report.postId._id },
-                  })
-                }
-                className="bg-white rounded-lg shadow-md border border-gray-200 p-6 hover:shadow-lg transition-shadow cursor-pointer"
+                className="bg-white rounded-lg shadow-md border border-gray-200 p-6 hover:shadow-lg transition-shadow"
               >
                 <div className="flex justify-between items-start gap-6">
                   <div className="flex-1">
@@ -275,9 +270,18 @@ const Reports = () => {
                       </span>
                       {getStatusBadge(report.status)}
                     </div>
-                    <h3 className="text-xl font-bold text-gray-900 mb-2">
-                      {report.postId.title}
-                    </h3>
+                    <div
+                      onClick={() =>
+                        navigate("/admin-panel/current-posts", {
+                          state: { highlightPostId: report.postId._id },
+                        })
+                      }
+                      className="w-fit cursor-pointer group"
+                    >
+                      <h3 className="text-xl font-bold text-gray-900 mb-2 group-hover:text-blue-600 transition-colors">
+                        {report.postId.title}
+                      </h3>
+                    </div>
                     <p className="text-gray-600 text-sm mb-4 line-clamp-2">
                       {report.description}
                     </p>
