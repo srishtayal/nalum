@@ -96,7 +96,7 @@ const PostCard = ({
   };
 
   return (
-    <div className="relative bg-white/5 border border-white/10 backdrop-blur-md rounded-xl p-6 hover:bg-white/10 transition duration-200">
+    <div className="relative bg-white/5 border border-white/10 backdrop-blur-md rounded-xl p-4 md:p-6 hover:bg-white/10 transition duration-200">
       {isAuthor && (
         <div className="absolute top-4 right-4 flex gap-2">
           {post.status === "rejected" ? (

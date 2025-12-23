@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { createPortal } from "react-dom";
 import { Link } from "react-router-dom";
 import { Menu, X } from "lucide-react";
 import nsutLogo from "@/assets/logo.webp";
@@ -169,79 +170,81 @@ const Header = ({ setHeaderHeight }) => {
           </div>
         </div>
 
-        {/* === MOBILE MENU === */}
-        {isMobileMenuOpen && (
-          <div
-            className="fixed inset-0 bg-black bg-opacity-50 z-40 md:hidden transition-opacity duration-300"
-            onClick={() => setIsMobileMenuOpen(false)}
-          >
-            <div
-              className="fixed inset-y-0 left-0 w-64 bg-white shadow-lg z-50 p-4 transform transition-transform duration-300 overflow-y-auto"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <div className="flex justify-between items-center mb-6">
-                <div className="flex flex-col items-start">
-                  <h1 className="text-lg font-bold leading-none tracking-wide text-gray-800 whitespace-nowrap">
-                    <span className="text-red-600">N</span>SUT
-                    <span className="text-red-600"> ALUM</span>NI
-                  </h1>
-                  <span className="block text-[7px] text-gray-700 font-bold tracking-widest">
-                    ASSOCIATION
-                  </span>
-                </div>
-                <button
-                  onClick={() => setIsMobileMenuOpen(false)}
-                  className="hover:text-nsut-maroon transition-colors duration-200 hover:scale-110"
-                  aria-label="Close mobile menu"
-                >
-                  <X />
-                </button>
-              </div>
-
-              <nav className="flex flex-col space-y-4 pb-8">
-                {/* Mobile CTAs at top for visibility */}
-                <div className="flex flex-col gap-3 mb-4">
-                  <Link to="/login" className="bg-nsut-maroon text-white font-bold py-2 px-4 rounded hover:shadow-lg hover:scale-105 transition-all duration-300 text-center">
-                    myNSUT Login
-                  </Link>
-                  <a
-                    href="/giving"
-                    className="bg-nsut-yellow text-nsut-maroon font-bold py-2 px-4 rounded hover:shadow-lg hover:scale-105 transition-all duration-300 text-center"
-                  >
-                    Make a Gift
-                  </a>
-                </div>
-                <hr className="border-gray-200" />
-
-                {Object.entries(navLinks).map(([title, sublinks]) => (
-                  <div key={title}>
-                    <h3 className="font-serif text-nsut-maroon mb-2 font-semibold">
-                      {title}
-                    </h3>
-                    {sublinks.map((link) => (
-                      <Link
-                        key={link}
-                        to={`/${title
-                          .toLowerCase()
-                          .replace(/ & /g, "-")}/${link
-                            .toLowerCase()
-                            .replace(/ /g, "-")}`}
-                        className="block pl-4 py-1 text-sm hover:bg-gradient-to-r hover:from-nsut-beige hover:to-transparent hover:pl-6 transition-all duration-200 rounded"
-                      >
-                        {link}
-                      </Link>
-                    ))}
-                  </div>
-                ))}
-                <hr className="border-gray-200" />
-                <Link to="/about" className="hover:text-nsut-maroon transition-colors duration-200 font-medium">
-                  About
-                </Link>
-              </nav>
-            </div>
-          </div>
-        )}
       </header>
+
+      {/* === MOBILE MENU (Portal) === */}
+      {isMobileMenuOpen && createPortal(
+        <div
+          className="fixed inset-0 bg-black bg-opacity-50 z-[60] md:hidden transition-opacity duration-300"
+          onClick={() => setIsMobileMenuOpen(false)}
+        >
+          <div
+            className="fixed inset-y-0 left-0 w-64 bg-white shadow-lg z-[70] p-4 transform transition-transform duration-300 overflow-y-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex justify-between items-center mb-6">
+              <div className="flex flex-col items-start">
+                <h1 className="text-lg font-bold leading-none tracking-wide text-gray-800 whitespace-nowrap">
+                  <span className="text-red-600">N</span>SUT
+                  <span className="text-red-600"> ALUM</span>NI
+                </h1>
+                <span className="block text-[7px] text-gray-700 font-bold tracking-widest">
+                  ASSOCIATION
+                </span>
+              </div>
+              <button
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="hover:text-nsut-maroon transition-colors duration-200 hover:scale-110"
+                aria-label="Close mobile menu"
+              >
+                <X />
+              </button>
+            </div>
+
+            <nav className="flex flex-col space-y-4 pb-8">
+              {/* Mobile CTAs at top for visibility */}
+              <div className="flex flex-col gap-3 mb-4">
+                <Link to="/login" className="bg-nsut-maroon text-white font-bold py-2 px-4 rounded hover:shadow-lg hover:scale-105 transition-all duration-300 text-center">
+                  myNSUT Login
+                </Link>
+                <a
+                  href="/giving"
+                  className="bg-nsut-yellow text-nsut-maroon font-bold py-2 px-4 rounded hover:shadow-lg hover:scale-105 transition-all duration-300 text-center"
+                >
+                  Make a Gift
+                </a>
+              </div>
+              <hr className="border-gray-200" />
+
+              {Object.entries(navLinks).map(([title, sublinks]) => (
+                <div key={title}>
+                  <h3 className="font-serif text-nsut-maroon mb-2 font-semibold">
+                    {title}
+                  </h3>
+                  {sublinks.map((link) => (
+                    <Link
+                      key={link}
+                      to={`/${title
+                        .toLowerCase()
+                        .replace(/ & /g, "-")}/${link
+                          .toLowerCase()
+                          .replace(/ /g, "-")}`}
+                      className="block pl-4 py-1 text-sm hover:bg-gradient-to-r hover:from-nsut-beige hover:to-transparent hover:pl-6 transition-all duration-200 rounded"
+                    >
+                      {link}
+                    </Link>
+                  ))}
+                </div>
+              ))}
+              <hr className="border-gray-200" />
+              <Link to="/about" className="hover:text-nsut-maroon transition-colors duration-200 font-medium">
+                About
+              </Link>
+            </nav>
+          </div>
+        </div>,
+        document.body
+      )}
     </>
   );
 };
