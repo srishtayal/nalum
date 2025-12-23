@@ -32,10 +32,6 @@ const GivingCard = ({ title, description, icon: Icon, index }: GivingCardProps) 
         </p>
 
         {/* Hover indicator */}
-        <div className="mt-4 flex items-center text-nsut-maroon text-sm font-semibold opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-          <span>Learn more</span>
-          <ArrowRight className="h-4 w-4 ml-1 transform group-hover:translate-x-1 transition-transform duration-300" />
-        </div>
       </div>
     </div>
   </div>
@@ -119,17 +115,10 @@ const GivingSection = () => {
               size="lg"
               className="bg-nsut-maroon hover:bg-nsut-maroon/90 text-white font-semibold px-8"
             >
-              <Link to="/giving">
+              <Link to="/login">
                 Start Giving Today
               </Link>
             </Button>
-            <Link
-              to="/giving/planned-giving"
-              className="text-nsut-maroon font-semibold hover:underline flex items-center gap-1"
-            >
-              Learn about planned giving
-              <ArrowRight className="h-4 w-4" />
-            </Link>
           </div>
 
           {/* Trust indicator */}

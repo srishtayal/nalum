@@ -1,503 +1,373 @@
-import { useState, useEffect, useRef } from 'react';
-import { Globe, Users, Briefcase, GraduationCap, TrendingUp, Code, Search, X, Cpu, Zap, Building2, Layers, BookOpen, Target, Award } from 'lucide-react';
+import { useState } from 'react';
+import { BookOpen, GraduationCap, Microscope, Cpu, TrendingUp, Award, Users, Lightbulb, Target, ChevronDown, ChevronUp } from 'lucide-react';
 
-// Company data with categories
-type Company = {
-  name: string;
-  logo: string;
-  category: 'Tech' | 'Core' | 'Non-Tech' | 'Hybrid';
-};
+interface Program {
+  title: string;
+  programs: string[];
+}
 
-const companies: Company[] = [
-  // TECH COMPANIES
-  { name: 'Adobe', logo: '/benefits/learnings/logos/Adobe.jpeg', category: 'Tech' },
-  { name: 'Aidash', logo: '/benefits/learnings/logos/Aidash.jpeg', category: 'Tech' },
-  { name: 'Amantya Technologies', logo: '/benefits/learnings/logos/Amantya Technologies.jpeg', category: 'Tech' },
-  { name: 'Ambak', logo: '/benefits/learnings/logos/Ambak.jpeg', category: 'Tech' },
-  { name: 'Apple', logo: '/benefits/learnings/logos/Apple.jpeg', category: 'Tech' },
-  { name: 'Arcesium', logo: '/benefits/learnings/logos/Arcesium.jpeg', category: 'Tech' },
-  { name: 'Armorcode', logo: '/benefits/learnings/logos/Armorcode.jpeg', category: 'Tech' },
-  { name: 'Atlassian', logo: '/benefits/learnings/logos/Atlassian.jpeg', category: 'Tech' },
-  { name: 'Auxia', logo: '/benefits/learnings/logos/Auxia.jpeg', category: 'Tech' },
-  { name: 'Baaz Bikes', logo: '/benefits/learnings/logos/Baaz Bikes.jpeg', category: 'Tech' },
-  { name: 'BharatPe', logo: '/benefits/learnings/logos/BharatPe.jpeg', category: 'Tech' },
-  { name: 'Black and Green', logo: '/benefits/learnings/logos/Black and Green.jpeg', category: 'Tech' },
-  { name: 'Blu Smart', logo: '/benefits/learnings/logos/Blu Smart.jpeg', category: 'Tech' },
-  { name: 'Bytical AI', logo: '/benefits/learnings/logos/Bytical AI.jpeg', category: 'Tech' },
-  { name: 'Cadence', logo: '/benefits/learnings/logos/Cadence.jpeg', category: 'Tech' },
-  { name: 'Cisco', logo: '/benefits/learnings/logos/Cisco.jpeg', category: 'Tech' },
-  { name: 'Clear', logo: '/benefits/learnings/logos/Clear.jpeg', category: 'Tech' },
-  { name: 'Cloudwick', logo: '/benefits/learnings/logos/Cloudwick.jpeg', category: 'Tech' },
-  { name: 'CommerceIQ', logo: '/benefits/learnings/logos/CommerceIQ.jpeg', category: 'Tech' },
-  { name: 'COSM Technologies', logo: '/benefits/learnings/logos/COSM Technologies.jpeg', category: 'Tech' },
-  { name: 'Cyran', logo: '/benefits/learnings/logos/Cyran.jpeg', category: 'Tech' },
-  { name: 'DeShaw', logo: '/benefits/learnings/logos/DeShaw.jpeg', category: 'Tech' },
-  { name: 'DigiIQ', logo: '/benefits/learnings/logos/DigiIQ.jpeg', category: 'Hybrid' },
-  { name: 'DotPe', logo: '/benefits/learnings/logos/DotPe.jpeg', category: 'Tech' },
-  { name: 'E2E Networks', logo: '/benefits/learnings/logos/E2E Networks.jpeg', category: 'Tech' },
-  { name: 'Engineersmind Corp', logo: '/benefits/learnings/logos/Engineersmind Corp.jpeg', category: 'Tech' },
-  { name: 'Estee Advisor', logo: '/benefits/learnings/logos/Estee Advisor.jpeg', category: 'Tech' },
-  { name: 'Expedia Group', logo: '/benefits/learnings/logos/Expedia Group.jpeg', category: 'Hybrid' },
-  { name: 'Flipkart', logo: '/benefits/learnings/logos/Flipkart.jpeg', category: 'Tech' },
-  { name: 'Flydocs', logo: '/benefits/learnings/logos/Flydocs.jpeg', category: 'Tech' },
-  { name: 'Fundwave', logo: '/benefits/learnings/logos/Fundwave.jpeg', category: 'Tech' },
-  { name: 'Gartner', logo: '/benefits/learnings/logos/Gartner.jpeg', category: 'Tech' },
-  { name: 'GE Healthcare', logo: '/benefits/learnings/logos/GE Healthcare.jpeg', category: 'Tech' },
-  { name: 'Godaddy', logo: '/benefits/learnings/logos/Godaddy.jpeg', category: 'Tech' },
-  { name: 'Goldman Sachs', logo: '/benefits/learnings/logos/Goldman Sachs.jpeg', category: 'Tech' },
-  { name: 'Google', logo: '/benefits/learnings/logos/Google.jpeg', category: 'Tech' },
-  { name: 'Headlamp', logo: '/benefits/learnings/logos/Headlamp.jpeg', category: 'Tech' },
-  { name: 'Hike', logo: '/benefits/learnings/logos/Hike.jpeg', category: 'Tech' },
-  { name: 'Humantic AI', logo: '/benefits/learnings/logos/Humantic AI.jpeg', category: 'Tech' },
-  { name: 'IBM', logo: '/benefits/learnings/logos/IBM.jpeg', category: 'Tech' },
-  { name: 'Indigo', logo: '/benefits/learnings/logos/Indigo.jpeg', category: 'Tech' },
-  { name: 'Innovis', logo: '/benefits/learnings/logos/Innovis.jpeg', category: 'Tech' },
-  { name: 'Intuit', logo: '/benefits/learnings/logos/Intuit.jpeg', category: 'Tech' },
-  { name: 'JPMC', logo: '/benefits/learnings/logos/JPMC.jpeg', category: 'Tech' },
-  { name: 'Kapstan', logo: '/benefits/learnings/logos/Kapstan.jpeg', category: 'Tech' },
-  { name: 'Kimbal Technologies', logo: '/benefits/learnings/logos/Kimbal Technologies.jpeg', category: 'Tech' },
-  { name: 'Leena AI', logo: '/benefits/learnings/logos/LeenaAi.jpeg', category: 'Hybrid' },
-  { name: 'LimeRoad', logo: '/benefits/learnings/logos/limeroad.jpeg', category: 'Tech' },
-  { name: 'Macquarie', logo: '/benefits/learnings/logos/Macquarie.jpeg', category: 'Tech' },
-  { name: 'MagicPin', logo: '/benefits/learnings/logos/MagicPin.jpeg', category: 'Hybrid' },
-  { name: 'Material Plus', logo: '/benefits/learnings/logos/MaterialPlus.jpeg', category: 'Tech' },
-  { name: 'Microsoft', logo: '/benefits/learnings/logos/Microsoft.jpeg', category: 'Tech' },
-  { name: 'MongoDB', logo: '/benefits/learnings/logos/MongoDB.jpeg', category: 'Tech' },
-  { name: 'Monotype Solutions', logo: '/benefits/learnings/logos/Monotype.jpeg', category: 'Tech' },
-  { name: 'Morgan Stanley', logo: '/benefits/learnings/logos/MorganStanley.jpeg', category: 'Tech' },
-  { name: 'myKaarma', logo: '/benefits/learnings/logos/mykaarma.jpeg', category: 'Tech' },
-  { name: 'NatWest', logo: '/benefits/learnings/logos/Natwest.jpeg', category: 'Tech' },
-  { name: 'Nexalis International', logo: '/benefits/learnings/logos/NexalisInternational.jpeg', category: 'Tech' },
-  { name: 'NVIDIA', logo: '/benefits/learnings/logos/NVIDIA.jpeg', category: 'Tech' },
-  { name: 'Nykaa', logo: '/benefits/learnings/logos/Nykaa.jpeg', category: 'Tech' },
-  { name: 'OLX', logo: '/benefits/learnings/logos/OLX.jpeg', category: 'Tech' },
-  { name: 'OYO', logo: '/benefits/learnings/logos/OYO.jpeg', category: 'Tech' },
-  { name: 'PayPal', logo: '/benefits/learnings/logos/PayPal.jpeg', category: 'Tech' },
-  { name: 'PharmEasy', logo: '/benefits/learnings/logos/PharmEasy.jpeg', category: 'Tech' },
-  { name: 'Quantizer', logo: '/benefits/learnings/logos/Quantizer.jpeg', category: 'Tech' },
-  { name: 'Rippling', logo: '/benefits/learnings/logos/Rippling.jpeg', category: 'Tech' },
-  { name: 'Salesforce', logo: '/benefits/learnings/logos/Salesforce.jpeg', category: 'Tech' },
-  { name: 'Sprinklr', logo: '/benefits/learnings/logos/spinklr.jpeg', category: 'Tech' },
-  { name: 'Uber', logo: '/benefits/learnings/logos/Uber.jpeg', category: 'Tech' },
-  { name: 'Visa', logo: '/benefits/learnings/logos/Visa.jpeg', category: 'Tech' },
-  { name: 'Walmart', logo: '/benefits/learnings/logos/Walmart.jpeg', category: 'Tech' },
-  { name: 'Zupee', logo: '/benefits/learnings/logos/Zupee.jpeg', category: 'Tech' },
-  
-  // CORE COMPANIES
-  { name: 'ARM', logo: '/benefits/learnings/logos/ARM.jpeg', category: 'Core' },
-  { name: 'Attero', logo: '/benefits/learnings/logos/Attero.jpeg', category: 'Core' },
-  { name: 'Bechtel', logo: '/benefits/learnings/logos/Bechtel.jpeg', category: 'Core' },
-  { name: 'CRITICAL INSIGHTS', logo: '/benefits/learnings/logos/CRITICAL INSIGHTS.jpeg', category: 'Core' },
-  { name: 'Euler Motors', logo: '/benefits/learnings/logos/Euler Motors.jpeg', category: 'Core' },
-  { name: 'GE Vernova', logo: '/benefits/learnings/logos/GE Vernova.jpeg', category: 'Core' },
-  { name: 'HLS Asia', logo: '/benefits/learnings/logos/HLS Asia.jpeg', category: 'Core' },
-  { name: 'MediaTek', logo: '/benefits/learnings/logos/Mediatel.jpeg', category: 'Core' },
-  { name: 'Qualcomm', logo: '/benefits/learnings/logos/Qualcomm.jpeg', category: 'Core' },
-  { name: 'Samsung Semiconductor', logo: '/benefits/learnings/logos/SamsungSemiconductor.jpeg', category: 'Core' },
-  { name: 'SLB', logo: '/benefits/learnings/logos/SLB.jpeg', category: 'Core' },
-  { name: 'Texas Instruments', logo: '/benefits/learnings/logos/TexasInstruments.jpeg', category: 'Core' },
-  
-  // NON-TECH COMPANIES
-  { name: 'A&M', logo: '/benefits/learnings/logos/A&M.jpeg', category: 'Non-Tech' },
-  { name: 'Algouniversity', logo: '/benefits/learnings/logos/Algouniversity.jpeg', category: 'Non-Tech' },
-  { name: 'AMEX', logo: '/benefits/learnings/logos/AMEX.jpeg', category: 'Non-Tech' },
-  { name: 'Astrovega Aviation', logo: '/benefits/learnings/logos/Astrovega Aviation.jpeg', category: 'Non-Tech' },
-  { name: 'Axxella', logo: '/benefits/learnings/logos/Axxella.jpeg', category: 'Non-Tech' },
-  { name: 'BCG', logo: '/benefits/learnings/logos/BCG.jpeg', category: 'Non-Tech' },
-  { name: 'BCN', logo: '/benefits/learnings/logos/BCN.jpeg', category: 'Non-Tech' },
-  { name: 'Coding Blocks', logo: '/benefits/learnings/logos/Coding Blocks.jpeg', category: 'Non-Tech' },
-  { name: 'Fast Retailing', logo: '/benefits/learnings/logos/Fast Retailing.jpeg', category: 'Non-Tech' },
-  { name: 'Flour Corporations', logo: '/benefits/learnings/logos/Flour Corporations.jpeg', category: 'Non-Tech' },
-  { name: 'Future First', logo: '/benefits/learnings/logos/Future First.jpeg', category: 'Non-Tech' },
-  { name: 'HELEUM', logo: '/benefits/learnings/logos/HELEUM.jpeg', category: 'Non-Tech' },
-  { name: 'Hex Advisory', logo: '/benefits/learnings/logos/Hex Advisory.jpeg', category: 'Non-Tech' },
-  { name: 'Idemitsu', logo: '/benefits/learnings/logos/Idemitsu.jpeg', category: 'Non-Tech' },
-  { name: 'Infinite Locus', logo: '/benefits/learnings/logos/Infinite Locus.jpeg', category: 'Non-Tech' },
-  { name: 'Junglee Games', logo: '/benefits/learnings/logos/Junglee Games.jpeg', category: 'Non-Tech' },
-  { name: 'McKinsey & Company', logo: '/benefits/learnings/logos/McKinseynCompany.jpeg', category: 'Non-Tech' },
-  { name: 'movidu', logo: '/benefits/learnings/logos/movidu.jpeg', category: 'Non-Tech' },
-  
-  // HYBRID COMPANIES
-  { name: 'Avtaar Skincare', logo: '/benefits/learnings/logos/Avtaar Skincare.jpeg', category: 'Hybrid' },
-  { name: 'Battery Smart', logo: '/benefits/learnings/logos/Battery Smart.jpeg', category: 'Hybrid' },
-  { name: 'Blackcat', logo: '/benefits/learnings/logos/Blackcat.jpeg', category: 'Hybrid' },
-  { name: 'Care Health', logo: '/benefits/learnings/logos/Care Health.jpeg', category: 'Hybrid' },
-  { name: 'Jarvis Consulting', logo: '/benefits/learnings/logos/Jarvis Consulting.jpeg', category: 'Hybrid' },
-];
-
-const stats = [
-  { label: 'Alumni Worldwide', value: 10000, suffix: '+', icon: Globe },
-  { label: 'Countries', value: 50, suffix: '+', icon: TrendingUp },
-  { label: 'Top Companies', value: 200, suffix: '+', icon: Building2 },
-  { label: 'Industry Domains', value: 15, suffix: '+', icon: Layers },
-];
-
-// Divide companies into 4 rows for marquee
-const row1Companies = companies.filter((_, i) => i % 4 === 0);
-const row2Companies = companies.filter((_, i) => i % 4 === 1);
-const row3Companies = companies.filter((_, i) => i % 4 === 2);
-const row4Companies = companies.filter((_, i) => i % 4 === 3);
-
-const domains = [
-  {
-    icon: Code,
-    title: 'Tech',
-    description: 'NSUT graduates excel in software engineering, AI/ML, cloud architecture, and product development at leading tech giants and innovative startups worldwide.',
-  },
-  {
-    icon: Cpu,
-    title: 'Core',
-    description: 'Our alumni lead breakthrough innovations in semiconductor design, electronics, hardware engineering, and advanced manufacturing across global technology firms.',
-  },
-  {
-    icon: Building2,
-    title: 'Non-Tech',
-    description: 'NSUT alumni drive strategic initiatives in consulting, finance, policy, and education, leveraging their strong analytical foundation to create impact.',
-  },
-  {
-    icon: Layers,
-    title: 'Hybrid',
-    description: 'Alumni thrive in organizations where technical expertise meets business acumen, bridging technology and strategy in dynamic growth environments.',
-  },
-];
-
-// Counter animation hook
-const useCountUp = (end: number, duration: number = 2000) => {
-  const [count, setCount] = useState(0);
-  const [hasStarted, setHasStarted] = useState(false);
-
-  useEffect(() => {
-    if (!hasStarted) return;
-    
-    const increment = end / (duration / 16);
-    let current = 0;
-    
-    const timer = setInterval(() => {
-      current += increment;
-      if (current >= end) {
-        setCount(end);
-        clearInterval(timer);
-      } else {
-        setCount(Math.floor(current));
-      }
-    }, 16);
-
-    return () => clearInterval(timer);
-  }, [end, duration, hasStarted]);
-
-  return { count, startCounting: () => setHasStarted(true) };
-};
-
-const CounterCard = ({ label, value, suffix, icon: Icon }: { label: string; value: number; suffix: string; icon: any }) => {
-  const { count, startCounting } = useCountUp(value);
-  const ref = useRef(null);
-  
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting) {
-          startCounting();
-        }
-      },
-      { threshold: 0.5 }
-    );
-
-    if (ref.current) observer.observe(ref.current);
-
-    return () => observer.disconnect();
-  }, [startCounting]);
-
-  return (
-    <div ref={ref} className="text-center">
-      <div className="text-5xl md:text-6xl font-bold text-nsut-maroon mb-2">
-        {count.toLocaleString()}{suffix}
-      </div>
-      <div className="text-sm text-gray-600 font-medium uppercase tracking-wide">{label}</div>
-    </div>
-  );
-};
-
-const LogoMarqueeRow = ({ rowCompanies, duration, onClick }: { rowCompanies: Company[]; duration: number; onClick: () => void }) => {
-  // Duplicate array 2 times for seamless infinite loop (need exactly 2 copies for -50% translateX)
-  const duplicatedCompanies = [...rowCompanies, ...rowCompanies];
-  
-  return (
-    <div className="relative flex overflow-hidden py-3 group">
-      <div 
-        className="flex gap-5 items-center animate-marquee whitespace-nowrap will-change-transform"
-        style={{
-          animationDuration: `${duration}s`,
-        }}
-      >
-        {duplicatedCompanies.map((company, idx) => (
-          <div
-            key={`${company.name}-${idx}`}
-            onClick={onClick}
-            className="flex-shrink-0 h-12 w-32 flex items-center justify-center transition-transform duration-300 cursor-pointer hover:scale-110"
-          >
-            <img
-              src={company.logo}
-              alt={company.name}
-              className="max-h-full max-w-full object-contain"
-              loading="lazy"
-              title={company.name}
-            />
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-};
+interface ProgramSection {
+  level: string;
+  icon: any;
+  color: string;
+  description: string;
+  programs: string[];
+}
 
 const LearningPage = () => {
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState<'All' | 'Tech' | 'Core' | 'Non-Tech' | 'Hybrid'>('All');
+  const [expandedSection, setExpandedSection] = useState<string | null>(null);
 
-  const filteredCompanies = companies.filter((company) => {
-    const matchesSearch = company.name.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesCategory = selectedCategory === 'All' || company.category === selectedCategory;
-    return matchesSearch && matchesCategory;
-  });
+  const toggleSection = (section: string) => {
+    setExpandedSection(expandedSection === section ? null : section);
+  };
+
+  const programSections: ProgramSection[] = [
+    {
+      level: 'Undergraduate Programs',
+      icon: GraduationCap,
+      color: 'from-blue-500 to-blue-600',
+      description: 'Undergraduate programs span a range of core technical and applied disciplines, equipping students with deep subject knowledge, analytical skills, and real-world problem-solving capabilities.',
+      programs: [
+        'Electronics and Communication Engineering',
+        'Computer Engineering',
+        'Computer Science and Engineering (with Artificial Intelligence focus)',
+        'Mathematics and Computing',
+        'Electrical Engineering',
+        'Instrumentation and Control Engineering',
+        'Manufacturing Process and Automation Engineering',
+        'Mechanical Engineering',
+        'Information Technology',
+        'Bio-Technology',
+        'Architecture and Design',
+        'Management and Business Foundations'
+      ]
+    },
+    {
+      level: 'Postgraduate Programs',
+      icon: Microscope,
+      color: 'from-purple-500 to-purple-600',
+      description: 'Postgraduate studies focus on advanced and specialized areas of engineering, technology, and management, designed to deepen technical expertise and foster leadership in industry and academia.',
+      programs: [
+        'Computer Science and Advanced Computing',
+        'Signal Processing and Communication Systems',
+        'Embedded Systems and VLSI',
+        'Process Control and Industrial Automation',
+        'Industrial Electronics',
+        'Mechatronics and Production Engineering',
+        'Engineering Management',
+        'CAD/CAM and Manufacturing Systems',
+        'Bioinformatics and Nano Technology',
+        'Related interdisciplinary fields'
+      ]
+    },
+    {
+      level: 'Doctoral Programs',
+      icon: Award,
+      color: 'from-amber-500 to-amber-600',
+      description: 'Doctor of Philosophy (Ph.D.) programs encourage original research across multiple disciplines, preparing scholars for careers in research institutions, academia, and industry-research collaborations.',
+      programs: [
+        'Electronics and Communication Engineering',
+        'Computer Engineering',
+        'Instrumentation and Control Engineering',
+        'Manufacturing Process and Automation Engineering',
+        'Information Technology',
+        'Bio-Technology',
+        'Management Studies',
+        'Humanities and Social Sciences',
+        'Mathematics',
+        'Physics',
+        'Chemistry'
+      ]
+    }
+  ];
+
+  const specializations = [
+    { name: 'Artificial Intelligence and Machine Learning', icon: Cpu },
+    { name: 'Data Science and Analytics', icon: TrendingUp },
+    { name: 'Internet of Things (IoT)', icon: Cpu },
+    { name: 'Cybersecurity and Networks', icon: Target },
+    { name: 'Design and Innovation', icon: Lightbulb },
+    { name: 'Lean Manufacturing and Automation', icon: Target }
+  ];
+
+  const features = [
+    {
+      icon: BookOpen,
+      title: 'Choice-Based Credit System',
+      description: 'Flexible curriculum allowing students to tailor their learning through core, elective, and interdisciplinary courses.'
+    },
+    {
+      icon: Users,
+      title: 'Industry Partnerships',
+      description: 'Collaboration with industry partners through guest lectures, internships, and real-world projects.'
+    },
+    {
+      icon: Lightbulb,
+      title: 'Research & Innovation',
+      description: 'Access to research centres, innovation labs, and opportunities for original research and development.'
+    },
+    {
+      icon: Target,
+      title: 'Hands-on Learning',
+      description: 'Practical lab work, project-based assignments, and exposure to emerging technologies.'
+    }
+  ];
+
+  const benefits = [
+    'Balanced blend of theory and practice',
+    'Curriculum informed by industry trends',
+    'Faculty with research and industry experience',
+    'Opportunities for global exposure and research collaboration',
+    'Strong foundation for advanced degrees and careers worldwide',
+    'Professional and ethical development',
+    'Interdisciplinary learning opportunities'
+  ];
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-gradient-to-b from-white to-nsut-beige/30">
       {/* Hero Section */}
-      <section className="relative bg-gradient-to-br from-nsut-maroon to-[#900000] text-white py-20 px-4 overflow-hidden">
-        {/* Simple Background Pattern */}
-        <div className="absolute inset-0 opacity-5 pointer-events-none">
-          <div className="absolute inset-0" style={{
-            backgroundImage: 'radial-gradient(circle at 2px 2px, white 1px, transparent 0)',
-            backgroundSize: '40px 40px',
-          }}></div>
-        </div>
+      <div className="relative bg-gradient-to-r from-nsut-maroon to-[#800000] text-white py-20 px-4 overflow-hidden">
+        {/* Decorative Elements */}
+        <div className="absolute top-0 right-0 w-96 h-96 bg-nsut-yellow/10 rounded-full blur-3xl"></div>
+        <div className="absolute bottom-0 left-0 w-96 h-96 bg-nsut-yellow/10 rounded-full blur-3xl"></div>
         
-        <div className="container mx-auto max-w-4xl relative z-10 text-center">
-          <div className="inline-block px-4 py-1.5 bg-white/10 rounded-full text-sm font-medium mb-6 backdrop-blur-sm border border-white/20">
-            NSUT Alumni Network
+        <div className="container mx-auto max-w-7xl relative z-10">
+          <div className="flex items-center gap-4 mb-6 animate-fade-in">
+            <BookOpen className="w-12 h-12 text-nsut-yellow" />
+            <h1 className="font-serif text-5xl md:text-6xl font-bold">
+              Learning at NSUT
+            </h1>
           </div>
-          <h1 className="font-serif text-4xl md:text-6xl font-bold mb-6 leading-tight">
-            A Global Community of<br />
-            <span className="text-nsut-yellow">Innovators & Leaders</span>
-          </h1>
-          <p className="text-lg md:text-xl text-white/90 max-w-2xl mx-auto leading-relaxed">
-            From Silicon Valley to global innovation hubs, NSUT alumni are shaping the future of technology, business, and society.
+          <p className="text-xl md:text-2xl max-w-5xl leading-relaxed opacity-95 animation-delay-300 animate-fade-in">
+            Academic Excellence with Diverse Programs
+          </p>
+          <p className="text-lg max-w-5xl mt-4 leading-relaxed opacity-90 animation-delay-500 animate-fade-in">
+            Netaji Subhas University of Technology (NSUT), Delhi offers a wide spectrum of high-quality academic programs designed to prepare students for careers in engineering, technology, research, and management. These programs are grounded in a strong theoretical foundation, hands-on learning, and industry relevance.
           </p>
         </div>
-      </section>
+      </div>
 
-      {/* Stats Section */}
-      <section className="py-20 bg-white">
-        <div className="container mx-auto max-w-6xl px-4">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-            {stats.map((stat) => (
-              <CounterCard
-                key={stat.label}
-                label={stat.label}
-                value={stat.value}
-                suffix={stat.suffix}
-                icon={stat.icon}
-              />
+      {/* Main Content */}
+      <div className="container mx-auto max-w-7xl px-4 py-16">
+        {/* Key Features Grid */}
+        <div className="mb-20">
+          <h2 className="font-serif text-4xl font-bold text-nsut-maroon mb-12 text-center">
+            Curriculum Structure & Learning Approach
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {features.map((feature, index) => (
+              <div
+                key={index}
+                className="group bg-white rounded-xl shadow-md hover:shadow-2xl transition-all duration-500 p-6 border border-gray-100 hover:border-nsut-yellow/50 animate-fade-in hover:-translate-y-2"
+                style={{ animationDelay: `${index * 100}ms` }}
+              >
+                <div className="w-14 h-14 bg-gradient-to-br from-nsut-maroon to-[#800000] rounded-lg flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
+                  <feature.icon className="w-7 h-7 text-white" />
+                </div>
+                <h3 className="font-serif text-xl font-bold text-nsut-maroon mb-3 group-hover:text-[#800000] transition-colors">
+                  {feature.title}
+                </h3>
+                <p className="text-gray-600 leading-relaxed">
+                  {feature.description}
+                </p>
+              </div>
             ))}
           </div>
         </div>
-      </section>
 
-      {/* Infinite Marquee Section */}
-      <section className="py-20 bg-gray-50 border-y border-gray-200 overflow-hidden">
-        <div className="container mx-auto px-4 mb-12 text-center">
-          <h2 className="font-serif text-3xl md:text-4xl font-bold text-nsut-maroon mb-4">
-            Where We Work
+        {/* Programs Sections */}
+        <div className="mb-20">
+          <h2 className="font-serif text-4xl font-bold text-nsut-maroon mb-4 text-center">
+            Programs & Courses Offered
           </h2>
-          <p className="text-gray-600 max-w-2xl mx-auto">
-            NSUT alumni are powering the world's most influential companies.
+          <p className="text-center text-gray-600 mb-12 max-w-4xl mx-auto text-lg">
+            NSUT offers programs at the Undergraduate, Postgraduate, and Doctoral levels across engineering, science, management, and technology disciplines.
           </p>
-        </div>
-
-        {/* Marquee Container with Fade Edges */}
-        <div className="relative max-w-[100vw] mx-auto">
-             {/* Gradient Masks */}
-            <div className="absolute inset-y-0 left-0 w-20 md:w-40 bg-gradient-to-r from-gray-50 to-transparent z-10 pointer-events-none"></div>
-            <div className="absolute inset-y-0 right-0 w-20 md:w-40 bg-gradient-to-l from-gray-50 to-transparent z-10 pointer-events-none"></div>
-
-            <div className="flex flex-col gap-4">
-                <LogoMarqueeRow rowCompanies={row1Companies} duration={80} onClick={() => setIsModalOpen(true)} />
-                <LogoMarqueeRow rowCompanies={row2Companies} duration={90} onClick={() => setIsModalOpen(true)} />
-                <LogoMarqueeRow rowCompanies={row3Companies} duration={85} onClick={() => setIsModalOpen(true)} />
-                <LogoMarqueeRow rowCompanies={row4Companies} duration={95} onClick={() => setIsModalOpen(true)} />
-            </div>
-        </div>
-      </section>
-
-      {/* Domains Section */}
-      <section className="py-20 bg-white px-4">
-        <div className="container mx-auto max-w-6xl">
-          <div className="text-center mb-12">
-            <h2 className="font-serif text-3xl md:text-4xl font-bold text-nsut-maroon mb-4">
-              Career Domains
-            </h2>
-            <p className="text-gray-600 max-w-2xl mx-auto">
-              NSUT alumni demonstrate exceptional versatility across diverse industries and roles
-            </p>
-          </div>
-
-          <div className="grid md:grid-cols-2 gap-6">
-            {domains.map((domain) => {
-              const Icon = domain.icon;
-              return (
-                <div
-                  key={domain.title}
-                  className="bg-gradient-to-br from-gray-50 to-white rounded-xl border border-gray-200 p-6 hover:border-nsut-maroon/30 hover:shadow-lg transition-all duration-300 group"
-                >
-                  <div className="flex items-start gap-4">
-                    <div className="w-12 h-12 bg-nsut-maroon/10 rounded-lg flex items-center justify-center flex-shrink-0 group-hover:bg-nsut-maroon transition-colors duration-300">
-                      <Icon className="text-nsut-maroon group-hover:text-white transition-colors" size={24} />
-                    </div>
-                    <div className="flex-1">
-                      <h3 className="font-bold text-lg mb-2 text-gray-900 group-hover:text-nsut-maroon transition-colors">
-                        {domain.title}
-                      </h3>
-                      <p className="text-sm text-gray-600 leading-relaxed">{domain.description}</p>
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      </section>
-
-      {/* CTA Section */}
-      <section className="py-20 px-4 bg-[#C00404] text-white relative overflow-hidden">
-        <div className="absolute top-0 right-0 p-12 opacity-5">
-            <GraduationCap size={400} />
-        </div>
-        
-        <div className="container mx-auto max-w-4xl text-center relative z-10">
-          <h2 className="font-serif text-4xl md:text-5xl font-bold mb-6">
-            Join the Network
-          </h2>
-          <p className="text-xl mb-10 text-white/90 max-w-2xl mx-auto font-light">
-            Connect, mentor, and grow with the NSUT global alumni community.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-6 justify-center">
-            <a
-              href="/login"
-              className="px-10 py-4 bg-white text-nsut-maroon font-bold rounded-lg hover:bg-nsut-yellow hover:scale-105 transition-all duration-300 shadow-xl"
-            >
-              Join Now
-            </a>
-          </div>
-        </div>
-      </section>
-
-      {/* Modal */}
-      {isModalOpen && (
-        <div className="fixed inset-0 z-50 overflow-y-auto bg-black/60 flex items-start justify-center p-4 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="relative bg-white rounded-xl shadow-2xl w-full max-w-6xl my-8 h-[85vh] flex flex-col overflow-hidden">
-            {/* Modal Header */}
-            <div className="flex-none bg-white border-b border-gray-200 p-6 z-10">
-              <div className="flex items-center justify-between mb-6">
-                <div>
-                    <h3 className="text-2xl font-bold text-nsut-maroon font-serif">Company Directory</h3>
-                    <p className="text-sm text-gray-500 mt-1">Browse all companies where our alumni work</p>
-                </div>
+          
+          <div className="space-y-6">
+            {programSections.map((section, index) => (
+              <div
+                key={index}
+                className="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden animate-fade-in hover:shadow-xl transition-all duration-300"
+                style={{ animationDelay: `${index * 150}ms` }}
+              >
+                {/* Section Header */}
                 <button
-                  onClick={() => setIsModalOpen(false)}
-                  className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full transition-colors"
-                  aria-label="Close modal"
+                  onClick={() => toggleSection(section.level)}
+                  className="w-full flex items-center justify-between p-6 bg-gradient-to-r hover:from-gray-50 hover:to-white transition-all duration-300"
                 >
-                  <X size={28} />
-                </button>
-              </div>
-
-              <div className="flex flex-col md:flex-row gap-4">
-                {/* Search Bar */}
-                <div className="relative flex-grow">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
-                    <input
-                    type="text"
-                    placeholder="Search by company name..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-nsut-maroon focus:border-transparent transition-all"
-                    />
-                </div>
-
-                {/* Filter Chips */}
-                <div className="flex gap-2 flex-wrap items-center">
-                    {(['All', 'Tech', 'Core', 'Non-Tech', 'Hybrid'] as const).map((category) => (
-                    <button
-                        key={category}
-                        onClick={() => setSelectedCategory(category)}
-                        className={`px-4 py-2 rounded-full text-sm font-medium transition-all border ${selectedCategory === category
-                            ? 'bg-nsut-maroon text-white border-nsut-maroon'
-                            : 'bg-white text-gray-600 border-gray-200 hover:border-gray-300 hover:bg-gray-50'}`}
-                    >
-                        {category}
-                    </button>
-                    ))}
-                </div>
-              </div>
-            </div>
-
-            {/* Modal Content */}
-            <div className="flex-grow p-6 overflow-y-auto bg-gray-50/50">
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-                {filteredCompanies.map((company, idx) => (
-                  <div
-                    key={`${company.name}-${idx}`}
-                    className="group bg-white border border-gray-200 rounded-xl p-4 hover:border-nsut-maroon/50 hover:shadow-md transition-all duration-300 flex flex-col items-center justify-center aspect-square"
-                  >
-                    <div className="w-full h-2/3 flex items-center justify-center p-2 mb-2">
-                      <img
-                        src={company.logo}
-                        alt={company.name}
-                        className="max-h-full max-w-full object-contain transition-all duration-300"
-                        loading="lazy"
-                      />
+                  <div className="flex items-center gap-4">
+                    <div className={`w-12 h-12 bg-gradient-to-br ${section.color} rounded-lg flex items-center justify-center shadow-lg`}>
+                      <section.icon className="w-6 h-6 text-white" />
                     </div>
-                    <div className="text-center w-full">
-                         <p className="text-xs font-semibold text-gray-800 line-clamp-1 group-hover:text-nsut-maroon transition-colors">
-                            {company.name}
-                        </p>
-                        <p className="text-[10px] text-gray-500 uppercase tracking-wider mt-1">
-                            {company.category}
-                        </p>
+                    <div className="text-left">
+                      <h3 className="font-serif text-2xl font-bold text-nsut-maroon">
+                        {section.level}
+                      </h3>
                     </div>
                   </div>
-                ))}
-              </div>
+                  <div className="text-nsut-maroon">
+                    {expandedSection === section.level ? (
+                      <ChevronUp className="w-6 h-6" />
+                    ) : (
+                      <ChevronDown className="w-6 h-6" />
+                    )}
+                  </div>
+                </button>
 
-              {filteredCompanies.length === 0 && (
-                <div className="h-64 flex flex-col items-center justify-center text-gray-400">
-                  <Search size={48} className="mb-4 opacity-20" />
-                  <p className="text-lg font-medium text-gray-500">No matches found</p>
-                  <p className="text-sm">Try adjusting your search or filters</p>
+                {/* Expandable Content */}
+                <div
+                  className={`transition-all duration-500 ease-in-out ${
+                    expandedSection === section.level
+                      ? 'max-h-[2000px] opacity-100'
+                      : 'max-h-0 opacity-0'
+                  } overflow-hidden`}
+                >
+                  <div className="p-6 pt-0 border-t border-gray-100">
+                    <p className="text-gray-700 mb-6 leading-relaxed">
+                      {section.description}
+                    </p>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                      {section.programs.map((program, idx) => (
+                        <div
+                          key={idx}
+                          className="flex items-start gap-2 p-3 rounded-lg bg-gradient-to-r from-gray-50 to-white hover:from-nsut-beige/30 hover:to-white transition-all duration-300 border border-gray-100"
+                        >
+                          <div className="w-2 h-2 bg-nsut-yellow rounded-full mt-2 flex-shrink-0"></div>
+                          <span className="text-gray-700 text-sm leading-relaxed">
+                            {program}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
                 </div>
-              )}
-            </div>
-            
-             <div className="p-4 bg-white border-t border-gray-200 text-center text-xs text-gray-400">
-                Showing {filteredCompanies.length} companies
-            </div>
+              </div>
+            ))}
           </div>
         </div>
-      )}
 
-      {/* Global CSS for Marquee Animation */}
+        {/* Specializations */}
+        <div className="mb-20">
+          <h2 className="font-serif text-4xl font-bold text-nsut-maroon mb-4 text-center">
+            Specialized Tracks & Emerging Areas
+          </h2>
+          <p className="text-center text-gray-600 mb-12 max-w-4xl mx-auto text-lg">
+            To align with evolving global trends, NSUT offers opportunities for specialization in cutting-edge areas
+          </p>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {specializations.map((spec, index) => (
+              <div
+                key={index}
+                className="group bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-300 p-6 border border-gray-100 hover:border-nsut-yellow/50 animate-fade-in flex items-center gap-4 hover:-translate-y-1"
+                style={{ animationDelay: `${index * 100}ms` }}
+              >
+                <div className="w-12 h-12 bg-gradient-to-br from-nsut-maroon to-nsut-yellow rounded-lg flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform duration-300">
+                  <spec.icon className="w-6 h-6 text-white" />
+                </div>
+                <p className="font-semibold text-gray-800 group-hover:text-nsut-maroon transition-colors">
+                  {spec.name}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Learning Beyond Classroom */}
+        <div className="mb-20 bg-gradient-to-br from-nsut-maroon to-[#800000] rounded-2xl p-8 md:p-12 text-white shadow-xl">
+          <h2 className="font-serif text-4xl font-bold mb-6 flex items-center gap-3">
+            <Users className="w-10 h-10 text-nsut-yellow" />
+            Learning Beyond the Classroom
+          </h2>
+          <p className="text-lg mb-8 opacity-95 leading-relaxed">
+            NSUT encourages a holistic approach to learning through various initiatives that help students apply classroom knowledge to real-world challenges and build professional confidence.
+          </p>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {[
+              'Industry partnerships and guest lectures',
+              'Interdisciplinary projects and capstone assignments',
+              'Research centres and innovation labs',
+              'Seminars, workshops, and short-term professional courses',
+              'Student clubs, competitions, and community initiatives',
+              'Global exposure and research collaboration'
+            ].map((item, index) => (
+              <div
+                key={index}
+                className="flex items-start gap-3 p-4 bg-white/10 backdrop-blur-sm rounded-lg hover:bg-white/20 transition-all duration-300 animate-fade-in"
+                style={{ animationDelay: `${index * 100}ms` }}
+              >
+                <div className="w-2 h-2 bg-nsut-yellow rounded-full mt-2 flex-shrink-0"></div>
+                <span className="leading-relaxed">{item}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Why NSUT Section */}
+        <div className="bg-white rounded-2xl shadow-xl p-8 md:p-12 border border-gray-100">
+          <h2 className="font-serif text-4xl font-bold text-nsut-maroon mb-8 text-center flex items-center justify-center gap-3">
+            <Target className="w-10 h-10 text-nsut-yellow" />
+            Why NSUT for Learning
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-5xl mx-auto">
+            {benefits.map((benefit, index) => (
+              <div
+                key={index}
+                className="group flex items-start gap-3 p-4 rounded-lg bg-gradient-to-r from-nsut-beige/20 to-white hover:from-nsut-beige/40 hover:to-white transition-all duration-300 border border-gray-100 hover:border-nsut-yellow/50 animate-fade-in hover:-translate-x-2"
+                style={{ animationDelay: `${index * 100}ms` }}
+              >
+                <div className="w-6 h-6 bg-gradient-to-br from-nsut-maroon to-nsut-yellow rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <span className="text-white text-xs font-bold">✓</span>
+                </div>
+                <span className="text-gray-700 leading-relaxed group-hover:text-nsut-maroon transition-colors">
+                  {benefit}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Bottom CTA */}
+        <div className="mt-16 text-center bg-gradient-to-r from-nsut-beige/30 to-transparent rounded-2xl p-12">
+          <h3 className="font-serif text-3xl font-bold text-nsut-maroon mb-4">
+            Join the NSUT Legacy
+          </h3>
+          <p className="text-gray-600 text-lg mb-8 max-w-3xl mx-auto">
+            NSUT follows a flexible and modern credit-based curriculum that encourages interdisciplinary learning and innovation, preparing students for careers in engineering, technology, research, and management.
+          </p>
+          <a
+            href="https://www.nsut.ac.in/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-block bg-gradient-to-r from-nsut-maroon to-[#800000] text-white font-bold py-4 px-8 rounded-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
+          >
+            Explore NSUT Programs
+          </a>
+        </div>
+      </div>
+
       <style>{`
-        @keyframes marquee {
-          0% {
-            transform: translateX(0);
+        @keyframes fade-in {
+          from {
+            opacity: 0;
+            transform: translateY(20px);
           }
-          100% {
-            transform: translateX(-50%);
+          to {
+            opacity: 1;
+            transform: translateY(0);
           }
         }
-        
-        .animate-marquee {
-          animation: marquee linear infinite;
+
+        .animate-fade-in {
+          animation: fade-in 0.6s ease-out forwards;
+        }
+
+        .animation-delay-300 {
+          animation-delay: 300ms;
+        }
+
+        .animation-delay-500 {
+          animation-delay: 500ms;
         }
       `}</style>
     </div>

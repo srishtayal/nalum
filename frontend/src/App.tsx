@@ -45,7 +45,11 @@ const CodeManagement = lazy(() => import("./pages/admin/CodeManagement"));
 const AlumniDatabase = lazy(() => import("./pages/admin/AlumniDatabase"));
 const NotableAlumni = lazy(() => import("./pages/stories/notableAlumni"));
 const ClubsPage = lazy(() => import("./pages/communities/clubs"));
+const IndustriesPage = lazy(() => import("./pages/communities/industries"));
+const RecentGradsPage = lazy(() => import("./pages/communities/recentGrads"));
 const LearningPage = lazy(() => import("./pages/benefits/learning"));
+const CareerPage = lazy(() => import("./pages/benefits/career"));
+const AboutPage = lazy(() => import("./pages/About"));
 
 const queryClient = new QueryClient();
 
@@ -134,7 +138,11 @@ function AppContent() {
           <Route index element={<HomePage />} />
           <Route path="/stories/notable-alumni" element={<NotableAlumni />} />
           <Route path="/communities/clubs" element={<ClubsPage />} />
+          <Route path="/communities/industries" element={<IndustriesPage />} />
+          <Route path="/communities/recent-grads" element={<RecentGradsPage />} />
           <Route path="/benefits/learning" element={<LearningPage />} />
+          <Route path="/benefits/career" element={<CareerPage />} />
+          <Route path="/about" element={<AboutPage />} />
         </Route>
 
         {/* Auth Routes (without header/footer) */}

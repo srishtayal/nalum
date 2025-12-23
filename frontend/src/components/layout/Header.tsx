@@ -15,22 +15,15 @@ const Header = ({ setHeaderHeight }) => {
       "Recent Grads",
       "Industries",
     ],
-    Volunteer: ["Opportunities", "Advocacy", "Tools & Resources", "Recognition"],
-    Events: ["Calendar", "Campus Dance", "Reunions", "Medical Reunion Weekend"],
+    
+    Events: ["Calendar", "Reunions"],
     Benefits: [
-      "NSUTConnect+",
       "Career",
       "Learning",
       "Perks",
       "Alumni Directory",
     ],
-    Giving: [
-      "How to Give",
-      "Annual Fund",
-      "Athletics",
-      "Planned Giving",
-      "Donor Recognition",
-    ],
+    Giving:[],
     Stories: ["Notable Alumni", "Alumni Stories", "Giving Stories", "Campus News", "All Stories"],
   };
 
@@ -133,26 +126,36 @@ const Header = ({ setHeaderHeight }) => {
             {/* Nav Links */}
             <div className="hidden md:flex items-center space-x-8">
               {Object.entries(navLinks).map(([title, sublinks]) => (
-                <div key={title} className="group relative">
-                  <button className="font-serif relative text-gray-800 transition-colors duration-300 hover:text-nsut-maroon after:content-[''] after:absolute after:-bottom-2 after:left-0 after:w-0 after:h-0.5 after:bg-gradient-to-r after:from-nsut-maroon after:to-nsut-yellow after:transition-all after:duration-400 after:ease-out after:rounded-sm hover:after:w-full">
+                title === "Giving" ? (
+                  <Link
+                    key={title}
+                    to="/login"
+                    className="font-serif relative text-gray-800 transition-colors duration-300 hover:text-nsut-maroon after:content-[''] after:absolute after:-bottom-2 after:left-0 after:w-0 after:h-0.5 after:bg-gradient-to-r after:from-nsut-maroon after:to-nsut-yellow after:transition-all after:duration-400 after:ease-out after:rounded-sm hover:after:w-full"
+                  >
                     <span className="relative">{title}</span>
-                  </button>
-                  <div className="absolute bg-white shadow-xl rounded-lg mt-2 py-2 w-48 z-10 border border-gray-100 opacity-0 invisible -translate-y-2.5 transition-all duration-300 ease-out group-hover:opacity-100 group-hover:visible group-hover:translate-y-0">
-                    {sublinks.map((link) => (
-                      <Link
-                        key={link}
-                        to={`/${title
-                          .toLowerCase()
-                          .replace(/ & /g, "-")}/${link
+                  </Link>
+                ) : (
+                  <div key={title} className="group relative">
+                    <button className="font-serif relative text-gray-800 transition-colors duration-300 hover:text-nsut-maroon after:content-[''] after:absolute after:-bottom-2 after:left-0 after:w-0 after:h-0.5 after:bg-gradient-to-r after:from-nsut-maroon after:to-nsut-yellow after:transition-all after:duration-400 after:ease-out after:rounded-sm hover:after:w-full">
+                      <span className="relative">{title}</span>
+                    </button>
+                    <div className="absolute bg-white shadow-xl rounded-lg mt-2 py-2 w-48 z-10 border border-gray-100 opacity-0 invisible -translate-y-2.5 transition-all duration-300 ease-out group-hover:opacity-100 group-hover:visible group-hover:translate-y-0">
+                      {sublinks.map((link) => (
+                        <Link
+                          key={link}
+                          to={`/${title
                             .toLowerCase()
-                            .replace(/ /g, "-")}`}
-                        className="block px-4 py-2 text-sm text-gray-700 relative overflow-hidden transition-all duration-200 before:content-[''] before:absolute before:left-0 before:top-0 before:h-full before:w-0.5 before:bg-nsut-maroon before:-translate-x-full before:transition-transform before:duration-300 hover:before:translate-x-0 hover:pl-5 hover:bg-gradient-to-r hover:from-amber-50 hover:to-transparent"
-                      >
-                        {link}
-                      </Link>
-                    ))}
+                            .replace(/ & /g, "-")}/${link
+                              .toLowerCase()
+                              .replace(/ /g, "-")}`}
+                          className="block px-4 py-2 text-sm text-gray-700 relative overflow-hidden transition-all duration-200 before:content-[''] before:absolute before:left-0 before:top-0 before:h-full before:w-0.5 before:bg-nsut-maroon before:-translate-x-full before:transition-transform before:duration-300 hover:before:translate-x-0 hover:pl-5 hover:bg-gradient-to-r hover:from-amber-50 hover:to-transparent"
+                        >
+                          {link}
+                        </Link>
+                      ))}
+                    </div>
                   </div>
-                </div>
+                )
               ))}
             </div>
 
@@ -214,24 +217,34 @@ const Header = ({ setHeaderHeight }) => {
                 <hr className="border-gray-200" />
 
                 {Object.entries(navLinks).map(([title, sublinks]) => (
-                  <div key={title}>
-                    <h3 className="font-serif text-nsut-maroon mb-2 font-semibold">
+                  title === "Giving" ? (
+                    <Link
+                      key={title}
+                      to="/login"
+                      className="font-serif text-nsut-maroon font-semibold hover:underline transition-all duration-200"
+                    >
                       {title}
-                    </h3>
-                    {sublinks.map((link) => (
-                      <Link
-                        key={link}
-                        to={`/${title
-                          .toLowerCase()
-                          .replace(/ & /g, "-")}/${link
+                    </Link>
+                  ) : (
+                    <div key={title}>
+                      <h3 className="font-serif text-nsut-maroon mb-2 font-semibold">
+                        {title}
+                      </h3>
+                      {sublinks.map((link) => (
+                        <Link
+                          key={link}
+                          to={`/${title
                             .toLowerCase()
-                            .replace(/ /g, "-")}`}
-                        className="block pl-4 py-1 text-sm hover:bg-gradient-to-r hover:from-nsut-beige hover:to-transparent hover:pl-6 transition-all duration-200 rounded"
-                      >
-                        {link}
-                      </Link>
-                    ))}
-                  </div>
+                            .replace(/ & /g, "-")}/${link
+                              .toLowerCase()
+                              .replace(/ /g, "-")}`}
+                          className="block pl-4 py-1 text-sm hover:bg-gradient-to-r hover:from-nsut-beige hover:to-transparent hover:pl-6 transition-all duration-200 rounded"
+                        >
+                          {link}
+                        </Link>
+                      ))}
+                    </div>
+                  )
                 ))}
                 <hr className="border-gray-200" />
                 <Link to="/about" className="hover:text-nsut-maroon transition-colors duration-200 font-medium">
