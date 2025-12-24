@@ -180,9 +180,9 @@ const CareerPage = () => {
                 <div className={`h-2 bg-gradient-to-r ${domain.color}`}></div>
                 
                 <div className="p-8">
-                  <div className="flex items-start justify-between mb-6">
-                    <div className="flex-grow">
-                      <h3 className="font-serif text-2xl font-bold text-nsut-maroon mb-2 group-hover:text-[#800000] transition-colors">
+                  <div className="flex items-start justify-between mb-6 gap-4">
+                    <div className="flex-grow min-w-0">
+                      <h3 className="font-serif text-2xl font-bold text-nsut-maroon mb-2 group-hover:text-[#800000] transition-colors leading-tight">
                         {domain.title}
                       </h3>
                       <div className="flex items-center gap-2">
