@@ -7,7 +7,7 @@ const IconCtaSection = () => {
       icon: Calendar,
       text: "Attend an Event",
       description: "Join upcoming reunions, workshops, and campus celebrations",
-      link: "/login",
+      link: "/events/attend",
       gradient: "from-nsut-maroon to-red-800",
       bgColor: "bg-red-50",
       hoverColor: "group-hover:bg-red-100"
@@ -16,7 +16,7 @@ const IconCtaSection = () => {
       icon: Users,
       text: "Explore Communities",
       description: "Connect with fellow alumni who share your interests",
-      link: "/login",
+      link: "/communities/explore",
       gradient: "from-nsut-yellow to-amber-500",
       bgColor: "bg-amber-50",
       hoverColor: "group-hover:bg-amber-100"

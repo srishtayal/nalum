@@ -3,8 +3,20 @@ import { Link } from 'react-router-dom';
 import { Facebook, Twitter, Instagram, Youtube, Linkedin } from 'lucide-react';
 
 const Footer = () => {
-  const quickNav = ["Communities", "Volunteer", "Events", "Benefits", "Giving", "Stories"];
-  const secondaryNav = ["About", "myNSUT Login", "Contact", "NSUT.edu"];
+  const quickNav = [
+    { text: "Communities", link: "/communities/explore" }, // UPDATE THIS LINK
+    { text: "Events", link: "/events/attend" }, // UPDATE THIS LINK
+    { text: "Benefits", link: "/benefits/learning" }, // UPDATE THIS LINK
+    { text: "Giving", link: "/giving" }, // ✓ Already configured
+    { text: "Stories", link: "/stories" }, // UPDATE THIS LINK
+  ];
+  const secondaryNav = [
+    { text: "About", link: "/about", external: false }, // ✓ Already configured
+    { text: "myNSUT Login", link: "/login", external: false }, // ✓ Already configured
+    { text: "Contact", link: "/about#contact", external: false }, // ✓ Links to Get in Touch section on About page
+    { text: "NSUT.edu", link: "https://www.nsut.ac.in/", external: true }, // ✓ EXAMPLE: External link
+  ];
+
   const socialLinks = [
     { icon: Facebook, href: "#", label: "Facebook" },
     { icon: Twitter, href: "#", label: "Twitter" },
@@ -124,12 +136,13 @@ const Footer = () => {
                   <h3 className="font-serif text-lg font-semibold mb-4 footer-heading">Quick Navigation</h3>
                   <ul className="space-y-3">
                     {quickNav.map(item => (
-                      <li key={item}>
+                      <li key={item.text}>
                         <Link 
-                          to={`/${item.toLowerCase()}`} 
+                          to={item.link} 
                           className="footer-link text-gray-200"
+                          onClick={() => window.scrollTo(0, 0)}
                         >
-                          {item}
+                          {item.text}
                         </Link>
                       </li>
                     ))}
@@ -139,13 +152,30 @@ const Footer = () => {
                   <h3 className="font-serif text-lg font-semibold mb-4 footer-heading">More</h3>
                   <ul className="space-y-3">
                     {secondaryNav.map(item => (
-                      <li key={item}>
-                        <Link 
-                          to={`/${item.toLowerCase().replace(' ', '-')}`} 
-                          className="footer-link text-gray-200"
-                        >
-                          {item}
-                        </Link>
+                      <li key={item.text}>
+                        {item.external ? (
+                          <a 
+                            href={item.link}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="footer-link text-gray-200"
+                          >
+                            {item.text}
+                          </a>
+                        ) : (
+                          <Link 
+                            to={item.link} 
+                            className="footer-link text-gray-200"
+                            onClick={() => {
+                              // Only scroll to top if not Contact (which uses anchor link)
+                              if (item.text !== "Contact") {
+                                window.scrollTo(0, 0);
+                              }
+                            }}
+                          >
+                            {item.text}
+                          </Link>
+                        )}
                       </li>
                     ))}
                   </ul>

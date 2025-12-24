@@ -8,11 +8,6 @@ const BenefitsSection = () => {
       variant: 'primary' as const
     },
     {
-      label: 'NSUTConnect+',
-      icon: Globe,
-      variant: 'secondary' as const
-    },
-    {
       label: 'Library E-Resources',
       icon: BookOpen,
       variant: 'secondary' as const

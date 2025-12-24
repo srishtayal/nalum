@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/select";
 import { Eye, EyeOff, Mail, Lock, Briefcase } from "lucide-react";
 import { toast } from "sonner";
-import nsutLogo from "@/assets/nsut-logo.svg";
+import nsutLogo from "@/assets/logo.webp";
 import nsutCampusHero from "@/assets/hero.webp";
 import apiClient from "@/lib/api";
 import { useAuth } from "@/context/AuthContext";
@@ -212,9 +212,17 @@ const Login = () => {
           className="absolute inset-0 h-full w-full object-cover"
         />
         <div className="absolute inset-0 bg-black/50" />
-        <Link to="/" className="relative z-10 flex items-center gap-3 text-white">
-          <img src={nsutLogo} alt="NSUT Logo" width="40" height="40" className="h-10 w-10 " />
-          <span className="text-2xl font-serif font-semibold">NALUM</span>
+        <Link to="/" className="relative z-10 flex items-center gap-3">
+          <img src={nsutLogo} alt="Logo" width="80" height="80" className="h-16 md:h-20 w-auto object-contain" />
+          <div className="flex flex-col items-start">
+            <h1 className="text-xl md:text-2xl font-bold leading-none tracking-wide text-white whitespace-nowrap">
+              <span className="text-red-600">N</span>SUT
+              <span className="text-red-600"> ALUM</span>NI
+            </h1>
+            <span className="block text-[8px] md:text-xs text-white/90 font-bold tracking-widest">
+              ASSOCIATION
+            </span>
+          </div>
         </Link>
         <div className="relative z-10 text-white">
           <h1 className="text-4xl font-serif font-bold">
@@ -238,8 +246,16 @@ const Login = () => {
           {/* Header */}
           <div>
             <Link to="/" className="lg:hidden flex items-center gap-3 text-nsut-maroon mb-6 justify-center">
-              <img src={nsutLogo} alt="NSUT Logo" className="h-8 w-8" />
-              <span className="text-2xl font-serif font-semibold">NALUM</span>
+              <img src={nsutLogo} alt="Logo" className="h-12 w-auto object-contain" />
+              <div className="flex flex-col items-start">
+                <h1 className="text-lg font-bold leading-none tracking-wide text-nsut-maroon whitespace-nowrap">
+                  <span className="text-red-600">N</span>SUT
+                  <span className="text-red-600"> ALUM</span>NI
+                </h1>
+                <span className="block text-[7px] text-gray-700 font-bold tracking-widest">
+                  ASSOCIATION
+                </span>
+              </div>
             </Link>
             <h2 className="text-center text-3xl lg:text-4xl font-bold tracking-tight text-gray-900">
               Sign in to your account

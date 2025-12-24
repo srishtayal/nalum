@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Mail, Phone, MapPin, Users, Heart, Target, Award, Linkedin, Building2, GraduationCap } from 'lucide-react';
+import { useLocation } from 'react-router-dom';
 
 // ============================================
 // TEAM MEMBERS CONFIGURATION
@@ -75,6 +76,19 @@ const studentMembers: TeamMember[] = [
 
 const AboutPage = () => {
   const [activeTab, setActiveTab] = useState<'about' | 'team'>('about');
+  const location = useLocation();
+
+  // Scroll to hash anchor when component mounts or hash changes
+  useEffect(() => {
+    if (location.hash) {
+      const element = document.querySelector(location.hash);
+      if (element) {
+        const yOffset = -100; // Offset for fixed header
+        const y = element.getBoundingClientRect().top + window.pageYOffset + yOffset;
+        window.scrollTo({ top: y, behavior: 'smooth' });
+      }
+    }
+  }, [location]);
 
   const values = [
     {
@@ -241,7 +255,7 @@ const AboutPage = () => {
             </div>
 
             {/* Contact Information */}
-            <div className="mb-8">
+            <div className="mb-8" id="contact">
               <div className="bg-white rounded-2xl shadow-xl p-8 md:p-12 border border-gray-100">
                 <h2 className="font-serif text-4xl font-bold text-nsut-maroon mb-8 text-center">
                   Get in Touch
