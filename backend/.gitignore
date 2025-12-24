@@ -4,3 +4,13 @@
 # uploads
 uploads/posts/*
 !uploads/posts/.gitkeep
+
+# Ignore all files in upload directories but keep the folders
+uploads/event-images/*
+uploads/newsletters/*
+uploads/profile-pictures/*
+
+# Keep the directories themselves
+!uploads/event-images/.gitkeep
+!uploads/newsletters/.gitkeep
+!uploads/profile-pictures/.gitkeep

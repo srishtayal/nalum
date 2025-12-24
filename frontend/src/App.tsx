@@ -29,6 +29,8 @@ const ChatPage = lazy(() => import("@/pages/dashboard/chat/ChatPage").then(modul
 const Events = lazy(() => import("@/pages/dashboard/Events"));
 const HostEvent = lazy(() => import("@/pages/dashboard/HostEvent"));
 const MyPosts = lazy(() => import("@/pages/dashboard/MyPosts"));
+const Queries = lazy(() => import("@/pages/dashboard/Queries"));
+const Giving = lazy(() => import("@/pages/dashboard/Giving"));
 const Root = lazy(() => import("@/pages/Root"));
 const SignUp = lazy(() => import("@/pages/auth/SignUp"));
 const AdminProtectedRoute = lazy(() => import("./components/admin/AdminProtectedRoute"));
@@ -43,6 +45,9 @@ const Newsletters = lazy(() => import("./pages/admin/Newsletters"));
 const BannedUsers = lazy(() => import("./pages/admin/BannedUsers"));
 const CodeManagement = lazy(() => import("./pages/admin/CodeManagement"));
 const AlumniDatabase = lazy(() => import("./pages/admin/AlumniDatabase"));
+const Reports = lazy(() => import("./pages/admin/Reports"));
+const QueryManagement = lazy(() => import("./pages/admin/QueryManagement"));
+const GivingManagement = lazy(() => import("./pages/admin/GivingManagement"));
 const NotableAlumni = lazy(() => import("./pages/stories/notableAlumni"));
 const AlumniStories = lazy(() => import("./pages/stories/alumniStories"));
 const GivingStories = lazy(() => import("./pages/stories/givingStories"));
@@ -159,98 +164,103 @@ function AppContent() {
           <Route path="/about" element={<AboutPage />} />
         </Route>
 
-        {/* Auth Routes (without header/footer) */}
-        <Route path="/login" element={<Login />} />
-        <Route path="/signup" element={<SignUp />} />
-        <Route path="/otp-verification" element={<OtpVerificationPage />} />
-        <Route path="/profile-form" element={<ProfileForm />} />
+            {/* Auth Routes (without header/footer) */}
+            <Route path="/login" element={<Login />} />
+            <Route path="/signup" element={<SignUp />} />
+            <Route path="/otp-verification" element={<OtpVerificationPage />} />
+            <Route path="/profile-form" element={<ProfileForm />} />
 
-        {/* Verification Route - requires auth but not verification */}
-        <Route
-          path="/dashboard/verify-alumni"
-          element={
-            <ProtectedRoute>
-              <VerifyAlumni />
-            </ProtectedRoute>
-          }
-        />
+            {/* Verification Route - requires auth but not verification */}
+            <Route
+              path="/dashboard/verify-alumni"
+              element={
+                <ProtectedRoute>
+                  <VerifyAlumni />
+                </ProtectedRoute>
+              }
+            />
 
-        {/* Protected Dashboard Routes - require verification */}
-        <Route
-          element={
-            <ProtectedRoute>
-              <ProtectedVerificationRoute>
-                <ChatProvider>
-                  <DashboardLayout />
-                </ChatProvider>
-              </ProtectedVerificationRoute>
-            </ProtectedRoute>
-          }
-        >
-          <Route path="/dashboard" element={<DashboardHome />} />
-          <Route path="/dashboard/profile" element={<ShowProfile />} />
-          <Route path="/dashboard/update-profile" element={<UpdateProfile />} />
-          <Route path="/dashboard/alumni" element={<AlumniDirectory />} />
-          <Route path="/dashboard/alumni/:userId" element={<ViewProfile />} />
-          <Route path="/dashboard/connections" element={<ConnectionsPage />} />
-          <Route
-            path="/dashboard/chat/*"
-            element={
-              <Routes>
-                <Route index element={<ChatPage />} />
-                <Route path=":conversationId" element={<ChatPage />} />
-              </Routes>
-            }
-          />
-          <Route path="/dashboard/events" element={<Events />} />
-          <Route path="/dashboard/posts" element={<MyPosts />} />
-          <Route path="/dashboard/host-event" element={<HostEvent />} />
-        </Route>
+            {/* Protected Dashboard Routes - require verification */}
+            <Route
+              element={
+                <ProtectedRoute>
+                  <ProtectedVerificationRoute>
+                    <ChatProvider>
+                      <DashboardLayout />
+                    </ChatProvider>
+                  </ProtectedVerificationRoute>
+                </ProtectedRoute>
+              }
+            >
+              <Route path="/dashboard" element={<DashboardHome />} />
+              <Route path="/dashboard/profile" element={<ShowProfile />} />
+              <Route path="/dashboard/update-profile" element={<UpdateProfile />} />
+              <Route path="/dashboard/alumni" element={<AlumniDirectory />} />
+              <Route path="/dashboard/alumni/:userId" element={<ViewProfile />} />
+              <Route path="/dashboard/connections" element={<ConnectionsPage />} />
+              <Route
+                path="/dashboard/chat/*"
+                element={
+                  <Routes>
+                    <Route index element={<ChatPage />} />
+                    <Route path=":conversationId" element={<ChatPage />} />
+                  </Routes>
+                }
+              />
+              <Route path="/dashboard/events" element={<Events />} />
+              <Route path="/dashboard/posts" element={<MyPosts />} />
+              <Route path="/dashboard/host-event" element={<HostEvent />} />
+              <Route path="/dashboard/queries" element={<Queries />} />
+              <Route path="/dashboard/giving" element={<Giving />} />
+            </Route>
 
-        {/* Admin Panel Routes - Use main login, role-based access */}
-        <Route element={<AdminProtectedRoute />}>
-          <Route path="/admin-panel/dashboard" element={<AdminDashboard />} />
-          <Route
-            path="/admin-panel/verification"
-            element={<VerificationQueue />}
-          />
-          <Route
-            path="/admin-panel/verifications"
-            element={<VerificationQueue />}
-          />
-          <Route path="/admin-panel/users" element={<UserManagement />} />
-          <Route path="/admin-panel/events" element={<EventApprovals />} />
-          <Route
-            path="/admin-panel/current-events"
-            element={<CurrentEvents />}
-          />
-          <Route
-            path="/admin-panel/posts-approval"
-            element={<PostsApproval />}
-          />
+            {/* Admin Panel Routes - Use main login, role-based access */}
+            <Route element={<AdminProtectedRoute />}>
+              <Route path="/admin-panel/dashboard" element={<AdminDashboard />} />
+              <Route
+                path="/admin-panel/verification"
+                element={<VerificationQueue />}
+              />
+              <Route
+                path="/admin-panel/verifications"
+                element={<VerificationQueue />}
+              />
+              <Route path="/admin-panel/users" element={<UserManagement />} />
+              <Route path="/admin-panel/events" element={<EventApprovals />} />
+              <Route
+                path="/admin-panel/current-events"
+                element={<CurrentEvents />}
+              />
+              <Route
+                path="/admin-panel/posts-approval"
+                element={<PostsApproval />}
+              />
           <Route path="/admin-panel/current-posts" element={<CurrentPosts />} />
           <Route path="/admin-panel/newsletters" element={<Newsletters />} />
-          <Route path="/admin-panel/banned" element={<BannedUsers />} />
-          <Route path="/admin-panel/codes" element={<CodeManagement />} />
-          <Route
-            path="/admin-panel/alumni-database"
-            element={<AlumniDatabase />}
-          />
-        </Route>
-        <Route
-          path="/admin-panel"
-          element={<Navigate to="/admin-panel/dashboard" replace />}
-        />
-        <Route
-          path="/admin-panel/login"
-          element={<Navigate to="/login" replace />}
-        />
+              <Route path="/admin-panel/banned" element={<BannedUsers />} />
+              <Route path="/admin-panel/codes" element={<CodeManagement />} />
+              <Route
+                path="/admin-panel/alumni-database"
+                element={<AlumniDatabase />}
+              />
+              <Route path="/admin-panel/reports" element={<Reports />} />
+              <Route path="/admin-panel/queries" element={<QueryManagement />}/>
+              <Route path="/admin-panel/givings" element={<GivingManagement />}/>
+            </Route>
+            <Route
+              path="/admin-panel"
+              element={<Navigate to="/admin-panel/dashboard" replace />}
+            />
+            <Route
+              path="/admin-panel/login"
+              element={<Navigate to="/login" replace />}
+            />
 
-        {/* 404 Route */}
-        <Route path="*" element={<NotFound />} />
+            {/* 404 Route */}
+            <Route path="*" element={<NotFound />} />
           </Routes>
         </Suspense>
-      <Toaster />
+        <Toaster />
       </TooltipProvider>
     </>
   );

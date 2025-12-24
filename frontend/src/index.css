@@ -85,4 +85,14 @@
       transform: translateY(0);
     }
   }
+
+  .animate-blink-twice {
+    animation: blinkTwice 1.5s ease-in-out;
+  }
+
+  @keyframes blinkTwice {
+    0%, 100% { border-color: rgb(59 130 246); }
+    25%, 75% { border-color: rgb(147 197 253); }
+    50% { border-color: rgb(59 130 246); }
+  }
 }

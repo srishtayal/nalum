@@ -1,9 +1,0 @@
-# Ignore all files in upload directories but keep the folders
-event-images/*
-newsletters/*
-profile-pictures/*
-
-# Keep the directories themselves
-!event-images/.gitkeep
-!newsletters/.gitkeep
-!profile-pictures/.gitkeep
