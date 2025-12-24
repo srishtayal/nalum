@@ -6,6 +6,7 @@ import nsutLogo from "@/assets/logo.webp";
 const Header = ({ setHeaderHeight }) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [localHeaderHeight, setLocalHeaderHeight] = useState(0);
   const headerRef = useRef<HTMLDivElement>(null);
   const logoRef = useRef<HTMLImageElement>(null);
   // --- Hardcoded Nav Links ---
@@ -32,7 +33,9 @@ const Header = ({ setHeaderHeight }) => {
 
     const updateHeight = () => {
       if (headerRef.current) {
-        setHeaderHeight(headerRef.current.offsetHeight);
+        const height = headerRef.current.offsetHeight;
+        setHeaderHeight(height);
+        setLocalHeaderHeight(height);
       }
     };
 
@@ -172,12 +175,17 @@ const Header = ({ setHeaderHeight }) => {
         {/* === MOBILE MENU === */}
         {isMobileMenuOpen && (
           <div
-            className="fixed inset-0 bg-black bg-opacity-50 z-40 md:hidden transition-opacity duration-300"
+            className="fixed inset-0 bg-black bg-opacity-50 z-[60] md:hidden transition-opacity duration-300"
             onClick={() => setIsMobileMenuOpen(false)}
+            style={{ top: `${localHeaderHeight}px` }}
           >
             <div
-              className="fixed inset-y-0 left-0 w-64 bg-white shadow-lg z-50 p-4 transform transition-transform duration-300 overflow-y-auto"
+              className="fixed top-0 left-0 w-72 bg-white shadow-lg z-[70] p-6 transform transition-transform duration-300 overflow-y-auto max-h-screen"
               onClick={(e) => e.stopPropagation()}
+              style={{ 
+                top: `${localHeaderHeight}px`,
+                maxHeight: `calc(100vh - ${localHeaderHeight}px)`
+              }}
             >
               <div className="flex justify-between items-center mb-6">
                 <div className="flex flex-col items-start">
@@ -201,15 +209,20 @@ const Header = ({ setHeaderHeight }) => {
               <nav className="flex flex-col space-y-4 pb-8">
                 {/* Mobile CTAs at top for visibility */}
                 <div className="flex flex-col gap-3 mb-4">
-                  <Link to="/login" className="bg-nsut-maroon text-white font-bold py-2 px-4 rounded hover:shadow-lg hover:scale-105 transition-all duration-300 text-center">
+                  <Link 
+                    to="/login" 
+                    className="bg-nsut-maroon text-white font-bold py-2 px-4 rounded hover:shadow-lg hover:scale-105 transition-all duration-300 text-center"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
                     myNSUT Login
                   </Link>
-                  <a
-                    href="/giving"
+                  <Link
+                    to="/giving"
                     className="bg-nsut-yellow text-nsut-maroon font-bold py-2 px-4 rounded hover:shadow-lg hover:scale-105 transition-all duration-300 text-center"
+                    onClick={() => setIsMobileMenuOpen(false)}
                   >
                     Make a Gift
-                  </a>
+                  </Link>
                 </div>
                 <hr className="border-gray-200" />
 
@@ -219,6 +232,7 @@ const Header = ({ setHeaderHeight }) => {
                       key={title}
                       to="/giving"
                       className="font-serif text-nsut-maroon font-semibold hover:underline transition-all duration-200"
+                      onClick={() => setIsMobileMenuOpen(false)}
                     >
                       {title}
                     </Link>
@@ -236,6 +250,7 @@ const Header = ({ setHeaderHeight }) => {
                               .toLowerCase()
                               .replace(/ /g, "-")}`}
                           className="block pl-4 py-1 text-sm hover:bg-gradient-to-r hover:from-nsut-beige hover:to-transparent hover:pl-6 transition-all duration-200 rounded"
+                          onClick={() => setIsMobileMenuOpen(false)}
                         >
                           {link}
                         </Link>
@@ -244,7 +259,11 @@ const Header = ({ setHeaderHeight }) => {
                   )
                 ))}
                 <hr className="border-gray-200" />
-                <Link to="/about" className="hover:text-nsut-maroon transition-colors duration-200 font-medium">
+                <Link 
+                  to="/about" 
+                  className="hover:text-nsut-maroon transition-colors duration-200 font-medium"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
                   About
                 </Link>
               </nav>

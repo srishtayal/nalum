@@ -38,32 +38,26 @@ const carouselImages = [
 
 const RecentGradsPage = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
-  const [isAutoPlaying, setIsAutoPlaying] = useState(true);
 
   // Auto-play carousel
   useEffect(() => {
-    if (!isAutoPlaying) return;
-    
     const timer = setInterval(() => {
       setCurrentSlide((prev) => (prev + 1) % carouselImages.length);
     }, 5000); // Change slide every 5 seconds
 
     return () => clearInterval(timer);
-  }, [isAutoPlaying]);
+  }, [currentSlide]);
 
   const nextSlide = () => {
     setCurrentSlide((prev) => (prev + 1) % carouselImages.length);
-    setIsAutoPlaying(false);
   };
 
   const prevSlide = () => {
     setCurrentSlide((prev) => (prev - 1 + carouselImages.length) % carouselImages.length);
-    setIsAutoPlaying(false);
   };
 
   const goToSlide = (index: number) => {
     setCurrentSlide(index);
-    setIsAutoPlaying(false);
   };
 
   const distinguishedGuests = [
@@ -182,21 +176,25 @@ const RecentGradsPage = () => {
                       : 'opacity-0 scale-105'
                   }`}
                 >
-                  {/* Placeholder gradient - Replace with actual images */}
-                  <div className="w-full h-full bg-gradient-to-br from-nsut-maroon via-[#800000] to-nsut-yellow flex items-center justify-center">
-                    <div className="text-center text-white p-8">
-                      <Sparkles className="w-16 h-16 mx-auto mb-4 opacity-50" />
-                      <p className="text-xl font-semibold mb-2">{image.alt}</p>
-                      <p className="text-sm opacity-75">Add image at: {image.src}</p>
-                    </div>
-                  </div>
-                  {/* When you add actual images, uncomment this and remove the placeholder above:
                   <img
                     src={image.src}
                     alt={image.alt}
                     className="w-full h-full object-cover"
+                    onError={(e) => {
+                      // Fallback to gradient if image fails to load
+                      const target = e.target as HTMLImageElement;
+                      target.style.display = 'none';
+                      const fallback = document.createElement('div');
+                      fallback.className = 'w-full h-full bg-gradient-to-br from-nsut-maroon via-[#800000] to-nsut-yellow flex items-center justify-center';
+                      fallback.innerHTML = `
+                        <div class="text-center text-white p-8">
+                          <p class="text-xl font-semibold mb-2">${image.alt}</p>
+                          <p class="text-sm opacity-75">Image not found at: ${image.src}</p>
+                        </div>
+                      `;
+                      target.parentElement?.appendChild(fallback);
+                    }}
                   />
-                  */}
                   
                   {/* Caption Overlay */}
                   <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 via-black/50 to-transparent p-6">
