@@ -1,16 +1,5 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import {
-  LayoutDashboard,
-  Users,
-  CheckCircle,
-  Calendar,
-  CalendarCheck,
-  FileText,
-  Ban,
-  LogOut,
-  Key,
-  Database,
-} from "lucide-react";
+import { LayoutDashboard, Users, CheckCircle, Calendar, CalendarCheck, FileText, Ban, LogOut, Key, Database, AlertTriangle, MessageSquare, Heart } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
 
 /**
@@ -66,6 +55,21 @@ const AdminSidebar = () => {
       name: "Current Posts",
       path: "/admin-panel/current-posts",
       icon: FileText,
+    },
+    {
+      name: "Query Management",
+      path: "/admin-panel/queries",
+      icon: MessageSquare,
+    },
+    {
+      name: "Giving Management",
+      path: "/admin-panel/givings",
+      icon: Heart,
+    },
+    {
+      name: "Reports",
+      path: "/admin-panel/reports",
+      icon: AlertTriangle,
     },
     {
       name: "Newsletters",

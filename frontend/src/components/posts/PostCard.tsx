@@ -1,17 +1,16 @@
 import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { formatDistanceToNow } from "date-fns";
-import { Clock, Edit, Trash2, AlertCircle, RefreshCw } from "lucide-react";
+import { Clock, Edit, Trash2, AlertCircle, ChevronLeft, ChevronRight, X, Flag } from "lucide-react";
 import UserAvatar from "@/components/UserAvatar";
+import api from "@/lib/api";
 import { BASE_URL } from "@/lib/constants";
 import { useProfile } from "@/context/ProfileContext";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import {
-  Dialog,
-  DialogContent,
-  DialogTrigger,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import ReportDialog from "@/components/reports/ReportDialog";
 
 interface Post {
   _id: string;
@@ -49,8 +48,11 @@ const PostCard = ({
   const navigate = useNavigate();
   const isAuthor = profile?.user?._id === post.userId._id;
   const [isExpanded, setIsExpanded] = useState(false);
+  const [isReportDialogOpen, setIsReportDialogOpen] = useState(false);
+  const [hasReported, setHasReported] = useState(false);
   const [isTruncated, setIsTruncated] = useState(false);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const contentRef = useRef<HTMLDivElement>(null);
 
   const handleUserClick = (e: React.MouseEvent) => {
@@ -65,6 +67,20 @@ const PostCard = ({
       );
     }
   }, [post.content, isExpanded]);
+
+  useEffect(() => {
+    const checkReportStatus = async () => {
+      if (!isAuthor) {
+        try {
+          const { data } = await api.get(`/reports/post/${post._id}/check`);
+          setHasReported(data.hasReported);
+        } catch (error) {
+          console.error("Error checking report status:", error);
+        }
+      }
+    };
+    checkReportStatus();
+  }, [post._id, isAuthor]);
 
   const getImageUrl = (imagePath: string) => {
     if (imagePath.startsWith("http")) return imagePath;
@@ -95,37 +111,75 @@ const PostCard = ({
     return <Badge className={`${config.color} border`}>{config.text}</Badge>;
   };
 
+  const goToNextImage = () => {
+    setCurrentImageIndex((prev) =>
+      prev === post.images.length - 1 ? 0 : prev + 1
+    );
+  };
+
+  const goToPreviousImage = () => {
+    setCurrentImageIndex((prev) =>
+      prev === 0 ? post.images.length - 1 : prev - 1
+    );
+  };
+
+  const goToImage = (index: number) => {
+    setCurrentImageIndex(index);
+  };
+
+  const handleImageClick = () => {
+    setSelectedImage(getImageUrl(post.images[currentImageIndex]));
+  };
+
   return (
-    <div className="relative bg-white/5 border border-white/10 backdrop-blur-md rounded-xl p-4 md:p-6 hover:bg-white/10 transition duration-200">
-      {isAuthor && (
-        <div className="absolute top-4 right-4 flex gap-2">
-          {post.status === "rejected" ? (
+    <div className="relative bg-white/5 border border-white/10 backdrop-blur-md rounded-xl p-6 hover:bg-white/10 transition duration-200">
+      {/* Action buttons in top-right */}
+      <div className="absolute top-4 right-4 flex gap-2">
+        {isAuthor ? (
+          <>
+            {post.status !== "rejected" && (
+              <button
+                onClick={() => onEdit?.(post)}
+                className="p-2 text-gray-400 hover:text-blue-400 hover:bg-blue-500/10 rounded-full transition-colors"
+                title="Edit Post"
+              >
+                <Edit className="w-4 h-4" />
+              </button>
+            )}
             <button
-              onClick={() => onEdit?.(post)}
-              className="px-3 py-1.5 text-sm font-medium text-green-400 bg-green-500/10 hover:bg-green-500/20 border border-green-500/30 rounded-lg transition-colors flex items-center gap-1.5"
-              title="Reapply Post"
+              onClick={() => onDelete?.(post._id)}
+              className="p-2 text-gray-400 hover:text-red-400 hover:bg-red-500/10 rounded-full transition-colors"
+              title="Delete Post"
             >
-              <RefreshCw className="w-3.5 h-3.5" />
-              Reapply
+              <Trash2 className="w-4 h-4" />
             </button>
-          ) : (
-            <button
-              onClick={() => onEdit?.(post)}
-              className="p-2 text-gray-400 hover:text-blue-400 hover:bg-blue-500/10 rounded-full transition-colors"
-              title="Edit Post"
-            >
-              <Edit className="w-4 h-4" />
-            </button>
-          )}
-          <button
-            onClick={() => onDelete?.(post._id)}
-            className="p-2 text-gray-400 hover:text-red-400 hover:bg-red-500/10 rounded-full transition-colors"
-            title="Delete Post"
-          >
-            <Trash2 className="w-4 h-4" />
-          </button>
-        </div>
-      )}
+          </>
+        ) : (
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button
+                  onClick={() => !hasReported && setIsReportDialogOpen(true)}
+                  className={`p-2 rounded-full transition-colors ${
+                    hasReported
+                      ? "text-red-500 cursor-not-allowed"
+                      : "text-gray-400 hover:text-red-400 hover:bg-red-500/10"
+                  }`}
+                  title={hasReported ? "Already reported" : "Report Post"}
+                  disabled={hasReported}
+                >
+                  <Flag className="w-4 h-4" />
+                </button>
+              </TooltipTrigger>
+              {hasReported && (
+                <TooltipContent>
+                  <p>Already reported</p>
+                </TooltipContent>
+              )}
+            </Tooltip>
+          </TooltipProvider>
+        )}
+      </div>
 
       {/* Header */}
       <div className="flex items-center gap-3 mb-4">
@@ -179,7 +233,7 @@ const PostCard = ({
           <div
             ref={contentRef}
             className={`text-gray-300 whitespace-pre-wrap break-words leading-relaxed ${!isExpanded ? "line-clamp-4" : ""
-              }`}
+            }`}
           >
             {post.content}
           </div>
@@ -204,31 +258,156 @@ const PostCard = ({
 
       {/* Images */}
       {post.images && post.images.length > 0 && (
-        <div className="mt-4 flex flex-col gap-4">
-          {post.images.map((image, index) => (
-            <Dialog key={index}>
-              <DialogTrigger asChild>
+        <div className="mt-4 relative">
+          {/* Progress Indicators - Only show if multiple images */}
+          {post.images.length > 1 && (
+            <div className="absolute top-3 left-1/2 transform -translate-x-1/2 z-10 flex gap-1.5">
+              {post.images.map((_, index) => (
                 <div
-                  className="relative overflow-hidden rounded-lg border border-white/10 group w-full cursor-zoom-in"
-                >
-                  <img
-                    src={getImageUrl(image)}
-                    alt={`Post attachment ${index + 1}`}
-                    className="w-full h-auto max-h-[800px] object-contain transition-transform duration-500 group-hover:scale-105"
-                  />
-                </div>
-              </DialogTrigger>
-              <DialogContent className="max-w-[90vw] max-h-[90vh] bg-transparent border-none p-0 flex items-center justify-center">
-                <img
-                  src={getImageUrl(image)}
-                  alt={`Post attachment ${index + 1}`}
-                  className="w-full h-full max-h-[90vh] object-contain rounded-lg"
+                  key={index}
+                  onClick={() => goToImage(index)}
+                  className={`h-0.5 rounded-full cursor-pointer transition-all duration-300 ${
+                    index === currentImageIndex
+                      ? "bg-white w-8"
+                      : "bg-white/50 w-8 hover:bg-white/70"
+                  }`}
                 />
-              </DialogContent>
-            </Dialog>
-          ))}
+              ))}
+            </div>
+          )}
+
+          {/* Image Container - Single image display */}
+          <div
+            className="relative overflow-hidden rounded-lg border border-white/10 group cursor-pointer"
+            onClick={handleImageClick}
+          >
+            <img
+              src={getImageUrl(post.images[currentImageIndex])}
+              alt={`Post image ${currentImageIndex + 1} of ${
+                post.images.length
+              }`}
+              className="w-full h-auto max-h-[600px] object-contain transition-transform duration-500 group-hover:scale-105"
+            />
+
+            {/* Navigation Arrows - Only show if multiple images */}
+            {post.images.length > 1 && (
+              <>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    goToPreviousImage();
+                  }}
+                  className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+                  aria-label="Previous image"
+                >
+                  <ChevronLeft className="w-5 h-5" />
+                </button>
+
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    goToNextImage();
+                  }}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+                  aria-label="Next image"
+                >
+                  <ChevronRight className="w-5 h-5" />
+                </button>
+              </>
+            )}
+
+            {/* Image Counter - Only show if multiple images */}
+            {post.images.length > 1 && (
+              <div className="absolute bottom-3 right-3 bg-black/70 text-white text-xs px-2.5 py-1 rounded-full font-medium">
+                {currentImageIndex + 1} / {post.images.length}
+              </div>
+            )}
+          </div>
         </div>
       )}
+
+      {/* Enlarged Image Modal using Dialog */}
+      {selectedImage && post.images && post.images.length > 0 && (
+        <Dialog
+          open={!!selectedImage}
+          onOpenChange={() => setSelectedImage(null)}
+        >
+          <DialogContent className="max-w-[95vw] max-h-[95vh] p-0 bg-black border-none">
+            {/* Close Button - TOP RIGHT */}
+            <button
+              onClick={() => setSelectedImage(null)}
+              className="absolute top-4 right-4 text-white hover:text-gray-300 p-2 bg-black/50 hover:bg-black/70 rounded-full transition-colors z-50"
+              aria-label="Close"
+            >
+              <X className="w-6 h-6" />
+            </button>
+
+            {/* Progress Indicators - TOP CENTER */}
+            {post.images.length > 1 && (
+              <div className="absolute top-4 left-1/2 transform -translate-x-1/2 z-50 flex gap-2">
+                {post.images.map((_, index) => (
+                  <div
+                    key={index}
+                    onClick={() => goToImage(index)}
+                    className={`h-1 rounded-full cursor-pointer transition-all duration-300 ${
+                      index === currentImageIndex
+                        ? "bg-white w-12"
+                        : "bg-white/50 w-12 hover:bg-white/70"
+                    }`}
+                  />
+                ))}
+              </div>
+            )}
+
+            {/* Image Container */}
+            <div className="relative w-full h-[90vh] flex items-center justify-center">
+              <img
+                src={getImageUrl(post.images[currentImageIndex])}
+                alt={`Post image ${currentImageIndex + 1} of ${
+                  post.images.length
+                }`}
+                className="max-w-full max-h-full object-contain"
+              />
+
+              {/* Navigation Arrows */}
+              {post.images.length > 1 && (
+                <>
+                  <button
+                    onClick={goToPreviousImage}
+                    className="absolute left-4 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-3 rounded-full transition-colors"
+                    aria-label="Previous image"
+                  >
+                    <ChevronLeft className="w-6 h-6" />
+                  </button>
+
+                  <button
+                    onClick={goToNextImage}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-3 rounded-full transition-colors"
+                    aria-label="Next image"
+                  >
+                    <ChevronRight className="w-6 h-6" />
+                  </button>
+                </>
+              )}
+
+              {/* Image Counter */}
+              {post.images.length > 1 && (
+                <div className="absolute bottom-4 right-4 bg-black/70 text-white px-3 py-1.5 rounded-full text-sm font-medium">
+                  {currentImageIndex + 1} / {post.images.length}
+                </div>
+              )}
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
+
+      {/* Report Dialog */}
+      <ReportDialog
+        postId={post._id}
+        isOpen={isReportDialogOpen}
+        onClose={() => setIsReportDialogOpen(false)}
+        onReportSubmitted={() => setHasReported(true)}
+      />
     </div>
   );
 };

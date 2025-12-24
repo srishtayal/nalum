@@ -1,5 +1,18 @@
 const Post = require("../models/posts/post.model");
 const User = require("../models/user/user.model");
+const Settings = require("../models/admin/settings.model");
+
+// Helper function to check if posts should be auto-approved
+async function shouldAutoApprove() {
+  try {
+    const setting = await Settings.findOne({ key: "auto_post_approval" });
+    // Return true if value is 1 (Auto), false otherwise (0 or not found = Manual)
+    return setting?.value === 1;
+  } catch (error) {
+    console.error("Error checking auto approval setting:", error);
+    return false; // Default to manual mode on error
+  }
+}
 
 exports.createPost = async (req, res) => {
   try {
@@ -23,12 +36,15 @@ exports.createPost = async (req, res) => {
     const { title, content } = req.body;
     const images = req.files ? req.files.map((file) => file.filename) : [];
 
+    // Check if posts should be auto-approved
+    const autoApprove = await shouldAutoApprove();
+
     const post = await Post.create({
       title,
       content,
       images,
       userId: user_id,
-      status: "pending",
+      status: autoApprove ? "approved" : "pending",
     });
 
     return res.status(201).json({
@@ -209,15 +225,18 @@ exports.updatePost = async (req, res) => {
     if (content) post.content = content;
     if (newImages.length > 0) post.images = newImages;
 
-    // If post was rejected, reset to pending and clear rejection reason for resubmission
+    // Check if posts should be auto-approved
+    const autoApprove = await shouldAutoApprove();
+
+    // If post was rejected, reset based on approval mode and clear rejection reason for resubmission
     if (post.status === "rejected") {
-      post.status = "pending";
+      post.status = autoApprove ? "approved" : "pending";
       post.rejection_reason = null;
     }
 
-    // If post was approved, reset to pending for re-approval
+    // If post was approved, reset based on approval mode for re-approval
     if (post.status === "approved") {
-      post.status = "pending";
+      post.status = autoApprove ? "approved" : "pending";
     }
 
     await post.save();
