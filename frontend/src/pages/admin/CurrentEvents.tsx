@@ -59,6 +59,10 @@ const CurrentEvents = () => {
   const [eventToDelete, setEventToDelete] = useState<Event | null>(null);
   const [deleting, setDeleting] = useState(false);
 
+  // Reason Dialog
+  const [reasonDialogOpen, setReasonDialogOpen] = useState(false);
+  const [selectedReason, setSelectedReason] = useState<string>("");
+
   useEffect(() => {
     fetchEvents();
   }, []);
@@ -218,6 +222,11 @@ const CurrentEvents = () => {
     }
   };
 
+  const handleShowReason = (reason: string) => {
+    setSelectedReason(reason);
+    setReasonDialogOpen(true);
+  };
+
   const getStatusBadge = (status: string) => {
     const badges = {
       pending: "bg-yellow-500/20 text-yellow-600 border-yellow-500/30",
@@ -355,6 +364,14 @@ const CurrentEvents = () => {
                         </div>
                       </div>
                       <div className="flex gap-2">
+                        {event.status === "rejected" && event.rejection_reason && (
+                          <Button
+                            onClick={() => handleShowReason(event.rejection_reason || "No reason provided")}
+                            className="bg-yellow-600 hover:bg-yellow-700 text-white px-4 py-2"
+                          >
+                            Reason
+                          </Button>
+                        )}
                         <Button
                           onClick={() => handleEditClick(event)}
                           className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2"
@@ -608,6 +625,29 @@ const CurrentEvents = () => {
                   {updating ? "Updating..." : "Update Event"}
                 </Button>
               </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+
+        {/* Rejection Reason Dialog */}
+        <Dialog open={reasonDialogOpen} onOpenChange={setReasonDialogOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Rejection Reason</DialogTitle>
+              <DialogDescription>
+                This event was rejected for the following reason:
+              </DialogDescription>
+            </DialogHeader>
+            <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+              <p className="text-red-800">{selectedReason}</p>
+            </div>
+            <div className="flex justify-end mt-4">
+              <Button
+                onClick={() => setReasonDialogOpen(false)}
+                className="bg-blue-600 hover:bg-blue-700"
+              >
+                Close
+              </Button>
             </div>
           </DialogContent>
         </Dialog>

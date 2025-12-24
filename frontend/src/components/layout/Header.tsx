@@ -7,6 +7,7 @@ import nsutLogo from "@/assets/logo.webp";
 const Header = ({ setHeaderHeight }) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [localHeaderHeight, setLocalHeaderHeight] = useState(0);
   const headerRef = useRef<HTMLDivElement>(null);
   const logoRef = useRef<HTMLImageElement>(null);
   // --- Hardcoded Nav Links ---
@@ -16,23 +17,13 @@ const Header = ({ setHeaderHeight }) => {
       "Recent Grads",
       "Industries",
     ],
-    Volunteer: ["Opportunities", "Advocacy", "Tools & Resources", "Recognition"],
-    Events: ["Calendar", "Campus Dance", "Reunions", "Medical Reunion Weekend"],
     Benefits: [
-      "NSUTConnect+",
       "Career",
       "Learning",
-      "Perks",
       "Alumni Directory",
     ],
-    Giving: [
-      "How to Give",
-      "Annual Fund",
-      "Athletics",
-      "Planned Giving",
-      "Donor Recognition",
-    ],
-    Stories: ["Notable Alumni", "Alumni Stories", "Giving Stories", "Campus News", "All Stories"],
+    Giving:[],
+    Stories: ["Notable Alumni", "Alumni Stories", "Giving Stories", "Campus News"],
   };
 
   // --- Handle scroll effects and dynamic height ---
@@ -43,7 +34,9 @@ const Header = ({ setHeaderHeight }) => {
 
     const updateHeight = () => {
       if (headerRef.current) {
-        setHeaderHeight(headerRef.current.offsetHeight);
+        const height = headerRef.current.offsetHeight;
+        setHeaderHeight(height);
+        setLocalHeaderHeight(height);
       }
     };
 
@@ -104,10 +97,10 @@ const Header = ({ setHeaderHeight }) => {
 
         {/* === MAIN NAVBAR === */}
         <div
-          className={`bg-white shadow-md transition-all duration-300 ${scrolled ? "py-4" : "py-10"
+          className={`bg-white shadow-md transition-all duration-300 overflow-visible ${scrolled ? "py-4" : "py-10"
             }`}
         >
-          <div className="container mx-auto px-4 flex justify-between items-center">
+          <div className="container mx-auto px-4 flex justify-between items-center overflow-visible">
             <Link
               to="/"
               className="flex items-center gap-3"
@@ -133,27 +126,37 @@ const Header = ({ setHeaderHeight }) => {
 
             {/* Nav Links */}
             <div className="hidden md:flex items-center space-x-8">
-              {Object.entries(navLinks).map(([title, sublinks]) => (
-                <div key={title} className="group relative">
-                  <button className="font-serif relative text-gray-800 transition-colors duration-300 hover:text-nsut-maroon after:content-[''] after:absolute after:-bottom-2 after:left-0 after:w-0 after:h-0.5 after:bg-gradient-to-r after:from-nsut-maroon after:to-nsut-yellow after:transition-all after:duration-400 after:ease-out after:rounded-sm hover:after:w-full">
+              {Object.entries(navLinks).map(([title, sublinks], index) => (
+                title === "Giving" ? (
+                  <Link
+                    key={title}
+                    to="/giving"
+                    className="font-serif relative text-gray-800 transition-colors duration-300 hover:text-nsut-maroon after:content-[''] after:absolute after:-bottom-2 after:left-0 after:w-0 after:h-0.5 after:bg-gradient-to-r after:from-nsut-maroon after:to-nsut-yellow after:transition-all after:duration-400 after:ease-out after:rounded-sm hover:after:w-full"
+                  >
                     <span className="relative">{title}</span>
-                  </button>
-                  <div className="absolute bg-white shadow-xl rounded-lg mt-2 py-2 w-48 z-10 border border-gray-100 opacity-0 invisible -translate-y-2.5 transition-all duration-300 ease-out group-hover:opacity-100 group-hover:visible group-hover:translate-y-0">
-                    {sublinks.map((link) => (
-                      <Link
-                        key={link}
-                        to={`/${title
-                          .toLowerCase()
-                          .replace(/ & /g, "-")}/${link
+                  </Link>
+                ) : (
+                  <div key={title} className="group relative">
+                    <button className="font-serif relative text-gray-800 transition-colors duration-300 hover:text-nsut-maroon after:content-[''] after:absolute after:-bottom-2 after:left-0 after:w-0 after:h-0.5 after:bg-gradient-to-r after:from-nsut-maroon after:to-nsut-yellow after:transition-all after:duration-400 after:ease-out after:rounded-sm hover:after:w-full">
+                      <span className="relative">{title}</span>
+                    </button>
+                    <div className={`absolute bg-white shadow-xl rounded-lg mt-2 py-2 w-48 z-[100] border border-gray-100 opacity-0 invisible -translate-y-2.5 transition-all duration-300 ease-out group-hover:opacity-100 group-hover:visible group-hover:translate-y-0 ${title === "Stories" ? "right-0 xl:left-0 xl:right-auto" : "left-0"}`}>
+                      {sublinks.map((link) => (
+                        <Link
+                          key={link}
+                          to={`/${title
                             .toLowerCase()
-                            .replace(/ /g, "-")}`}
-                        className="block px-4 py-2 text-sm text-gray-700 relative overflow-hidden transition-all duration-200 before:content-[''] before:absolute before:left-0 before:top-0 before:h-full before:w-0.5 before:bg-nsut-maroon before:-translate-x-full before:transition-transform before:duration-300 hover:before:translate-x-0 hover:pl-5 hover:bg-gradient-to-r hover:from-amber-50 hover:to-transparent"
-                      >
-                        {link}
-                      </Link>
-                    ))}
+                            .replace(/ & /g, "-")}/${link
+                              .toLowerCase()
+                              .replace(/ /g, "-")}`}
+                          className="block px-4 py-2 text-sm text-gray-700 relative overflow-hidden transition-all duration-200 before:content-[''] before:absolute before:left-0 before:top-0 before:h-full before:w-0.5 before:bg-nsut-maroon before:-translate-x-full before:transition-transform before:duration-300 hover:before:translate-x-0 hover:pl-5 hover:bg-gradient-to-r hover:from-amber-50 hover:to-transparent"
+                        >
+                          {link}
+                        </Link>
+                      ))}
+                    </div>
                   </div>
-                </div>
+                )
               ))}
             </div>
 

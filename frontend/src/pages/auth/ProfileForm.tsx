@@ -240,7 +240,7 @@ const ProfileForm = () => {
             <div className="flex justify-center py-8">
               <ProfilePictureUpload
                 currentImage={undefined}
-                onImageChange={setProfilePicture}
+                onImageSelect={setProfilePicture}
                 userName={userName}
               />
             </div>

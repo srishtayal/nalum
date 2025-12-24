@@ -7,7 +7,7 @@ const IconCtaSection = () => {
       icon: Calendar,
       text: "Attend an Event",
       description: "Join upcoming reunions, workshops, and campus celebrations",
-      link: "/events/events-calendar",
+      link: "/events/attend",
       gradient: "from-nsut-maroon to-red-800",
       bgColor: "bg-red-50",
       hoverColor: "group-hover:bg-red-100"
@@ -16,7 +16,7 @@ const IconCtaSection = () => {
       icon: Users,
       text: "Explore Communities",
       description: "Connect with fellow alumni who share your interests",
-      link: "/communities-interests",
+      link: "/communities/explore",
       gradient: "from-nsut-yellow to-amber-500",
       bgColor: "bg-amber-50",
       hoverColor: "group-hover:bg-amber-100"
@@ -85,16 +85,6 @@ const IconCtaSection = () => {
               </div>
             </Link>
           ))}
-        </div>
-
-        {/* Bottom CTA */}
-        <div className="text-center mt-12">
-          <p className="text-gray-600">
-            Want to explore more ways to engage?{' '}
-            <Link to="/volunteer" className="text-nsut-maroon font-semibold hover:underline">
-              View all opportunities →
-            </Link>
-          </p>
         </div>
       </div>
     </div>

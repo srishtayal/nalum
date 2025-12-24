@@ -49,8 +49,19 @@ const Reports = lazy(() => import("./pages/admin/Reports"));
 const QueryManagement = lazy(() => import("./pages/admin/QueryManagement"));
 const GivingManagement = lazy(() => import("./pages/admin/GivingManagement"));
 const NotableAlumni = lazy(() => import("./pages/stories/notableAlumni"));
+const AlumniStories = lazy(() => import("./pages/stories/alumniStories"));
+const GivingStories = lazy(() => import("./pages/stories/givingStories"));
+const CampusNews = lazy(() => import("./pages/stories/campusNews"));
 const ClubsPage = lazy(() => import("./pages/communities/clubs"));
+const IndustriesPage = lazy(() => import("./pages/communities/industries"));
+const RecentGradsPage = lazy(() => import("./pages/communities/recentGrads"));
 const LearningPage = lazy(() => import("./pages/benefits/learning"));
+const CareerPage = lazy(() => import("./pages/benefits/career"));
+const AlumniDirectoryHome = lazy(() => import("./pages/benefits/alumniDirectoryHome"));
+const GivingHome = lazy(() => import("./pages/benefits/givingHome"));
+const AttendAnEvent = lazy(() => import("./pages/events/attendAnEvent"));
+const ExploreCommunities = lazy(() => import("./pages/communities/exploreCommunities"));
+const AboutPage = lazy(() => import("./pages/About"));
 
 const queryClient = new QueryClient();
 
@@ -134,13 +145,24 @@ function AppContent() {
       <TooltipProvider>
         <Suspense fallback={<div className="min-h-screen flex items-center justify-center"><LoadingAnimation isContentReady={true} /></div>}>
           <Routes>
-            {/* Main App Routes */}
-            <Route path="/" element={<Root />}>
-              <Route index element={<HomePage />} />
-              <Route path="/stories/notable-alumni" element={<NotableAlumni />} />
-              <Route path="/communities/clubs" element={<ClubsPage />} />
-              <Route path="/benefits/learning" element={<LearningPage />} />
-            </Route>
+        {/* Main App Routes */}
+        <Route path="/" element={<Root />}>
+          <Route index element={<HomePage />} />
+          <Route path="/stories/notable-alumni" element={<NotableAlumni />} />
+          <Route path="/stories/alumni-stories" element={<AlumniStories />} />
+          <Route path="/stories/giving-stories" element={<GivingStories />} />
+          <Route path="/stories/campus-news" element={<CampusNews />} />
+          <Route path="/communities/clubs" element={<ClubsPage />} />
+          <Route path="/communities/industries" element={<IndustriesPage />} />
+          <Route path="/communities/recent-grads" element={<RecentGradsPage />} />
+          <Route path="/benefits/learning" element={<LearningPage />} />
+          <Route path="/benefits/career" element={<CareerPage />} />
+          <Route path="/benefits/alumni-directory" element={<AlumniDirectoryHome />} />
+          <Route path="/giving" element={<GivingHome />} />
+          <Route path="/events/attend" element={<AttendAnEvent />} />
+          <Route path="/communities/explore" element={<ExploreCommunities />} />
+          <Route path="/about" element={<AboutPage />} />
+        </Route>
 
             {/* Auth Routes (without header/footer) */}
             <Route path="/login" element={<Login />} />
