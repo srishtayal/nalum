@@ -23,7 +23,7 @@ const AlumniDirectoryHome = () => {
     {
       icon: Search,
       title: 'Advanced Search & Filters',
-      description: 'Find alumni by name, graduation year, department, company, location, or industry. Use powerful filters to discover exactly who you\'re looking for.',
+      description: 'Find alumni by name, branch, campus, graduation year, or current company. Use powerful filters to discover exactly who you\'re looking for.',
       color: 'from-blue-500 to-blue-600'
     },
     {
@@ -74,21 +74,19 @@ const AlumniDirectoryHome = () => {
   ];
 
   const searchCapabilities = [
-    { label: 'Search by Name or Email', icon: Search },
-    { label: 'Filter by Graduation Year (1950-2025)', icon: Calendar },
-    { label: 'Filter by Department & Program', icon: GraduationCap },
-    { label: 'Filter by Current Company', icon: Building2 },
-    { label: 'Filter by Industry Sector', icon: Briefcase },
-    { label: 'Filter by Location & Country', icon: MapPin },
-    { label: 'Advanced Multi-Filter Combinations', icon: Filter },
-    { label: 'Real-time Search Results', icon: TrendingUp }
+    { label: 'Search by Name', icon: Search },
+    { label: 'Filter by Branch/Department', icon: GraduationCap },
+    { label: 'Filter by Campus', icon: Building2 },
+    { label: 'Filter by Graduation Year', icon: Calendar },
+    { label: 'Filter by Current Company', icon: Briefcase },
+    { label: 'Combine Multiple Filters', icon: Filter }
   ];
 
   const stats = [
-    { number: '15,000+', label: 'Alumni Profiles' },
-    { number: '50+', label: 'Countries' },
-    { number: '500+', label: 'Cities' },
-    { number: '100+', label: 'Industries' }
+    { number: 'Thousands', label: 'Alumni Profiles' },
+    { number: 'Worldwide', label: 'Presence' },
+    { number: 'Global', label: 'Network' },
+    { number: 'Diverse', label: 'Industries' }
   ];
 
   return (
@@ -107,7 +105,7 @@ const AlumniDirectoryHome = () => {
             </h1>
           </div>
           <p className="text-xl md:text-2xl max-w-5xl leading-relaxed opacity-95 animation-delay-300 animate-fade-in">
-            Connect with 15,000+ NSUT Alumni Worldwide
+            Connect with NSUT Alumni Worldwide
           </p>
           <p className="text-lg max-w-5xl mt-4 leading-relaxed opacity-90 animation-delay-500 animate-fade-in">
             The NSUT Alumni Directory is your gateway to connecting with fellow NSUTians across the globe. Discover alumni working at leading organizations, find mentors, explore career opportunities, and strengthen the bonds of our vibrant community.
