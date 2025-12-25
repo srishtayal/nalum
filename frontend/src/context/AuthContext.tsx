@@ -113,12 +113,38 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
     };
 
+    // Listen for token refresh events from the API interceptor
+    const handleTokenRefresh = (event: Event) => {
+      const customEvent = event as CustomEvent;
+      const { accessToken: newToken, user: userData } = customEvent.detail;
+      
+      setAccessToken(newToken);
+      setAuthToken(newToken);
+      if (userData) {
+        setUser(userData);
+        setIsVerifiedAlumni(userData.verified_alumni || false);
+      }
+    };
+
+    // Listen for auth errors from the API interceptor
+    const handleAuthError = () => {
+      logout();
+    };
+
+    window.addEventListener("token-refreshed", handleTokenRefresh);
+    window.addEventListener("auth-error", handleAuthError);
+
     // Only attempt restore if we don't already have a token
     if (!accessToken) {
       restoreSession();
     } else {
       setIsRestoringSession(false);
     }
+
+    return () => {
+      window.removeEventListener("token-refreshed", handleTokenRefresh);
+      window.removeEventListener("auth-error", handleAuthError);
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // Run only once on mount
 

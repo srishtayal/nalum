@@ -9,27 +9,27 @@ import { GraduationCap, ChevronLeft, ChevronRight, Users, Award, Globe, Lightbul
 // Format: JPG or PNG, Size: ~1920x1080 or similar aspect ratio
 const carouselImages = [
   {
-    src: '/Communities/RecentGrads/convocation-1.jpg', // Replace with actual convocation ceremony images
+    src: '/Communities/RecentGrads/convocation-1.webp', // Replace with actual convocation ceremony images
     alt: 'NSUT Third Convocation Ceremony at Yashobhoomi Convention Centre',
     caption: 'Third Convocation - Class of 2025'
   },
   {
-    src: '/Communities/RecentGrads/convocation-2.jpg', // Replace with actual convocation ceremony images
+    src: '/Communities/RecentGrads/convocation-2.webp', // Replace with actual convocation ceremony images
     alt: 'Graduating students receiving their degrees',
     caption: '2,450 Graduates Across All Programs'
   },
   {
-    src: '/Communities/RecentGrads/convocation-3.jpg', // Replace with actual convocation ceremony images
+    src: '/Communities/RecentGrads/convocation-3.webp', // Replace with actual convocation ceremony images
     alt: 'Distinguished guests and university leadership',
     caption: 'Honoured by Distinguished Leadership'
   },
   {
-    src: '/Communities/RecentGrads/convocation-4.jpg', // Replace with actual convocation ceremony images
+    src: '/Communities/RecentGrads/convocation-4.webp', // Replace with actual convocation ceremony images
     alt: 'Gold medalists and PhD awardees',
     caption: 'Celebrating Academic Excellence'
   },
   {
-    src: '/Communities/RecentGrads/convocation-5.jpg', // Replace with actual convocation ceremony images
+    src: '/Communities/RecentGrads/convocation-5.webp', // Replace with actual convocation ceremony images
     alt: 'Students taking the convocation pledge',
     caption: 'A Shared Pledge for the Future'
   }

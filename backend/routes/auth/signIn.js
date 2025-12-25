@@ -91,7 +91,7 @@ router.post("/", async (req, res) => {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
-    maxAge: 365 * 24 * 60 * 60 * 1000, // 1 year
+    maxAge: 14 * 24 * 60 * 60 * 1000, // 14 days
   });
 
   return res.status(200).json({

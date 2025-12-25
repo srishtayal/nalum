@@ -85,7 +85,7 @@ const NotFound = () => {
         {/* Footer */}
         <div className="pt-8 border-t border-gray-200">
           <p className="text-sm text-gray-500">
-            NALUM - NSUT Alumni Network
+            NSUT Alumni Association
           </p>
         </div>
       </div>

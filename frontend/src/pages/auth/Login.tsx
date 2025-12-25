@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/select";
 import { Eye, EyeOff, Mail, Lock, Briefcase } from "lucide-react";
 import { toast } from "sonner";
-import nsutLogo from "@/assets/logo.webp";
+import nsutLogo from "@/assets/nsut-logo.svg";
 import nsutCampusHero from "@/assets/hero.webp";
 import apiClient from "@/lib/api";
 import { useAuth } from "@/context/AuthContext";

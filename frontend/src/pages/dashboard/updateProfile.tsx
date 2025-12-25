@@ -629,31 +629,30 @@ const UpdateProfile = () => {
 
             {/* Current Position - Only visible for Alumni */}
             {isAlumni && (
-              <div className="rounded-xl border border-white/10 shadow-xl p-6">
-                <div className="bg-white/5 backdrop-blur-md rounded-xl">
-                  <h3 className="text-lg font-semibold text-white mb-4">
-                    Current Position
-                  </h3>
-                  <div className="space-y-4">
-                    <div className="space-y-2 relative">
-                      <Label htmlFor="current_role" className="text-gray-300">
-                        Current Role
-                      </Label>
-                      <Input
-                        ref={roleInputRef}
-                        id="current_role"
-                        value={formData.current_role}
-                        onChange={(e) => handleRoleChange(e.target.value)}
-                        onFocus={() =>
-                          formData.current_role && setShowRoleSuggestions(true)
-                        }
-                        onBlur={() =>
-                          setTimeout(() => setShowRoleSuggestions(false), 200)
-                        }
-                        placeholder="e.g., Software Engineer"
-                        className="bg-black/20 border-white/10 text-white placeholder:text-gray-500 focus:border-blue-500/50 focus:ring-blue-500/20"
-                        autoComplete="off"
-                      />
+              <div className="rounded-xl border border-white/10 bg-white/5 backdrop-blur-md shadow-xl p-6 overflow-visible">
+                <h3 className="text-lg font-semibold text-white mb-4">
+                  Current Position
+                </h3>
+                <div className="space-y-4">
+                  <div className="space-y-2 relative">
+                    <Label htmlFor="current_role" className="text-gray-300">
+                      Current Role
+                    </Label>
+                    <Input
+                      ref={roleInputRef}
+                      id="current_role"
+                      value={formData.current_role}
+                      onChange={(e) => handleRoleChange(e.target.value)}
+                      onFocus={() =>
+                        formData.current_role && setShowRoleSuggestions(true)
+                      }
+                      onBlur={() =>
+                        setTimeout(() => setShowRoleSuggestions(false), 200)
+                      }
+                      placeholder="e.g., Software Engineer"
+                      className="bg-black/20 border-white/10 text-white placeholder:text-gray-500 focus:border-blue-500/50 focus:ring-blue-500/20"
+                      autoComplete="off"
+                    />
                       {showRoleSuggestions &&
                         filteredRoles.length > 0 &&
                         createPortal(
@@ -718,7 +717,7 @@ const UpdateProfile = () => {
                         filteredCompanies.length > 0 &&
                         createPortal(
                           <div
-                            className="fixed z-[9999] bg-white/5 backdrop-blur-xl border border-white/15 rounded-md shadow-2xl max-h-60 overflow-auto"
+                            className="fixed z-[9999] bg-slate-900/95 backdrop-blur-xl border border-white/20 rounded-lg shadow-2xl max-h-60 overflow-auto"
                             style={{
                               left: companyInputRef.current?.getBoundingClientRect()
                                 .left,
@@ -734,7 +733,7 @@ const UpdateProfile = () => {
                               <button
                                 key={index}
                                 type="button"
-                                className="w-full text-left px-4 py-2 text-white cursor-pointer rounded-md transition-all hover:bg-white/10 hover:backdrop-brightness-125 hover:!text-white focus:bg-white/10 focus:!text-white text-sm"
+                                className="w-full text-left px-4 py-2.5 text-white cursor-pointer transition-all hover:bg-white/10 hover:text-white focus:bg-white/10 focus:text-white text-sm font-medium"
                                 onMouseDown={(e) => {
                                   e.preventDefault();
                                   handleInputChange("current_company", company);
@@ -747,7 +746,6 @@ const UpdateProfile = () => {
                           </div>,
                           document.body
                         )}
-                    </div>
                   </div>
                 </div>
               </div>
@@ -917,8 +915,8 @@ const UpdateProfile = () => {
                   size="sm"
                   className="bg-blue-600 hover:bg-blue-500 text-white"
                 >
-                  <Plus className="h-4 w-4 mr-2" />
-                  Add Experience
+                  <Plus className="h-4 w-4 mr-1" />
+                  Add
                 </Button>
               </div>
               <div className="space-y-6">
@@ -931,10 +929,10 @@ const UpdateProfile = () => {
                   formData.experience.map((exp, index) => (
                     <div
                       key={index}
-                      className="p-4 border border-white/10 rounded-lg space-y-4 bg-black/20"
+                      className="p-4 md:p-5 border border-white/20 rounded-xl space-y-4 bg-white/5 backdrop-blur-sm hover:border-white/30 transition-colors"
                     >
                       <div className="flex justify-between items-start">
-                        <h4 className="font-semibold text-gray-200">
+                        <h4 className="font-semibold text-white text-base">
                           Experience {index + 1}
                         </h4>
                         <Button
@@ -942,7 +940,7 @@ const UpdateProfile = () => {
                           variant="ghost"
                           size="sm"
                           onClick={() => handleRemoveExperience(index)}
-                          className="text-red-400 hover:bg-red-500/10"
+                          className="text-red-400 hover:bg-red-500/10 hover:text-red-300"
                         >
                           <Trash2 className="h-4 w-4" />
                         </Button>
@@ -1099,14 +1097,14 @@ const UpdateProfile = () => {
                               document.body
                             )}
                         </div>
-                        <div className="space-y-2">
+                        <div className="space-y-3">
                           <Label className="text-gray-300">Duration</Label>
-                          <div className="grid grid-cols-2 gap-2">
-                            <div className="space-y-1">
-                              <Label className="text-xs text-gray-400">
+                          <div className="space-y-3">
+                            <div className="space-y-2">
+                              <Label className="text-sm text-gray-400">
                                 Start Date
                               </Label>
-                              <div className="grid grid-cols-2 gap-1">
+                              <div className="grid grid-cols-2 gap-2">
                                 <Select
                                   value={
                                     exp.duration
@@ -1127,7 +1125,7 @@ const UpdateProfile = () => {
                                     );
                                   }}
                                 >
-                                  <SelectTrigger className="bg-black/20 border-white/10 text-white text-xs">
+                                  <SelectTrigger className="bg-black/20 border-white/10 text-white text-sm h-10">
                                     <SelectValue placeholder="Month" />
                                   </SelectTrigger>
                                   <SelectContent className="bg-white/5 backdrop-blur-xl border border-white/15 shadow-2xl">
@@ -1175,7 +1173,7 @@ const UpdateProfile = () => {
                                     );
                                   }}
                                 >
-                                  <SelectTrigger className="bg-black/20 border-white/10 text-white text-xs">
+                                  <SelectTrigger className="bg-black/20 border-white/10 text-white text-sm h-10">
                                     <SelectValue placeholder="Year" />
                                   </SelectTrigger>
                                   <SelectContent className="bg-white/5 backdrop-blur-xl border border-white/15 shadow-2xl">
@@ -1197,11 +1195,11 @@ const UpdateProfile = () => {
                                 </Select>
                               </div>
                             </div>
-                            <div className="space-y-1">
-                              <Label className="text-xs text-gray-400">
+                            <div className="space-y-2">
+                              <Label className="text-sm text-gray-400">
                                 End Date
                               </Label>
-                              <div className="grid grid-cols-2 gap-1">
+                              <div className="grid grid-cols-2 gap-2">
                                 <Select
                                   value={
                                     exp.duration
@@ -1229,10 +1227,10 @@ const UpdateProfile = () => {
                                     );
                                   }}
                                 >
-                                  <SelectTrigger className="bg-black/20 border-white/10 text-white text-xs">
+                                  <SelectTrigger className="bg-black/20 border-white/10 text-white text-sm h-10">
                                     <SelectValue placeholder="Month" />
                                   </SelectTrigger>
-                                  <SelectContent className="bg-white/5 backdrop-blur-xl border border-white/15 shadow-2xl">
+                                  <SelectContent className="bg-white/5 backdrop-blur-xl border border-white/15 shadow-2xl max-h-[300px]" position="popper" sideOffset={5}>
                                     <div className="p-2 space-y-1">
                                       <SelectItem
                                         value="Present"
@@ -1291,7 +1289,7 @@ const UpdateProfile = () => {
                                       );
                                     }}
                                   >
-                                    <SelectTrigger className="bg-black/20 border-white/10 text-white text-xs">
+                                    <SelectTrigger className="bg-black/20 border-white/10 text-white text-sm h-10">
                                       <SelectValue placeholder="Year" />
                                     </SelectTrigger>
                                     <SelectContent className="bg-white/5 backdrop-blur-xl border border-white/15 shadow-2xl">
@@ -1322,66 +1320,38 @@ const UpdateProfile = () => {
                 )}
               </div>
             </div>
-
-            {/* Action Buttons */}
-            <div className="flex gap-4">
-              <Button
-                type="submit"
-                className="flex-1 bg-nsut-maroon hover:bg-red-900 text-white"
-                disabled={isSaving || !isDirty}
-              >
-                {isSaving ? (
-                  <>
-                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                    Saving...
-                  </>
-                ) : (
-                  <>
-                    <Save className="h-4 w-4 mr-2" />
-                    Save Changes
-                  </>
-                )}
-              </Button>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => navigate("/dashboard/profile")}
-                disabled={isSaving}
-                className="border-input text-muted-foreground hover:bg-accent hover:text-accent-foreground bg-transparent"
-              >
-                Cancel
-              </Button>
-            </div>
           </form>
         </div>
       </div>
 
       {/* Unsaved Changes Popup */}
       {isDirty && (
-        <div className="fixed bottom-8 left-1/2 transform -translate-x-1/2 z-50 animate-in slide-in-from-bottom-10 fade-in duration-300">
-          <div className="bg-foreground text-background px-6 py-4 rounded-full shadow-2xl flex items-center gap-6 border border-border">
-            <p className="font-medium">You have unsaved changes</p>
-            <div className="flex items-center gap-2">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={handleDiscard}
-                className="hover:bg-background/20 hover:text-background text-background/80"
-              >
-                Discard
-              </Button>
-              <Button
-                size="sm"
-                onClick={handleSubmit}
-                disabled={isSaving}
-                className="bg-nsut-maroon hover:bg-red-900 text-white rounded-full px-6"
-              >
-                {isSaving ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : (
-                  "Save"
-                )}
-              </Button>
+        <div className="fixed bottom-20 md:bottom-8 left-4 right-4 md:left-1/2 md:right-auto md:-translate-x-1/2 z-50 animate-in slide-in-from-bottom-10 fade-in duration-300">
+          <div className="bg-foreground text-background px-4 py-3 md:px-6 md:py-4 rounded-2xl shadow-2xl border border-border min-w-[280px] md:min-w-[400px]">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-6">
+              <p className="font-medium text-sm md:text-base">You have unsaved changes</p>
+              <div className="flex items-center gap-2 w-full sm:w-auto">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleDiscard}
+                  className="hover:bg-background/20 hover:text-background text-background/80 flex-1 sm:flex-none"
+                >
+                  Discard
+                </Button>
+                <Button
+                  size="sm"
+                  onClick={handleSubmit}
+                  disabled={isSaving}
+                  className="bg-nsut-maroon hover:bg-red-900 text-white rounded-full px-6 flex-1 sm:flex-none"
+                >
+                  {isSaving ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    "Save"
+                  )}
+                </Button>
+              </div>
             </div>
           </div>
         </div>

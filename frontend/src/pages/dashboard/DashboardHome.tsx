@@ -48,7 +48,7 @@ const DashboardHome = () => {
       <div className="flex flex-col lg:flex-row gap-8">
         {/* Left Column: Search & Feed */}
         <div className="flex-grow space-y-6">
-          <div className="relative">
+          <div className="relative hidden md:block">
             <Search className="absolute left-6 top-1/2 -translate-y-1/2 h-6 w-6 text-gray-400 group-hover:text-white transition-colors pointer-events-none" />
             <input
               type="text"
@@ -81,7 +81,7 @@ const DashboardHome = () => {
         {/* Right Column: Start Post, People & Events */}
         <div className="w-full lg:w-72 flex-shrink-0 space-y-6 order-first lg:order-none">
           {/* Start Post & Notifications */}
-          <div className="flex items-center gap-3">
+          <div className="hidden md:flex items-center gap-3">
             <button
               onClick={handleStartPost}
               className="relative flex-grow flex items-center bg-white/5 hover:bg-white/10 border border-white/10 rounded-2xl py-4 pl-12 pr-10 text-base text-white placeholder:text-gray-500 transition-all text-left"

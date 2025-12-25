@@ -9,14 +9,14 @@ import { Home, MessageSquare, Search, ArrowLeft, Users, SlidersHorizontal, X, Gr
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { BRANCHES, CAMPUSES } from "@/constants/branches";
 import UserAvatar from "@/components/UserAvatar";
+import ProfileMenu from "@/components/ProfileMenu";
 import nsutLogo from "@/assets/nsut-logo.svg";
 import { useConversations } from "@/hooks/useConversations"; // Restored import
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import api, { searchUsers } from "@/lib/api";
+import api, { globalSearch } from "@/lib/api";
 
 import { useChatContext } from "@/context/ChatContext";
 import { useEffect, useState, useRef } from "react";
@@ -24,9 +24,11 @@ import { useEffect, useState, useRef } from "react";
 const DashboardContent = () => {
   const location = useLocation();
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [searchResults, setSearchResults] = useState<any[]>([]);
+  const [searchResults, setSearchResults] = useState<{ users: any[], posts: any[] }>({ users: [], posts: [] });
   const [isSearching, setIsSearching] = useState(false);
+  const [searchTab, setSearchTab] = useState<'people' | 'posts'>('people');
   const searchDebounceRef = useRef<NodeJS.Timeout | null>(null);
   const currentQueryRef = useRef("");
   const inputRef = useRef<HTMLInputElement>(null);
@@ -62,7 +64,7 @@ const DashboardContent = () => {
   useEffect(() => {
     setIsSearchOpen(false);
     setSearchQuery("");
-    setSearchResults([]);
+    setSearchResults({ users: [], posts: [] });
     setShowMobileFilters(false);
   }, [location.pathname]);
 
@@ -104,9 +106,12 @@ const DashboardContent = () => {
       {!isChatPage && (
         <div className="md:hidden fixed top-0 left-0 right-0 z-50 bg-slate-950/80 backdrop-blur-xl border-b border-white/10 px-4 h-16 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <img src={nsutLogo} alt="NALUM" width="32" height="32" className="h-8 w-8" />
-            <span className={`font-bold text-white tracking-wider text-lg transition-all duration-300 ${isSearchOpen ? 'opacity-0 w-0 overflow-hidden' : 'opacity-100 w-auto'}`}>
-              NALUM
+            <img src={nsutLogo} alt="NSUT Alumni" width="32" height="32" className="h-8 w-8" />
+            <span className={`font-bold tracking-wide text-sm transition-all duration-300 ${isSearchOpen ? 'opacity-0 w-0 overflow-hidden' : 'opacity-100 w-auto'}`}>
+              <span className="text-red-600">N</span>
+              <span className="text-white">SUT</span>
+              <span className="text-red-600"> ALUM</span>
+              <span className="text-white">NI</span>
             </span>
           </div>
 
@@ -132,9 +137,9 @@ const DashboardContent = () => {
                     searchDebounceRef.current = setTimeout(async () => {
                       if (currentQueryRef.current !== query) return;
                       try {
-                        const { data } = await searchUsers(query, searchFilters);
+                        const results = await globalSearch(query, searchFilters);
                         if (currentQueryRef.current === query) {
-                          setSearchResults(data.profiles || []);
+                          setSearchResults(results);
                         }
                       } catch (error) {
                         console.error("Search failed", error);
@@ -145,7 +150,7 @@ const DashboardContent = () => {
                       }
                     }, 50);
                   } else {
-                    setSearchResults([]);
+                    setSearchResults({ users: [], posts: [] });
                     setIsSearching(false);
                   }
                 }}
@@ -168,7 +173,7 @@ const DashboardContent = () => {
                   // Focus will be handled by useEffect
                 } else {
                   setSearchQuery("");
-                  setSearchResults([]);
+                  setSearchResults({ users: [], posts: [] });
                   currentQueryRef.current = "";
                 }
               }}
@@ -188,35 +193,69 @@ const DashboardContent = () => {
       )}
 
       {/* Vertical Search Results (Mobile) */}
-      {isSearchOpen && (searchResults.length > 0 || searchQuery.trim().length > 0) && (
+      {isSearchOpen && ((searchResults.users.length > 0 || searchResults.posts.length > 0) || searchQuery.trim().length > 0) && (
         <div className="md:hidden fixed top-16 left-0 right-0 z-40 bg-slate-900/95 backdrop-blur-md border-b border-white/10 shadow-lg animate-in slide-in-from-top-2 duration-200 max-h-[70vh] overflow-y-auto">
 
-          {/* Filter Header */}
-          <div className="flex justify-between items-center p-3 border-b border-white/10 bg-black/20">
-            <div className="flex items-center gap-2">
-              <span className="text-xs font-medium text-gray-400">
-                {searchResults.length} result{searchResults.length !== 1 ? 's' : ''}
-              </span>
-              {(searchFilters.batch || searchFilters.branch || searchFilters.campus || searchFilters.company || searchFilters.skills.length > 0 || searchFilters.connectionFilter !== "all") && (
-                <span className="flex items-center gap-1 text-xs text-blue-400">
-                  <span className="h-1.5 w-1.5 rounded-full bg-blue-400" />
-                  filtered
-                </span>
+          {/* Tabs - Instagram style */}
+          <div className="flex border-b border-white/10 bg-black/20">
+            <button
+              onClick={() => setSearchTab('people')}
+              className={cn(
+                "flex-1 py-3 text-sm font-medium transition-colors relative",
+                searchTab === 'people' 
+                  ? "text-white" 
+                  : "text-gray-400 hover:text-gray-300"
               )}
-            </div>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setShowMobileFilters(!showMobileFilters)}
-              className="h-7 px-2 text-xs hover:bg-transparent text-blue-400"
             >
-              <SlidersHorizontal className="w-4 h-4 mr-1.5" />
-              Filters
-            </Button>
+              People ({searchResults.users.length})
+              {searchTab === 'people' && (
+                <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-white" />
+              )}
+            </button>
+            <button
+              onClick={() => setSearchTab('posts')}
+              className={cn(
+                "flex-1 py-3 text-sm font-medium transition-colors relative",
+                searchTab === 'posts' 
+                  ? "text-white" 
+                  : "text-gray-400 hover:text-gray-300"
+              )}
+            >
+              Posts ({searchResults.posts.length})
+              {searchTab === 'posts' && (
+                <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-white" />
+              )}
+            </button>
           </div>
 
+          {/* Filter Header - Only show for people tab */}
+          {searchTab === 'people' && (
+            <div className="flex justify-between items-center p-3 border-b border-white/10 bg-black/20">
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-medium text-gray-400">
+                  {searchResults.users.length} result{searchResults.users.length !== 1 ? 's' : ''}
+                </span>
+                {(searchFilters.batch || searchFilters.branch || searchFilters.campus || searchFilters.company || searchFilters.skills.length > 0 || searchFilters.connectionFilter !== "all") && (
+                  <span className="flex items-center gap-1 text-xs text-blue-400">
+                    <span className="h-1.5 w-1.5 rounded-full bg-blue-400" />
+                    filtered
+                  </span>
+                )}
+              </div>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setShowMobileFilters(!showMobileFilters)}
+                className="h-7 px-2 text-xs hover:bg-transparent text-blue-400"
+              >
+                <SlidersHorizontal className="w-4 h-4 mr-1.5" />
+                Filters
+              </Button>
+            </div>
+          )}
+
           {/* Filter Panel */}
-          {showMobileFilters && (
+          {searchTab === 'people' && showMobileFilters && (
             <div className="p-3 bg-black/30 border-b border-white/10 space-y-2">
               <div className="flex justify-between items-center">
                 <span className="text-xs font-medium text-white">Refine Results</span>
@@ -228,8 +267,8 @@ const DashboardContent = () => {
                     setSearchFilters(emptyFilters);
                     setSkillInput("");
                     if (searchQuery.trim()) {
-                      searchUsers(searchQuery, emptyFilters).then(({ data }) => {
-                        setSearchResults(data.profiles || []);
+                      globalSearch(searchQuery, emptyFilters).then((results) => {
+                        setSearchResults(results);
                       });
                     }
                   }}
@@ -249,8 +288,8 @@ const DashboardContent = () => {
                     setSearchFilters(newFilters);
                     if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current);
                     searchDebounceRef.current = setTimeout(async () => {
-                      const { data } = await searchUsers(searchQuery, newFilters);
-                      setSearchResults(data.profiles || []);
+                      const results = await globalSearch(searchQuery, newFilters);
+                      setSearchResults(results);
                     }, 300);
                   }}
                   className="h-7 bg-black/30 border-white/10 text-xs text-white"
@@ -263,8 +302,8 @@ const DashboardContent = () => {
                     setSearchFilters(newFilters);
                     if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current);
                     searchDebounceRef.current = setTimeout(async () => {
-                      const { data } = await searchUsers(searchQuery, newFilters);
-                      setSearchResults(data.profiles || []);
+                      const results = await globalSearch(searchQuery, newFilters);
+                      setSearchResults(results);
                     }, 300);
                   }}
                   className="h-7 bg-black/30 border-white/10 text-xs text-white"
@@ -278,8 +317,8 @@ const DashboardContent = () => {
                   onValueChange={(val) => {
                     const newFilters = { ...searchFilters, branch: val === "all" ? "" : val };
                     setSearchFilters(newFilters);
-                    searchUsers(searchQuery, newFilters).then(({ data }) => {
-                      setSearchResults(data.profiles || []);
+                    globalSearch(searchQuery, newFilters).then((results) => {
+                      setSearchResults(results);
                     });
                   }}
                 >
@@ -296,8 +335,8 @@ const DashboardContent = () => {
                   onValueChange={(val) => {
                     const newFilters = { ...searchFilters, campus: val === "all" ? "" : val };
                     setSearchFilters(newFilters);
-                    searchUsers(searchQuery, newFilters).then(({ data }) => {
-                      setSearchResults(data.profiles || []);
+                    globalSearch(searchQuery, newFilters).then((results) => {
+                      setSearchResults(results);
                     });
                   }}
                 >
@@ -324,8 +363,8 @@ const DashboardContent = () => {
                       const newFilters = { ...searchFilters, skills: newSkills };
                       setSearchFilters(newFilters);
                       setSkillInput("");
-                      searchUsers(searchQuery, newFilters).then(({ data }) => {
-                        setSearchResults(data.profiles || []);
+                      globalSearch(searchQuery, newFilters).then((results) => {
+                        setSearchResults(results);
                       });
                     }
                   }}
@@ -339,8 +378,8 @@ const DashboardContent = () => {
                       const newFilters = { ...searchFilters, skills: newSkills };
                       setSearchFilters(newFilters);
                       setSkillInput("");
-                      searchUsers(searchQuery, newFilters).then(({ data }) => {
-                        setSearchResults(data.profiles || []);
+                      globalSearch(searchQuery, newFilters).then((results) => {
+                        setSearchResults(results);
                       });
                     }
                   }}
@@ -360,8 +399,8 @@ const DashboardContent = () => {
                         const newSkills = searchFilters.skills.filter((_, idx) => idx !== i);
                         const newFilters = { ...searchFilters, skills: newSkills };
                         setSearchFilters(newFilters);
-                        searchUsers(searchQuery, newFilters).then(({ data }) => {
-                          setSearchResults(data.profiles || []);
+                        globalSearch(searchQuery, newFilters).then((results) => {
+                          setSearchResults(results);
                         });
                       }}
                     >
@@ -381,8 +420,8 @@ const DashboardContent = () => {
                     onClick={() => {
                       const newFilters = { ...searchFilters, connectionFilter: status };
                       setSearchFilters(newFilters);
-                      searchUsers(searchQuery, newFilters).then(({ data }) => {
-                        setSearchResults(data.profiles || []);
+                      globalSearch(searchQuery, newFilters).then((results) => {
+                        setSearchResults(results);
                       });
                     }}
                     className={`h-6 px-2 text-xs flex-1 ${searchFilters.connectionFilter === status
@@ -396,55 +435,107 @@ const DashboardContent = () => {
               </div>
             </div>
           )}
-
           {/* Results List */}
           <div className="flex flex-col p-2 gap-1">
-            {searchResults.length === 0 && searchQuery.trim().length > 0 && !isSearching && (
-              <div className="p-4 text-center text-gray-400 text-sm">
-                No results found. Try adjusting filters.
-              </div>
+            {/* People Tab Results */}
+            {searchTab === 'people' && (
+              <>
+                {searchResults.users.length === 0 && searchQuery.trim().length > 0 && !isSearching && (
+                  <div className="p-4 text-center text-gray-400 text-sm">
+                    No people found. Try adjusting filters.
+                  </div>
+                )}
+                {searchResults.users.map((profile) => (
+                  <Link
+                    key={profile._id}
+                    to={`/dashboard/alumni/${profile.user._id}`}
+                    onClick={() => {
+                      setIsSearchOpen(false);
+                      setSearchQuery("");
+                      setSearchResults({ users: [], posts: [] });
+                    }}
+                    className="flex items-center gap-3 p-3 rounded-lg hover:bg-white/10 transition-colors"
+                    style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}
+                  >
+                    <div className="relative flex-shrink-0">
+                      <UserAvatar
+                        src={profile.profile_picture}
+                        name={profile.user.name}
+                        className="h-10 w-10 border border-slate-700"
+                      />
+                    </div>
+                    <div className="flex flex-col min-w-0">
+                      <span className="text-sm font-medium text-white truncate">
+                        {profile.user.name}
+                      </span>
+                      <span className="text-xs text-gray-400 truncate">
+                        {profile.batch} • {profile.branch}
+                      </span>
+                    </div>
+                  </Link>
+                ))}
+                {searchResults.users.length >= 15 && (
+                  <Link
+                    to={`/dashboard/alumni?search=${encodeURIComponent(searchQuery)}`}
+                    onClick={() => {
+                      setIsSearchOpen(false);
+                      setSearchQuery("");
+                      setSearchResults({ users: [], posts: [] });
+                    }}
+                    className="p-3 text-center text-sm text-blue-400 hover:text-blue-300 hover:bg-white/5 rounded-lg transition-colors"
+                  >
+                    View all results →
+                  </Link>
+                )}
+              </>
             )}
-            {searchResults.map((profile) => (
-              <Link
-                key={profile._id}
-                to={`/dashboard/alumni/${profile.user._id}`}
-                onClick={() => {
-                  setIsSearchOpen(false);
-                  setSearchQuery("");
-                  setSearchResults([]);
-                }}
-                className="flex items-center gap-3 p-3 rounded-lg hover:bg-white/10 transition-colors"
-                style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}
-              >
-                <div className="relative flex-shrink-0">
-                  <UserAvatar
-                    src={profile.profile_picture}
-                    name={profile.user.name}
-                    className="h-10 w-10 border border-slate-700"
-                  />
-                </div>
-                <div className="flex flex-col min-w-0">
-                  <span className="text-sm font-medium text-white truncate">
-                    {profile.user.name}
-                  </span>
-                  <span className="text-xs text-gray-400 truncate">
-                    {profile.batch} • {profile.branch}
-                  </span>
-                </div>
-              </Link>
-            ))}
-            {searchResults.length >= 15 && (
-              <Link
-                to={`/dashboard/alumni?search=${encodeURIComponent(searchQuery)}`}
-                onClick={() => {
-                  setIsSearchOpen(false);
-                  setSearchQuery("");
-                  setSearchResults([]);
-                }}
-                className="p-3 text-center text-sm text-blue-400 hover:text-blue-300 hover:bg-white/5 rounded-lg transition-colors"
-              >
-                View all results →
-              </Link>
+            
+            {/* Posts Tab Results */}
+            {searchTab === 'posts' && (
+              <>
+                {searchResults.posts.length === 0 && searchQuery.trim().length > 0 && !isSearching && (
+                  <div className="p-4 text-center text-gray-400 text-sm">
+                    No posts found matching your search.
+                  </div>
+                )}
+                {searchResults.posts.map((post: any) => (
+                  <Link
+                    key={post._id}
+                    to={`/dashboard/posts/${post._id}`}
+                    onClick={() => {
+                      setIsSearchOpen(false);
+                      setSearchQuery("");
+                      setSearchResults({ users: [], posts: [] });
+                    }}
+                    className="flex flex-col gap-2 p-3 rounded-lg hover:bg-white/10 transition-colors"
+                    style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}
+                  >
+                    <div className="flex items-center gap-2">
+                      <UserAvatar
+                        src={post.userId?.profile_picture}
+                        name={post.userId?.name}
+                        className="h-8 w-8 border border-slate-700"
+                      />
+                      <div className="flex flex-col min-w-0 flex-1">
+                        <span className="text-xs font-medium text-white truncate">
+                          {post.userId?.name}
+                        </span>
+                        <span className="text-xs text-gray-500">
+                          {new Date(post.createdAt).toLocaleDateString()}
+                        </span>
+                      </div>
+                    </div>
+                    <div className="flex flex-col gap-1">
+                      <h4 className="text-sm font-semibold text-white line-clamp-1">
+                        {post.title}
+                      </h4>
+                      <p className="text-xs text-gray-400 line-clamp-2">
+                        {post.content}
+                      </p>
+                    </div>
+                  </Link>
+                ))}
+              </>
             )}
           </div>
         </div>
@@ -465,74 +556,91 @@ const DashboardContent = () => {
       {!isChatPage && (
         <div className="fixed bottom-0 left-0 right-0 z-40 bg-slate-900/90 backdrop-blur-lg border-t border-white/10 flex items-center justify-around px-2 py-2 shadow-2xl md:hidden h-16">
           <Link
-            to="/dashboard/connections"
-            className={cn(
-              "p-2 rounded-xl transition-all duration-300 relative",
-              location.pathname === "/dashboard/connections"
-                ? "bg-blue-600/20 text-blue-400"
-                : "text-gray-400 hover:text-white"
-            )}
-          >
-            <Users className="h-5 w-5" />
-            {hasPendingRequests && (
-              <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-blue-500 ring-2 ring-slate-950" />
-            )}
-          </Link>
-
-          <Link
-            to="/dashboard/alumni"
-            className={cn(
-              "p-2 rounded-xl transition-all duration-300",
-              location.pathname === "/dashboard/alumni"
-                ? "bg-blue-600/20 text-blue-400"
-                : "text-gray-400 hover:text-white"
-            )}
-          >
-            <GraduationCap className="h-5 w-5" />
-          </Link>
-
-          <Link
             to="/dashboard"
             className={cn(
-              "p-2 rounded-xl transition-all duration-300",
+              "flex flex-col items-center gap-1 p-2 rounded-xl transition-all duration-300",
               location.pathname === "/dashboard"
                 ? "bg-blue-600/20 text-blue-400"
                 : "text-gray-400 hover:text-white"
             )}
           >
             <Home className="h-5 w-5" />
+            <span className="text-[10px] font-medium">Home</span>
+          </Link>
+
+          <Link
+            to="/dashboard/connections"
+            className={cn(
+              "flex flex-col items-center gap-1 p-2 rounded-xl transition-all duration-300 relative",
+              location.pathname === "/dashboard/connections"
+                ? "bg-blue-600/20 text-blue-400"
+                : "text-gray-400 hover:text-white"
+            )}
+          >
+            <Users className="h-5 w-5" />
+            <span className="text-[10px] font-medium">Network</span>
+            {hasPendingRequests && (
+              <span className="absolute top-1 right-1 h-2 w-2 rounded-full bg-blue-500 ring-2 ring-slate-950" />
+            )}
+          </Link>
+
+          <Link
+            to="/dashboard/posts"
+            className={cn(
+              "flex flex-col items-center gap-1 p-2 rounded-xl transition-all duration-300",
+              location.pathname === "/dashboard/posts"
+                ? "bg-blue-600/20 text-blue-400"
+                : "text-gray-400 hover:text-white"
+            )}
+          >
+            <div className="w-6 h-6 border-2 border-current rounded-md flex items-center justify-center">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M12 4v16m8-8H4" />
+              </svg>
+            </div>
+            <span className="text-[10px] font-medium">Post</span>
           </Link>
 
           <Link
             to="/dashboard/events"
             className={cn(
-              "p-2 rounded-xl transition-all duration-300",
+              "flex flex-col items-center gap-1 p-2 rounded-xl transition-all duration-300",
               location.pathname === "/dashboard/events"
                 ? "bg-blue-600/20 text-blue-400"
                 : "text-gray-400 hover:text-white"
             )}
           >
             <Calendar className="h-5 w-5" />
+            <span className="text-[10px] font-medium">Events</span>
           </Link>
 
-          <Link
-            to="/dashboard/profile"
-            className={cn(
-              "flex flex-col items-center gap-1 p-1 rounded-full transition-all border-2",
-              location.pathname.startsWith("/dashboard/profile")
-                ? "border-blue-500"
-                : "border-transparent"
-            )}
+          <button
+            onClick={() => setIsProfileMenuOpen(true)}
+            className="flex flex-col items-center gap-1 transition-all"
           >
             <UserAvatar
               src={profile?.profile_picture}
               name={profile?.user?.name || "User"}
               size="sm"
-              className="h-7 w-7"
+              className={cn(
+                "h-7 w-7 ring-2",
+                isProfileMenuOpen
+                  ? "ring-blue-500"
+                  : "ring-transparent"
+              )}
             />
-          </Link>
+            <span className={cn(
+              "text-[10px] font-medium",
+              isProfileMenuOpen
+                ? "text-blue-400"
+                : "text-gray-400"
+            )}>Profile</span>
+          </button>
         </div>
       )}
+
+      {/* Profile Menu */}
+      <ProfileMenu isOpen={isProfileMenuOpen} onClose={() => setIsProfileMenuOpen(false)} />
 
       {/* Desktop Sidebar */}
       <div className="hidden md:block">

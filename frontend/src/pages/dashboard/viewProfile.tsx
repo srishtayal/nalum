@@ -442,16 +442,16 @@ const ViewProfile = () => {
             </div>
           )}
 
-          {/* Skills - Full Width */}
+          {/* Skills - Simplified */}
           {profile.skills && profile.skills.length > 0 && (
-            <div className="rounded-xl border border-white/10 bg-white/5 backdrop-blur-md shadow-xl p-6">
-              <h3 className="text-lg font-semibold text-white mb-4">Skills</h3>
+            <div className="rounded-xl border border-white/10 bg-white/5 backdrop-blur-md shadow-xl p-4">
+              <h3 className="text-sm font-medium text-gray-400 mb-3">Skills</h3>
               <div className="flex flex-wrap gap-2">
                 {profile.skills.map((skill, index) => (
                   <Badge
                     key={index}
                     variant="secondary"
-                    className="bg-white/5 text-gray-300 border border-white/10 hover:bg-white/10 transition-colors"
+                    className="bg-white/5 text-gray-400 text-xs border border-white/10 hover:bg-white/10 transition-colors"
                   >
                     {skill}
                   </Badge>

@@ -18,16 +18,6 @@ const ExploreLoginCta = () => {
 
       <div className="container mx-auto px-4 relative z-10">
         <div className="max-w-5xl mx-auto text-center">
-          {/* Sparkle Icon */}
-          <div className="inline-flex items-center justify-center mb-6 animate-fade-in">
-            <div className="relative">
-              <div className="absolute inset-0 bg-gradient-to-r from-nsut-maroon to-nsut-yellow rounded-full blur-md opacity-50 animate-pulse"></div>
-              <div className="relative bg-gradient-to-br from-nsut-maroon to-[#800000] p-4 rounded-full shadow-lg">
-                <Sparkles className="w-10 h-10 md:w-12 md:h-12 text-nsut-yellow" strokeWidth={2.5} />
-              </div>
-            </div>
-          </div>
-
           {/* Heading */}
           <h2 className="font-serif text-3xl md:text-5xl font-bold mb-4 animation-delay-200 animate-fade-in">
             <span className="bg-gradient-to-r from-nsut-maroon via-[#800000] to-nsut-maroon bg-clip-text text-transparent">

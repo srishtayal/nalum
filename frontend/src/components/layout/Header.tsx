@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import { Link } from "react-router-dom";
 import { Menu, X } from "lucide-react";
-import nsutLogo from "@/assets/logo.webp";
+import nsutLogo from "@/assets/nsut-logo.svg";
 
 const Header = ({ setHeaderHeight }) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -178,72 +178,125 @@ const Header = ({ setHeaderHeight }) => {
       {/* === MOBILE MENU (Portal) === */}
       {isMobileMenuOpen && createPortal(
         <div
-          className="fixed inset-0 bg-black bg-opacity-50 z-[60] md:hidden transition-opacity duration-300"
+          className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[60] md:hidden transition-opacity duration-300"
           onClick={() => setIsMobileMenuOpen(false)}
         >
           <div
-            className="fixed inset-y-0 left-0 w-64 bg-white shadow-lg z-[70] p-4 transform transition-transform duration-300 overflow-y-auto"
+            className="fixed inset-y-0 right-0 w-80 bg-white shadow-2xl z-[70] transform transition-transform duration-300 overflow-y-auto"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex justify-between items-center mb-6">
-              <div className="flex flex-col items-start">
-                <h1 className="text-lg font-bold leading-none tracking-wide text-gray-800 whitespace-nowrap">
-                  <span className="text-red-600">N</span>SUT
-                  <span className="text-red-600"> ALUM</span>NI
-                </h1>
-                <span className="block text-[7px] text-gray-700 font-bold tracking-widest">
-                  ASSOCIATION
-                </span>
+            {/* Header with Logo */}
+            <div className="sticky top-0 bg-white border-b-2 border-nsut-maroon p-4 shadow-lg z-10">
+              <div className="flex items-center justify-between mb-3">
+                <Link 
+                  to="/" 
+                  className="flex items-center gap-2"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  <img
+                    src={nsutLogo}
+                    alt="NSUT Logo"
+                    className="h-12 w-12 object-contain"
+                  />
+                  <div className="flex flex-col items-start">
+                    <h1 className="text-base font-bold leading-none tracking-wide whitespace-nowrap">
+                      <span className="text-red-600">N</span>SUT
+                      <span className="text-red-600"> ALUM</span>NI
+                    </h1>
+                    <span className="block text-[8px] font-bold tracking-widest text-gray-700">
+                      ASSOCIATION
+                    </span>
+                  </div>
+                </Link>
+                <button
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="text-gray-600 hover:text-nsut-maroon transition-colors duration-200 p-2 hover:bg-gray-100 rounded-full"
+                  aria-label="Close mobile menu"
+                >
+                  <X size={24} />
+                </button>
               </div>
-              <button
-                onClick={() => setIsMobileMenuOpen(false)}
-                className="hover:text-nsut-maroon transition-colors duration-200 hover:scale-110"
-                aria-label="Close mobile menu"
-              >
-                <X />
-              </button>
+              
+              {/* Quick Action Buttons */}
+              <div className="flex gap-2">
+                <Link 
+                  to="/login" 
+                  className="flex-1 bg-white text-nsut-maroon font-semibold py-2 px-3 rounded-lg text-sm hover:shadow-lg hover:scale-105 transition-all duration-300 text-center"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  Login
+                </Link>
+                <Link
+                  to="/giving"
+                  className="flex-1 bg-nsut-yellow text-nsut-maroon font-semibold py-2 px-3 rounded-lg text-sm hover:shadow-lg hover:scale-105 transition-all duration-300 text-center"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  Give
+                </Link>
+              </div>
             </div>
 
-            <nav className="flex flex-col space-y-4 pb-8">
-              {/* Mobile CTAs at top for visibility */}
-              <div className="flex flex-col gap-3 mb-4">
-                <Link to="/login" className="bg-nsut-maroon text-white font-bold py-2 px-4 rounded hover:shadow-lg hover:scale-105 transition-all duration-300 text-center">
-                  myNSUT Login
-                </Link>
-                <a
-                  href="/giving"
-                  className="bg-nsut-yellow text-nsut-maroon font-bold py-2 px-4 rounded hover:shadow-lg hover:scale-105 transition-all duration-300 text-center"
-                >
-                  Make a Gift
-                </a>
-              </div>
-              <hr className="border-gray-200" />
-
+            {/* Navigation Links */}
+            <nav className="p-4 space-y-1">
               {Object.entries(navLinks).map(([title, sublinks]) => (
-                <div key={title}>
-                  <h3 className="font-serif text-nsut-maroon mb-2 font-semibold">
-                    {title}
-                  </h3>
-                  {sublinks.map((link) => (
+                <div key={title} className="mb-4">
+                  {title === "Giving" && sublinks.length === 0 ? (
                     <Link
-                      key={link}
-                      to={`/${title
-                        .toLowerCase()
-                        .replace(/ & /g, "-")}/${link
-                          .toLowerCase()
-                          .replace(/ /g, "-")}`}
-                      className="block pl-4 py-1 text-sm hover:bg-gradient-to-r hover:from-nsut-beige hover:to-transparent hover:pl-6 transition-all duration-200 rounded"
+                      to="/giving"
+                      className="block py-3 px-4 font-serif text-base font-semibold text-nsut-maroon bg-gradient-to-r from-amber-50 to-transparent rounded-lg hover:from-amber-100 transition-all duration-200"
+                      onClick={() => setIsMobileMenuOpen(false)}
                     >
-                      {link}
+                      {title}
                     </Link>
-                  ))}
+                  ) : (
+                    <>
+                      <h3 className="font-serif text-base font-semibold text-nsut-maroon px-4 py-2 bg-gray-50 rounded-lg mb-2">
+                        {title}
+                      </h3>
+                      <div className="space-y-1 pl-2">
+                        {sublinks.map((link) => (
+                          <Link
+                            key={link}
+                            to={`/${title
+                              .toLowerCase()
+                              .replace(/ & /g, "-")}/${link
+                                .toLowerCase()
+                                .replace(/ /g, "-")}`}
+                            className="block py-2 px-4 text-sm text-gray-700 hover:bg-gradient-to-r hover:from-nsut-beige hover:to-transparent hover:text-nsut-maroon hover:translate-x-1 transition-all duration-200 rounded-lg border-l-2 border-transparent hover:border-nsut-maroon"
+                            onClick={() => setIsMobileMenuOpen(false)}
+                          >
+                            {link}
+                          </Link>
+                        ))}
+                      </div>
+                    </>
+                  )}
                 </div>
               ))}
-              <hr className="border-gray-200" />
-              <Link to="/about" className="hover:text-nsut-maroon transition-colors duration-200 font-medium">
-                About
-              </Link>
+              
+              {/* About Link */}
+              <div className="pt-4 border-t border-gray-200">
+                <Link 
+                  to="/about" 
+                  className="block py-3 px-4 text-gray-700 hover:bg-gradient-to-r hover:from-nsut-beige hover:to-transparent hover:text-nsut-maroon font-medium rounded-lg transition-all duration-200"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  About
+                </Link>
+              </div>
             </nav>
+
+            {/* Footer */}
+            <div className="sticky bottom-0 bg-gray-50 p-4 border-t border-gray-200">
+              <a
+                href="https://www.nsut.ac.in/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="block text-xs text-gray-600 hover:text-nsut-maroon transition-colors text-center"
+              >
+                Netaji Subhas University of Technology
+              </a>
+            </div>
           </div>
         </div>,
         document.body

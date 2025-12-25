@@ -10,6 +10,7 @@ export const setAuthToken = (token: string | null) => {
 const api = axios.create({
   baseURL: BASE_URL,
   timeout: 60000, // 60 seconds timeout for slow Render cold starts
+  withCredentials: true, // Enable sending/receiving cookies
   headers: {
     "ngrok-skip-browser-warning": "true",
   },
@@ -18,6 +19,7 @@ const api = axios.create({
 const refreshApi = axios.create({
   baseURL: BASE_URL,
   timeout: 60000, // 60 seconds timeout
+  withCredentials: true, // Enable sending/receiving cookies
   headers: {
     "ngrok-skip-browser-warning": "true",
   },
@@ -37,7 +39,7 @@ api.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config;
     if (
-      error.response.status === 401 &&
+      error.response?.status === 401 &&
       originalRequest.headers.Authorization &&
       !originalRequest._retry
     ) {
@@ -49,7 +51,25 @@ api.interceptors.response.use(
           { withCredentials: true }
         );
         const newAccessToken = response.data.data.access_token;
+        const userData = response.data.data.user;
+        
+        // Update the access token
         setAuthToken(newAccessToken);
+        
+        // Update localStorage
+        localStorage.setItem("accessToken", newAccessToken);
+        if (userData) {
+          localStorage.setItem("user", JSON.stringify(userData));
+        }
+        
+        // Dispatch event to update AuthContext
+        window.dispatchEvent(new CustomEvent("token-refreshed", { 
+          detail: { 
+            accessToken: newAccessToken, 
+            user: userData 
+          } 
+        }));
+        
         originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
         return api(originalRequest);
       } catch (refreshError) {
@@ -102,6 +122,24 @@ export const searchUsers = async (query: string, filters: any = {}) => {
   }
 
   return api.get(`/profile/search?${params.toString()}`);
+};
+
+export const searchPosts = async (query: string) => {
+  const params = new URLSearchParams();
+  params.append("query", query);
+  return api.get(`/posts/search?${params.toString()}`);
+};
+
+export const globalSearch = async (query: string, filters: any = {}) => {
+  const [usersResponse, postsResponse] = await Promise.all([
+    searchUsers(query, filters).catch(() => ({ data: { profiles: [] } })),
+    searchPosts(query).catch(() => ({ data: { data: [] } }))
+  ]);
+
+  return {
+    users: usersResponse.data.profiles || [],
+    posts: postsResponse.data.data || []
+  };
 };
 
 export default api;

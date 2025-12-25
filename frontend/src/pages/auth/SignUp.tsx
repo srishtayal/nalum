@@ -14,7 +14,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Mail, Lock, User, Briefcase } from "lucide-react";
-import nsutLogo from "@/assets/logo.webp";
+import nsutLogo from "@/assets/nsut-logo.svg";
 import nsutCampusHero from "@/assets/hero.webp";
 import { useAuth } from "@/context/AuthContext";
 

@@ -27,7 +27,7 @@ const sessionSchema = new mongoose.Schema(
 		refresh_token_expires_at: {
 			type: Date,
 			required: true,
-			default: () => new Date(Date.now() + 365 * 24 * 60 * 60 * 1000), // 1 year
+			default: () => new Date(Date.now() + 14 * 24 * 60 * 60 * 1000), // 14 days
 			expires: 0, // auto-delete when expired
 		}
 	},

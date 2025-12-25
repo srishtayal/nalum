@@ -11,6 +11,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import ReportDialog from "@/components/reports/ReportDialog";
+import { parseFormattedText } from "@/lib/textFormatting";
 
 interface Post {
   _id: string;
@@ -214,10 +215,6 @@ const PostCard = ({
 
       {/* Content */}
       <div className="space-y-3">
-        <div className="flex items-center gap-2">
-          <h2 className="text-xl font-bold text-white">{post.title}</h2>
-          {getStatusBadge()}
-        </div>
         {showRejectionReason &&
           post.status === "rejected" &&
           post.rejection_reason && (
@@ -229,13 +226,16 @@ const PostCard = ({
               </AlertDescription>
             </Alert>
           )}
+        <div className="flex items-center gap-2">
+          {getStatusBadge()}
+        </div>
         <div>
           <div
             ref={contentRef}
-            className={`text-gray-300 whitespace-pre-wrap break-words leading-relaxed ${!isExpanded ? "line-clamp-4" : ""
+            className={`text-gray-300 break-words leading-relaxed space-y-1 ${!isExpanded ? "line-clamp-6" : ""
             }`}
           >
-            {post.content}
+            {parseFormattedText(post.content)}
           </div>
           {isTruncated && !isExpanded && (
             <button
@@ -297,7 +297,7 @@ const PostCard = ({
                     e.stopPropagation();
                     goToPreviousImage();
                   }}
-                  className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+                  className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-2 rounded-full md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-200"
                   aria-label="Previous image"
                 >
                   <ChevronLeft className="w-5 h-5" />
@@ -308,7 +308,7 @@ const PostCard = ({
                     e.stopPropagation();
                     goToNextImage();
                   }}
-                  className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+                  className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-2 rounded-full md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-200"
                   aria-label="Next image"
                 >
                   <ChevronRight className="w-5 h-5" />
