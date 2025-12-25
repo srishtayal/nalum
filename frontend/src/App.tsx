@@ -126,14 +126,15 @@ function AppContent() {
     }
   }, [isRestoringSession, isContentReady]);
 
-  if (showAnimation) {
-    return (
-      <LoadingAnimation
-        onAnimationComplete={() => setShowAnimation(false)}
-        isContentReady={isContentReady}
-      />
-    );
-  }
+  // COMMENTED OUT: Website intro animation
+  // if (showAnimation) {
+  //   return (
+  //     <LoadingAnimation
+  //       onAnimationComplete={() => setShowAnimation(false)}
+  //       isContentReady={isContentReady}
+  //     />
+  //   );
+  // }
 
   if (isRestoringSession) {
     return <SessionLoadingScreen />;
