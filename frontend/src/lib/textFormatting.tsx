@@ -65,10 +65,15 @@ export const parseFormattedText = (text: string) => {
       for (let i = 0; i < segments.length; i += 3) {
         if (segments[i]) result.push(segments[i]);
         if (segments[i + 1] && segments[i + 2]) {
+          // Ensure URL has protocol
+          let url = segments[i + 2];
+          if (!url.match(/^https?:\/\//i)) {
+            url = 'https://' + url;
+          }
           result.push(
             <a
               key={`link-${lineIndex}-${i}`}
-              href={segments[i + 2]}
+              href={url}
               target="_blank"
               rel="noopener noreferrer"
               className="text-blue-400 hover:text-blue-300 underline"

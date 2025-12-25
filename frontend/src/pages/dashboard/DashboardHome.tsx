@@ -1,16 +1,16 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { useProfile } from "@/context/ProfileContext";
 import PeopleYouMightKnow from "@/pages/dashboard/PeopleYouMightKnow";
 import UpcomingEvents from "@/pages/dashboard/UpcomingEvents";
 import ConnectionsPopover from "@/components/ConnectionsPopover";
-import CreatePostModal from "@/components/posts/CreatePostModal";
 import PostsFeed from "@/components/posts/PostsFeed";
 import { PenSquare, Search, X, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
 const DashboardHome = () => {
   const { profile } = useProfile();
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const navigate = useNavigate();
   const [refreshTrigger, setRefreshTrigger] = useState(0);
   const [searchQuery, setSearchQuery] = useState("");
   const [debouncedQuery, setDebouncedQuery] = useState("");
@@ -34,7 +34,7 @@ const DashboardHome = () => {
     const isAlumni = (profile?.user as any)?.role === "alumni";
 
     if (isAlumni) {
-      setIsModalOpen(true);
+      navigate("/dashboard/posts");
     } else {
       toast.info(
         "Post creation will be available for students soon. Stay tuned!"
@@ -100,12 +100,6 @@ const DashboardHome = () => {
           </div>
         </div>
       </div>
-
-      <CreatePostModal
-        open={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        onPostCreated={() => setRefreshTrigger((prev) => prev + 1)}
-      />
     </div>
   );
 };
