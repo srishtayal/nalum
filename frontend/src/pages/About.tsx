@@ -7,70 +7,174 @@ import { useLocation } from 'react-router-dom';
 // ============================================
 // Add team member photos in the public folder at these paths:
 // For Faculty: /about/team/faculty/[name].jpg
-// For Students: /about/team/students/[name].jpg
+// For Developers: /about/team/developers/[name].jpg
+// For Operations: /about/team/operations/[name].jpg
 
 interface TeamMember {
   name: string;
-  role?: string;
+  branch: string;  // ADD BRANCH HERE (e.g., "Computer Science", "IT", "ECE")
+  year: string;    // ADD YEAR HERE (e.g., "2024", "2025")
+  designation?: string;  // ADD DESIGNATION HERE (optional, for faculty/core team)
   image: string;
+  linkedinUrl: string;  // Add LinkedIn profile URL here
 }
 
+// FACULTY TEAM (2 members)
 const facultyMembers: TeamMember[] = [
   {
     name: 'Prof. Anand Srivastava',
-    role: 'Vice Chancellor, NSUT',
-    image: '/about/team/faculty/prof-anand-srivastava.jpg'
+    branch: '',  // Leave empty for faculty
+    year: '',    // Leave empty for faculty
+    designation: 'Vice Chancellor',  // ADD DESIGNATION HERE
+    image: '/about/team/faculty/anandsrivastava.webp',  // ADD IMAGE PATH HERE
+    linkedinUrl: null  // ADD LINKEDIN URL HERE
   },
   {
-    name: 'Faculty Advisor 1',
-    role: 'Professor, Department',
-    image: '/about/team/faculty/faculty-1.jpg'
+    name: 'Prof. MPS Bhatia',
+    branch: '',  // Leave empty for faculty
+    year: '',    // Leave empty for faculty
+    designation: 'Head, TnP',  // ADD DESIGNATION HERE
+    image: '/about/team/faculty/mpsbhatia.webp',  // ADD IMAGE PATH HERE
+    linkedinUrl: null  // ADD LINKEDIN URL HERE
   },
   {
-    name: 'Faculty Advisor 2',
-    role: 'Professor, Department',
-    image: '/about/team/faculty/faculty-2.jpg'
+    name: 'Prof. Ritu Sibal',
+    branch: '',  // Leave empty for faculty
+    year: '',    // Leave empty for faculty
+    designation: 'Chairperson Alumni Student Affairs',  // ADD DESIGNATION HERE
+    image: '/about/team/faculty/ritusibal.webp',  // ADD IMAGE PATH HERE
+    linkedinUrl: null  // ADD LINKEDIN URL HERE
   },
   {
-    name: 'Faculty Advisor 3',
-    role: 'Professor, Department',
-    image: '/about/team/faculty/faculty-3.jpg'
+    name: 'Prof. Rajesh Rawat',
+    branch: '',  // Leave empty for faculty
+    year: '',    // Leave empty for faculty
+    designation: 'Coordinator, TnP',  // ADD DESIGNATION HERE
+    image: '/about/team/faculty/rajeshrawat.webp',  // ADD IMAGE PATH HERE
+    linkedinUrl: null  // ADD LINKEDIN URL HERE
   }
-  // Add more faculty members here
 ];
 
-const studentMembers: TeamMember[] = [
+// CORE TEAM (5 members)
+const coreTeamMembers: TeamMember[] = [
   {
-    name: 'Student Lead 1',
-    role: 'President',
-    image: '/about/team/students/student-1.jpg'
+    name: 'Core Team Member 1',
+    branch: 'CSE',  // ADD BRANCH HERE
+    year: '2025',   // ADD YEAR HERE
+    designation: 'President',  // ADD DESIGNATION HERE
+    image: '/about/team/core/core-1.jpg',  // ADD IMAGE PATH HERE
+    linkedinUrl: 'https://www.linkedin.com/in/username'  // ADD LINKEDIN URL HERE
   },
   {
-    name: 'Student Lead 2',
-    role: 'Vice President',
-    image: '/about/team/students/student-2.jpg'
+    name: 'Core Team Member 2',
+    branch: 'CSE',  // ADD BRANCH HERE
+    year: '2025',   // ADD YEAR HERE
+    designation: 'Vice President',  // ADD DESIGNATION HERE
+    image: '/about/team/core/core-2.jpg',  // ADD IMAGE PATH HERE
+    linkedinUrl: 'https://www.linkedin.com/in/username'  // ADD LINKEDIN URL HERE
   },
   {
-    name: 'Student Member 3',
-    role: 'Technical Head',
-    image: '/about/team/students/student-3.jpg'
+    name: 'Core Team Member 3',
+    branch: 'CSE',  // ADD BRANCH HERE
+    year: '2025',   // ADD YEAR HERE
+    designation: 'General Secretary',  // ADD DESIGNATION HERE
+    image: '/about/team/core/core-3.jpg',  // ADD IMAGE PATH HERE
+    linkedinUrl: 'https://www.linkedin.com/in/username'  // ADD LINKEDIN URL HERE
   },
   {
-    name: 'Student Member 4',
-    role: 'Events Coordinator',
-    image: '/about/team/students/student-4.jpg'
+    name: 'Core Team Member 4',
+    branch: 'CSE',  // ADD BRANCH HERE
+    year: '2025',   // ADD YEAR HERE
+    designation: 'Treasurer',  // ADD DESIGNATION HERE
+    image: '/about/team/core/core-4.jpg',  // ADD IMAGE PATH HERE
+    linkedinUrl: 'https://www.linkedin.com/in/username'  // ADD LINKEDIN URL HERE
   },
   {
-    name: 'Student Member 5',
-    role: 'Marketing Head',
-    image: '/about/team/students/student-5.jpg'
-  },
-  {
-    name: 'Student Member 6',
-    role: 'Content Writer',
-    image: '/about/team/students/student-6.jpg'
+    name: 'Core Team Member 5',
+    branch: 'CSE',  // ADD BRANCH HERE
+    year: '2025',   // ADD YEAR HERE
+    designation: 'Coordinator',  // ADD DESIGNATION HERE
+    image: '/about/team/core/core-5.jpg',  // ADD IMAGE PATH HERE
+    linkedinUrl: 'https://www.linkedin.com/in/username'  // ADD LINKEDIN URL HERE
   }
-  // Add more student members here
+];
+
+// DEVELOPERS TEAM (7 members)
+const developerMembers: TeamMember[] = [
+  {
+    name: 'Manik Gaur',
+    branch: 'IT',  // ADD BRANCH HERE
+    year: '2028',   // ADD YEAR HERE
+    image: '/about/team/developers/manikgaur.webp',  // ADD IMAGE PATH HERE
+    linkedinUrl: 'https://www.linkedin.com/in/manik-gaur-083922285/'  // ADD LINKEDIN URL HERE
+  },
+  {
+    name: 'Anant Mathur',
+    branch: 'IT',  // ADD BRANCH HERE
+    year: '2028',   // ADD YEAR HERE
+    image: '/about/team/developers/anantmathur.webp',  // ADD IMAGE PATH HERE
+    linkedinUrl: 'https://www.linkedin.com/in/anant-mathur-035519321/'  // ADD LINKEDIN URL HERE
+  },
+  {
+    name: 'Saumy Bhargava',
+    branch: 'CSAI',  // ADD BRANCH HERE
+    year: '2028',   // ADD YEAR HERE
+    image: '/about/team/developers/saumybhargava.webp',  // ADD IMAGE PATH HERE
+    linkedinUrl: 'https://www.linkedin.com/in/saumy-bhargava-744883321'  // ADD LINKEDIN URL HERE
+  },
+  {
+    name: 'Nischay Bagari',
+    branch: 'ITNS',  // ADD BRANCH HERE
+    year: '2028',   // ADD YEAR HERE
+    image: '/about/team/developers/nischaybagari.webp',  // ADD IMAGE PATH HERE
+    linkedinUrl: 'https://in.linkedin.com/in/nischay-bagari-a56013324'  // ADD LINKEDIN URL HERE
+  },
+  {
+    name: 'Daivik Awasthi',
+    branch: 'IT',  // ADD BRANCH HERE
+    year: '2027',   // ADD YEAR HERE
+    image: '/about/team/developers/daivikawasthi.webp',  // ADD IMAGE PATH HERE
+    linkedinUrl: 'https://www.linkedin.com/in/daivik-awasthi/'  // ADD LINKEDIN URL HERE
+  }
+];
+
+// OPERATIONS TEAM (10 members)
+const operationsMembers: TeamMember[] = [
+  {
+    name: 'Sarthak Verma',
+    branch: 'IT',  // ADD BRANCH HERE
+    year: '2028',   // ADD YEAR HERE
+    image: '/about/team/operations/sarthakverma.webp',  // ADD IMAGE PATH HERE
+    linkedinUrl: 'https://linkedin.com/in/rn-vrma'  // ADD LINKEDIN URL HERE
+  },
+  {
+    name: 'Operations Member 2',
+    branch: 'CSE',  // ADD BRANCH HERE
+    year: '2025',   // ADD YEAR HERE
+    image: '/about/team/operations/ops-2.jpg',  // ADD IMAGE PATH HERE
+    linkedinUrl: 'https://www.linkedin.com/in/username'  // ADD LINKEDIN URL HERE
+  },
+  {
+    name: 'Operations Member 3',
+    branch: 'CSE',  // ADD BRANCH HERE
+    year: '2025',   // ADD YEAR HERE
+    image: '/about/team/operations/ops-3.jpg',  // ADD IMAGE PATH HERE
+    linkedinUrl: 'https://www.linkedin.com/in/username'  // ADD LINKEDIN URL HERE
+  },
+  {
+    name: 'Operations Member 4',
+    branch: 'CSE',  // ADD BRANCH HERE
+    year: '2025',   // ADD YEAR HERE
+    image: '/about/team/operations/ops-4.jpg',  // ADD IMAGE PATH HERE
+    linkedinUrl: 'https://www.linkedin.com/in/username'  // ADD LINKEDIN URL HERE
+  },
+  {
+    name: 'Operations Member 5',
+    branch: 'CSE',  // ADD BRANCH HERE
+    year: '2025',   // ADD YEAR HERE
+    image: '/about/team/operations/ops-5.jpg',  // ADD IMAGE PATH HERE
+    linkedinUrl: 'https://www.linkedin.com/in/username'  // ADD LINKEDIN URL HERE
+  }
 ];
 // ============================================
 
@@ -332,107 +436,218 @@ const AboutPage = () => {
               Meet Our Team
             </h2>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-              {/* Faculty Advisors - Left Side */}
-              <div>
-                <div className="mb-8 text-center">
-                  <div className="inline-flex items-center gap-3 px-6 py-3 bg-gradient-to-r from-nsut-maroon to-[#800000] text-white rounded-full shadow-lg">
-                    <GraduationCap className="w-6 h-6" />
-                    <h3 className="font-serif text-2xl font-bold">Faculty Advisors</h3>
-                  </div>
-                </div>
-                
-                <div className="space-y-6">
-                  {facultyMembers.map((member, index) => (
-                    <div
-                      key={index}
-                      className="group bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-500 p-6 border border-gray-100 hover:border-nsut-yellow/50 animate-fade-in hover:-translate-y-2"
-                      style={{ animationDelay: `${index * 100}ms` }}
-                    >
-                      <div className="flex items-center gap-6">
-                        {/* Profile Picture */}
-                        <div className="w-24 h-24 rounded-full overflow-hidden bg-gradient-to-br from-nsut-maroon to-nsut-yellow flex-shrink-0 shadow-lg group-hover:scale-110 transition-transform duration-300 border-4 border-white">
-                          {/* Placeholder - Replace with actual image */}
-                          <div className="w-full h-full flex items-center justify-center text-white text-2xl font-bold bg-gradient-to-br from-nsut-maroon to-nsut-yellow">
-                            {member.name.split(' ').map(n => n[0]).join('').slice(0, 2)}
-                          </div>
-                          {/* When you add actual images, uncomment this:
-                          <img
-                            src={member.image}
-                            alt={member.name}
-                            className="w-full h-full object-cover"
-                          />
-                          */}
-                        </div>
-                        
-                        {/* Member Info */}
-                        <div className="flex-grow">
-                          <h4 className="font-serif text-xl font-bold text-nsut-maroon mb-1 group-hover:text-[#800000] transition-colors">
-                            {member.name}
-                          </h4>
-                          {member.role && (
-                            <p className="text-gray-600 text-sm">{member.role}</p>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  ))}
+            {/* Faculty Section */}
+            <div className="mb-16">
+              <div className="mb-8 text-center">
+                <div className="inline-flex items-center gap-3 px-6 py-3 bg-gradient-to-r from-nsut-maroon to-[#800000] text-white rounded-full shadow-lg">
+                  <GraduationCap className="w-6 h-6" />
+                  <h3 className="font-serif text-2xl font-bold">Faculty</h3>
                 </div>
               </div>
-
-              {/* Student Team - Right Side */}
-              <div>
-                <div className="mb-8 text-center">
-                  <div className="inline-flex items-center gap-3 px-6 py-3 bg-gradient-to-r from-purple-600 to-purple-700 text-white rounded-full shadow-lg">
-                    <Users className="w-6 h-6" />
-                    <h3 className="font-serif text-2xl font-bold">Student Team</h3>
-                  </div>
-                </div>
-                
-                <div className="space-y-6">
-                  {studentMembers.map((member, index) => (
+              
+              <div className="flex flex-wrap justify-center gap-8 max-w-6xl mx-auto">
+                {facultyMembers.map((member, index) => (
                     <div
                       key={index}
-                      className="group bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-500 p-6 border border-gray-100 hover:border-purple-300 animate-fade-in hover:-translate-y-2"
+                      className="group bg-white rounded-xl shadow-md hover:shadow-2xl transition-all duration-500 p-6 border border-gray-100 hover:border-nsut-yellow/50 animate-fade-in hover:-translate-y-2 flex flex-col items-center w-44"
                       style={{ animationDelay: `${index * 100}ms` }}
                     >
-                      <div className="flex items-center gap-6">
-                        {/* Profile Picture */}
-                        <div className="w-24 h-24 rounded-full overflow-hidden bg-gradient-to-br from-purple-500 to-purple-700 flex-shrink-0 shadow-lg group-hover:scale-110 transition-transform duration-300 border-4 border-white">
-                          {/* Placeholder - Replace with actual image */}
-                          <div className="w-full h-full flex items-center justify-center text-white text-2xl font-bold bg-gradient-to-br from-purple-500 to-purple-700">
-                            {member.name.split(' ').map(n => n[0]).join('').slice(0, 2)}
-                          </div>
-                          {/* When you add actual images, uncomment this:
-                          <img
-                            src={member.image}
-                            alt={member.name}
-                            className="w-full h-full object-cover"
-                          />
-                          */}
-                        </div>
-                        
-                        {/* Member Info */}
-                        <div className="flex-grow">
-                          <h4 className="font-serif text-xl font-bold text-nsut-maroon mb-1 group-hover:text-purple-700 transition-colors">
-                            {member.name}
-                          </h4>
-                          {member.role && (
-                            <p className="text-gray-600 text-sm">{member.role}</p>
-                          )}
-                        </div>
+                      {/* Profile Picture */}
+                      <div className="w-32 h-32 rounded-full overflow-hidden bg-gradient-to-br from-nsut-maroon to-nsut-yellow flex-shrink-0 shadow-lg group-hover:scale-110 transition-transform duration-300 border-4 border-white mb-4">
+                        <img
+                          src={member.image}
+                          alt={member.name}
+                          className="w-full h-full object-cover"
+                          onError={(e) => {
+                            e.currentTarget.style.display = 'none';
+                            e.currentTarget.parentElement!.innerHTML = `<div class="w-full h-full flex items-center justify-center text-white text-2xl font-bold bg-gradient-to-br from-nsut-maroon to-nsut-yellow">${member.name.split(' ').map((n: string) => n[0]).join('').slice(0, 2)}</div>`;
+                          }}
+                        />
                       </div>
+                      
+                      {/* Member Name */}
+                      <h4 className="font-serif text-lg font-bold text-nsut-maroon mb-1 text-center group-hover:text-[#800000] transition-colors">
+                        {member.name}
+                      </h4>
+
+                      {/* Designation */}
+                      {member.designation && (
+                        <p className="text-gray-600 text-sm text-center">
+                          {member.designation}
+                        </p>
+                      )}
                     </div>
                   ))}
-                </div>
               </div>
             </div>
 
-            {/* Team Note */}
-            <div className="mt-12 text-center">
-              <p className="text-gray-500 text-sm italic">
-                Note: Add team member photos at /about/team/faculty/ and /about/team/students/ paths
-              </p>
+            {/* Core Team Section */}
+            <div className="mb-16">
+              <div className="mb-8 text-center">
+                <div className="inline-flex items-center gap-3 px-6 py-3 bg-gradient-to-r from-emerald-600 to-emerald-700 text-white rounded-full shadow-lg">
+                  <Users className="w-6 h-6" />
+                  <h3 className="font-serif text-2xl font-bold">Core Team</h3>
+                </div>
+              </div>
+              
+              <div className="flex flex-wrap justify-center gap-8 max-w-6xl mx-auto">
+                {coreTeamMembers.map((member, index) => (
+                    <div
+                      key={index}
+                      className="group bg-white rounded-xl shadow-md hover:shadow-2xl transition-all duration-500 p-6 border border-gray-100 hover:border-emerald-300 animate-fade-in hover:-translate-y-2 flex flex-col items-center w-44"
+                      style={{ animationDelay: `${index * 100}ms` }}
+                    >
+                      {/* Profile Picture */}
+                      <div className="w-32 h-32 rounded-full overflow-hidden bg-gradient-to-br from-emerald-500 to-emerald-700 flex-shrink-0 shadow-lg group-hover:scale-110 transition-transform duration-300 border-4 border-white mb-4">
+                        <img
+                          src={member.image}
+                          alt={member.name}
+                          className="w-full h-full object-cover"
+                          onError={(e) => {
+                            e.currentTarget.style.display = 'none';
+                            e.currentTarget.parentElement!.innerHTML = `<div class="w-full h-full flex items-center justify-center text-white text-2xl font-bold bg-gradient-to-br from-emerald-500 to-emerald-700">${member.name.split(' ').map((n: string) => n[0]).join('').slice(0, 2)}</div>`;
+                          }}
+                        />
+                      </div>
+                      
+                      {/* Member Name */}
+                      <h4 className="font-serif text-lg font-bold text-nsut-maroon mb-1 text-center group-hover:text-emerald-700 transition-colors">
+                        {member.name}
+                      </h4>
+
+                      {/* Designation */}
+                      {member.designation && (
+                        <p className="text-emerald-700 text-xs font-semibold mb-1 text-center">
+                          {member.designation}
+                        </p>
+                      )}
+
+                      {/* Branch - Year */}
+                      <p className="text-gray-600 text-sm mb-3 text-center">
+                        {member.branch} - {member.year}
+                      </p>
+
+                      {/* LinkedIn Icon */}
+                      <a
+                        href={member.linkedinUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="mt-auto w-10 h-10 rounded-full bg-[#0077B5] hover:bg-[#005582] flex items-center justify-center transition-all duration-300 hover:scale-110 shadow-md"
+                        aria-label={`LinkedIn profile of ${member.name}`}
+                      >
+                        <Linkedin className="w-5 h-5 text-white" />
+                      </a>
+                    </div>
+                  ))}
+              </div>
+            </div>
+
+            {/* Developers Section */}
+            <div className="mb-16">
+              <div className="mb-8 text-center">
+                <div className="inline-flex items-center gap-3 px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-full shadow-lg">
+                  <Users className="w-6 h-6" />
+                  <h3 className="font-serif text-2xl font-bold">Developers Team</h3>
+                </div>
+              </div>
+              
+              <div className="flex flex-wrap justify-center gap-8 max-w-6xl mx-auto">
+                {developerMembers.map((member, index) => (
+                    <div
+                      key={index}
+                      className="group bg-white rounded-xl shadow-md hover:shadow-2xl transition-all duration-500 p-6 border border-gray-100 hover:border-blue-300 animate-fade-in hover:-translate-y-2 flex flex-col items-center w-44"
+                      style={{ animationDelay: `${index * 100}ms` }}
+                    >
+                      {/* Profile Picture */}
+                      <div className="w-32 h-32 rounded-full overflow-hidden bg-gradient-to-br from-blue-500 to-blue-700 flex-shrink-0 shadow-lg group-hover:scale-110 transition-transform duration-300 border-4 border-white mb-4">
+                        <img
+                          src={member.image}
+                          alt={member.name}
+                          className="w-full h-full object-cover"
+                          onError={(e) => {
+                            e.currentTarget.style.display = 'none';
+                            e.currentTarget.parentElement!.innerHTML = `<div class="w-full h-full flex items-center justify-center text-white text-2xl font-bold bg-gradient-to-br from-blue-500 to-blue-700">${member.name.split(' ').map((n: string) => n[0]).join('').slice(0, 2)}</div>`;
+                          }}
+                        />
+                      </div>
+                      
+                      {/* Member Name */}
+                      <h4 className="font-serif text-lg font-bold text-nsut-maroon mb-1 text-center group-hover:text-blue-700 transition-colors">
+                        {member.name}
+                      </h4>
+
+                      {/* Branch - Year */}
+                      <p className="text-gray-600 text-sm mb-3 text-center">
+                        {member.branch} - {member.year}
+                      </p>
+
+                      {/* LinkedIn Icon */}
+                      <a
+                        href={member.linkedinUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="mt-auto w-10 h-10 rounded-full bg-[#0077B5] hover:bg-[#005582] flex items-center justify-center transition-all duration-300 hover:scale-110 shadow-md"
+                        aria-label={`LinkedIn profile of ${member.name}`}
+                      >
+                        <Linkedin className="w-5 h-5 text-white" />
+                      </a>
+                    </div>
+                  ))}
+              </div>
+            </div>
+
+            {/* Operations Section */}
+            <div className="mb-16">
+              <div className="mb-8 text-center">
+                <div className="inline-flex items-center gap-3 px-6 py-3 bg-gradient-to-r from-purple-600 to-purple-700 text-white rounded-full shadow-lg">
+                  <Users className="w-6 h-6" />
+                  <h3 className="font-serif text-2xl font-bold">Operations Team</h3>
+                </div>
+              </div>
+              
+              <div className="flex flex-wrap justify-center gap-8 max-w-6xl mx-auto">
+                {operationsMembers.map((member, index) => (
+                    <div
+                      key={index}
+                      className="group bg-white rounded-xl shadow-md hover:shadow-2xl transition-all duration-500 p-6 border border-gray-100 hover:border-purple-300 animate-fade-in hover:-translate-y-2 flex flex-col items-center w-44"
+                      style={{ animationDelay: `${index * 100}ms` }}
+                    >
+                      {/* Profile Picture */}
+                      <div className="w-32 h-32 rounded-full overflow-hidden bg-gradient-to-br from-purple-500 to-purple-700 flex-shrink-0 shadow-lg group-hover:scale-110 transition-transform duration-300 border-4 border-white mb-4">
+                        <img
+                          src={member.image}
+                          alt={member.name}
+                          className="w-full h-full object-cover"
+                          onError={(e) => {
+                            e.currentTarget.style.display = 'none';
+                            e.currentTarget.parentElement!.innerHTML = `<div class="w-full h-full flex items-center justify-center text-white text-2xl font-bold bg-gradient-to-br from-purple-500 to-purple-700">${member.name.split(' ').map((n: string) => n[0]).join('').slice(0, 2)}</div>`;
+                          }}
+                        />
+                      </div>
+                      
+                      {/* Member Name */}
+                      <h4 className="font-serif text-lg font-bold text-nsut-maroon mb-1 text-center group-hover:text-purple-700 transition-colors">
+                        {member.name}
+                      </h4>
+
+                      {/* Branch - Year */}
+                      <p className="text-gray-600 text-sm mb-3 text-center">
+                        {member.branch} - {member.year}
+                      </p>
+
+                      {/* LinkedIn Icon */}
+                      <a
+                        href={member.linkedinUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="mt-auto w-10 h-10 rounded-full bg-[#0077B5] hover:bg-[#005582] flex items-center justify-center transition-all duration-300 hover:scale-110 shadow-md"
+                        aria-label={`LinkedIn profile of ${member.name}`}
+                      >
+                        <Linkedin className="w-5 h-5 text-white" />
+                      </a>
+                    </div>
+                  ))}
+              </div>
             </div>
           </div>
         )}
