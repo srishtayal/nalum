@@ -145,7 +145,7 @@ const operationsMembers: TeamMember[] = [
     branch: 'IT',  // ADD BRANCH HERE
     year: '2028',   // ADD YEAR HERE
     image: '/about/team/operations/sarthakverma.webp',  // ADD IMAGE PATH HERE
-    linkedinUrl: 'https://www.linkedin.com/in/username'  // ADD LINKEDIN URL HERE
+    linkedinUrl: 'https://linkedin.com/in/rn-vrma'  // ADD LINKEDIN URL HERE
   },
   {
     name: 'Operations Member 2',
