@@ -687,8 +687,16 @@ const ProfileForm = () => {
           to="/"
           className="relative z-10 flex items-center gap-3 text-white"
         >
-          <img src={nsutLogo} alt="NSUT Logo" width="40" height="40" className="h-10 w-10 invert" />
-          <span className="text-2xl font-serif font-semibold">NALUM</span>
+          <img src={nsutLogo} alt="NSUT Logo" width="40" height="40" className="h-10 w-10" />
+          <div className="flex flex-col items-start">
+            <h1 className="text-xl md:text-2xl font-bold leading-none tracking-wide whitespace-nowrap">
+              <span className="text-nsut-yellow">N</span><span className="text-white">SUT</span>
+              <span className="text-nsut-yellow"> ALUM</span><span className="text-white">NI</span>
+            </h1>
+            <span className="block text-[8px] md:text-xs font-bold tracking-widest text-white">
+              ASSOCIATION
+            </span>
+          </div>
         </Link>
         <div className="relative z-10 text-white">
           <h1 className="text-4xl font-serif font-bold">
@@ -724,7 +732,15 @@ const ProfileForm = () => {
               className="lg:hidden flex items-center gap-3 text-nsut-maroon mb-6 justify-center"
             >
               <img src={nsutLogo} alt="NSUT Logo" className="h-8 w-8" />
-              <span className="text-2xl font-serif font-semibold">NALUM</span>
+              <div className="flex flex-col items-start">
+                <h1 className="text-xl font-bold leading-none tracking-wide text-gray-800 whitespace-nowrap">
+                  <span className="text-red-600">N</span>SUT
+                  <span className="text-red-600"> ALUM</span>NI
+                </h1>
+                <span className="block text-[8px] font-bold tracking-widest text-gray-700">
+                  ASSOCIATION
+                </span>
+              </div>
             </Link>
             <div className="mb-6">
               <div className="flex justify-between mb-2 text-xs text-gray-600">

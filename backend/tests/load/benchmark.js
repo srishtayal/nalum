@@ -1,6 +1,6 @@
 const autocannon = require('autocannon');
 
-const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:5000';
+const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:2478';
 
 // Benchmark configurations
 const benchmarks = [

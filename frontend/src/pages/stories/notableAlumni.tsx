@@ -206,25 +206,6 @@ const AlumniCard = ({ alumni, index }: { alumni: AlumniProfile; index: number })
           />
           <div className={`absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent`} />
         </motion.div>
-
-        {/* Secondary Image - Floating */}
-                {/* Floating Secondary Image */}
-        {alumni.image2 && (
-          <motion.div
-            className="absolute -right-4 -top-4 w-40 h-auto rounded-xl overflow-hidden shadow-xl border-4 border-white z-10"
-            initial={{ opacity: 0, x: 20, y: -20 }}
-            whileInView={{ opacity: 1, x: 0, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6, delay: 0.5 }}
-          >
-            <img
-              src={getImagePath(2)}
-              alt={`${alumni.name} secondary`}
-              className="w-full h-auto object-contain"
-              loading="lazy"
-            />
-          </motion.div>
-        )}
       </motion.div>
     </motion.div>
 

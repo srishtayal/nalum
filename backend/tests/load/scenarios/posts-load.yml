@@ -1,5 +1,5 @@
 config:
-  target: "http://localhost:5000"
+  target: "http://localhost:2478"
   processor: "../processor.js"
   phases:
     - duration: 60

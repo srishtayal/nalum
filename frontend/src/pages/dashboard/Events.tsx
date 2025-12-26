@@ -351,7 +351,7 @@ export default function Events() {
       {mostLikedEvents.length > 0 && (
         <div className="relative">
           <h2 className="text-2xl font-bold text-white mb-4">
-            🔥 Most Liked Events
+            Most Liked Events
           </h2>
           <div className="px-4 md:px-8">
             <div

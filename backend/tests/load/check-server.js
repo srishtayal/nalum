@@ -2,14 +2,14 @@
 
 const http = require('http');
 
-const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:5000';
+const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:2478';
 const url = new URL(BACKEND_URL);
 
 console.log(`🔍 Checking if backend is running at ${BACKEND_URL}...`);
 
 const options = {
   hostname: url.hostname,
-  port: url.port || 5000,
+  port: url.port || 2478,
   path: '/health',
   method: 'GET',
   timeout: 3000

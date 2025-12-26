@@ -1,33 +1,39 @@
-const nodemailer = require("nodemailer");
 const mailConfig = require("../config/mail.config");
-
-const transporter = nodemailer.createTransport({
-  host: "smtp.gmail.com",
-  port: 587,
-  secure: false,
-  auth: {
-    user: mailConfig.EMAIL,
-    pass: mailConfig.PASSWORD,
-  },
-  tls: {
-    rejectUnauthorized: true,
-    minVersion: "TLSv1.2"
-  },
-  connectionTimeout: 60000, // 60 seconds
-  greetingTimeout: 30000,   // 30 seconds
-  socketTimeout: 60000,      // 60 seconds
-});
 
 exports.sendMail = async (recipient, subject, text, html) => {
   try {
-    await transporter.sendMail({
-      from: `"${mailConfig.NAME}" <${mailConfig.EMAIL}>`,
-      to: recipient,
-      subject: subject,
-      text: text,
-      html: html,
+    const response = await fetch("https://api.brevo.com/v3/smtp/email", {
+      method: "POST",
+      headers: {
+        "accept": "application/json",
+        "api-key": mailConfig.SMTP_PASS,
+        "content-type": "application/json",
+      },
+      body: JSON.stringify({
+        sender: {
+          name: mailConfig.FROM_NAME,
+          email: mailConfig.FROM_EMAIL,
+        },
+        to: [
+          {
+            email: recipient,
+          },
+        ],
+        subject: subject,
+        htmlContent: html,
+        textContent: text,
+      }),
     });
-    return { error: false };
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.error("Brevo API error:", errorData);
+      throw new Error(`Brevo API error: ${response.status} - ${JSON.stringify(errorData)}`);
+    }
+
+    const result = await response.json();
+    console.log("Email sent successfully:", result.messageId);
+    return { error: false, messageId: result.messageId };
   } catch (error) {
     console.error("Mailer error:", error);
     return { error: true, message: error.message };

@@ -2,10 +2,8 @@ require("dotenv").config();
 console.log("Starting backend server...");
 const express = require("express");
 const http = require("http");
-
 const app = express();
 const server = http.createServer(app);
-
 const authRoutes = require("./routes/auth/index.js");
 const cors = require("cors");
 const helmet = require("helmet");
@@ -32,7 +30,10 @@ app.use((req, res, next) => {
   next();
 });
 app.use(cors({
-  origin: ['http://localhost:5173', 'http://nsut.alumninet.in', 'http://localhost:3000', 'http://localhost:5000', 'http://localhost'],
+  origin: ["https://nsut.alumninet.in",
+  "https://www.nsut.alumninet.in",
+  "http://localhost:5173",
+  "http://localhost"],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
   allowedHeaders: ['Content-Type', 'Authorization', 'ngrok-skip-browser-warning'],
@@ -87,8 +88,8 @@ app.get("/api/health", (req, res) => {
 });
 
 // listening to port
-const port = process.env.PORT || 5000;
-server.listen(port, () => {
+const port = process.env.PORT || 2478;
+server.listen(port,'127.0.0.1' ,() => {
   console.log(`Server is running on port ${port}`);
   console.log(`Socket.io is running on port ${port}`);
 });
