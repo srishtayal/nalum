@@ -63,7 +63,7 @@ const Header = ({ setHeaderHeight }) => {
       >
         {/* === TOP BAR === */}
         <div
-          className={`bg-nsut-maroon text-white transition-all duration-300 ${scrolled ? "opacity-0 h-0 overflow-hidden" : "opacity-100 py-1"
+          className={`hidden md:block bg-nsut-maroon text-white transition-all duration-300 ${scrolled ? "opacity-0 h-0 overflow-hidden" : "opacity-100 py-1"
             }`}
           style={{ willChange: scrolled ? 'auto' : 'height, opacity' }}
         >

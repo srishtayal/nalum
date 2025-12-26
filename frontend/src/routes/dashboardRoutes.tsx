@@ -18,6 +18,7 @@ const Events = lazy(() => import("@/pages/dashboard/Events"));
 const HostEvent = lazy(() => import("@/pages/dashboard/HostEvent"));
 const MyPosts = lazy(() => import("@/pages/dashboard/MyPosts"));
 const CreatePost = lazy(() => import("@/pages/dashboard/CreatePost"));
+const ViewPost = lazy(() => import("@/pages/dashboard/ViewPost"));
 const Queries = lazy(() => import("@/pages/dashboard/Queries"));
 const Giving = lazy(() => import("@/pages/dashboard/Giving"));
 
@@ -66,6 +67,7 @@ export function DashboardRoutes() {
         
         <Route path="/dashboard/events" element={<Events />} />
         <Route path="/dashboard/posts" element={<CreatePost />} />
+        <Route path="/dashboard/posts/:postId" element={<ViewPost />} />
         <Route path="/dashboard/my-posts" element={<MyPosts />} />
         <Route path="/dashboard/host-event" element={<HostEvent />} />
         <Route path="/dashboard/queries" element={<Queries />} />

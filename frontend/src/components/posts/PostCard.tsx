@@ -132,8 +132,15 @@ const PostCard = ({
     setSelectedImage(getImageUrl(post.images[currentImageIndex]));
   };
 
+  const handlePostClick = () => {
+    navigate(`/dashboard/posts/${post._id}`);
+  };
+
   return (
-    <div className="relative bg-white/5 border border-white/10 backdrop-blur-md rounded-xl p-6 hover:bg-white/10 transition duration-200">
+    <div 
+      className="relative bg-white/5 border border-white/10 backdrop-blur-md rounded-xl p-6 hover:bg-white/10 transition duration-200 cursor-pointer"
+      onClick={handlePostClick}
+    >
       {/* Action buttons in top-right */}
       <div className="absolute top-4 right-4 flex gap-2">
         {isAuthor ? (

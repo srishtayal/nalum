@@ -18,19 +18,6 @@ export default defineConfig(({ mode }) => {
         '/api': {
           target: mode === 'production' ? env.VITE_API_URL_PROD : env.VITE_API_URL_DEV,
           changeOrigin: true,
-          rewrite: (path) => path.replace(/^\/api/, ''),
-        },
-        '/auth': {
-          target: mode === 'production' ? env.VITE_API_URL_PROD : env.VITE_API_URL_DEV,
-          changeOrigin: true,
-        },
-        '/parser/parse': {
-          target: mode === 'production' ? env.VITE_API_URL_PROD : env.VITE_API_URL_DEV,
-          changeOrigin: true,
-        },
-        '/profile': {
-          target: mode === 'production' ? env.VITE_API_URL_PROD : env.VITE_API_URL_DEV,
-          changeOrigin: true,
         },
       },
     },
@@ -76,7 +63,14 @@ export default defineConfig(({ mode }) => {
       chunkSizeWarningLimit: 600,
       // CSS optimization
       cssCodeSplit: true,
-      minify: 'esbuild',
+      minify: 'terser',
+      terserOptions: {
+        compress: {
+          drop_console: mode === 'production',
+          drop_debugger: true,
+          pure_funcs: mode === 'production' ? ['console.log', 'console.info'] : [],
+        },
+      },
     },
   }
 });

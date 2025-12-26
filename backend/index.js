@@ -32,9 +32,9 @@ app.use((req, res, next) => {
   next();
 });
 app.use(cors({
-  origin: ['http://localhost:5173','http://nsut.alumninet.in', 'http://localhost:3000', 'http://localhost:5000'],
+  origin: ['http://localhost:5173', 'http://nsut.alumninet.in', 'http://localhost:3000', 'http://localhost:5000', 'http://localhost'],
   credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
   allowedHeaders: ['Content-Type', 'Authorization', 'ngrok-skip-browser-warning'],
 }));
 app.use(helmet({
@@ -64,25 +64,25 @@ redisConfig.connectRedis().then(() => {
 });
 
 // Apply checkBanned middleware to protected routes (not to auth or admin routes)
-app.use("/auth", authRoutes);
-app.use("/profile", checkBanned, profileRoutes);
-app.use("/parser", checkBanned, pdfParser);
-app.use("/alumni", checkBanned, alumniRoutes);
-app.use("/chat", checkBanned, chatRoutes);
-app.use("/events", checkBanned, eventRoutes);
-app.use("/posts", checkBanned, postsRoutes);
-app.use("/reports", checkBanned, reportsRoutes);
-app.use("/queries", checkBanned, queriesRoutes);
-app.use("/givings", checkBanned, givingRoutes);
+app.use("/api/auth", authRoutes);
+app.use("/api/profile", checkBanned, profileRoutes);
+app.use("/api/parser", checkBanned, pdfParser);
+app.use("/api/alumni", checkBanned, alumniRoutes);
+app.use("/api/chat", checkBanned, chatRoutes);
+app.use("/api/events", checkBanned, eventRoutes);
+app.use("/api/posts", checkBanned, postsRoutes);
+app.use("/api/reports", checkBanned, reportsRoutes);
+app.use("/api/queries", checkBanned, queriesRoutes);
+app.use("/api/givings", checkBanned, givingRoutes);
 
 // Admin routes (no checkBanned needed)
-app.use("/admin", adminRoutes);
+app.use("/api/admin", adminRoutes);
 
 // Serve static files for newsletter uploads
-app.use("/uploads", express.static("uploads"));
+app.use("/api/uploads", express.static("uploads"));
 
 // a sample api call to check if the backend is working
-app.get("/health", (req, res) => {
+app.get("/api/health", (req, res) => {
   res.status(200).json({ status: "OK", message: "Backend is working!" });
 });
 

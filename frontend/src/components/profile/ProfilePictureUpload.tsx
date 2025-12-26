@@ -323,17 +323,17 @@ const ProfilePictureUpload = ({ currentImage, onImageSelect, userName = "User" }
 
       {/* Crop Modal */}
       <Dialog open={showCropModal} onOpenChange={setShowCropModal}>
-        <DialogContent className="sm:max-w-[600px] p-0">
-          <DialogHeader className="px-6 pt-6">
-            <DialogTitle className="text-2xl font-bold text-gray-900">
+        <DialogContent className="max-w-[95vw] sm:max-w-[600px] p-0 max-h-[95vh] flex flex-col">
+          <DialogHeader className="px-4 sm:px-6 pt-4 sm:pt-6">
+            <DialogTitle className="text-lg sm:text-2xl font-bold text-gray-900">
               Crop Your Photo
             </DialogTitle>
-            <DialogDescription className="text-sm text-gray-600 mt-2">
+            <DialogDescription className="text-xs sm:text-sm text-gray-600 mt-1 sm:mt-2">
               Adjust the position and size to get the perfect square crop
             </DialogDescription>
           </DialogHeader>
           
-          <div className="relative h-[400px] bg-gray-100">
+          <div className="relative h-[300px] sm:h-[400px] bg-gray-100">
             {imageToCrop && (
               <Cropper
                 image={imageToCrop}
@@ -349,9 +349,9 @@ const ProfilePictureUpload = ({ currentImage, onImageSelect, userName = "User" }
             )}
           </div>
 
-          <div className="px-6 py-4 space-y-4">
+          <div className="px-4 sm:px-6 py-3 sm:py-4 space-y-3 sm:space-y-4">
             <div className="space-y-2">
-              <label className="text-sm font-medium text-gray-700">
+              <label className="text-xs sm:text-sm font-medium text-gray-700">
                 Zoom
               </label>
               <input
@@ -367,12 +367,12 @@ const ProfilePictureUpload = ({ currentImage, onImageSelect, userName = "User" }
             </div>
           </div>
 
-          <DialogFooter className="px-6 pb-6 gap-2">
+          <DialogFooter className="px-4 sm:px-6 pb-4 sm:pb-6 gap-2 flex-col-reverse sm:flex-row w-full">
             <Button
               type="button"
               variant="outline"
               onClick={handleCropCancel}
-              className="gap-2 border-white/10 bg-white/5 text-gray-300 hover:bg-white/10 hover:text-white"
+              className="gap-2 w-full sm:w-auto border-gray-300 text-gray-700 hover:bg-gray-100"
             >
               <X className="w-4 h-4" />
               Cancel
@@ -380,7 +380,7 @@ const ProfilePictureUpload = ({ currentImage, onImageSelect, userName = "User" }
             <Button
               type="button"
               onClick={handleCropConfirm}
-              className="gap-2 bg-blue-600 hover:bg-blue-500 text-white"
+              className="gap-2 w-full sm:w-auto bg-[#800000] hover:bg-[#600000] text-white"
             >
               <Check className="w-4 h-4" />
               Crop & Save

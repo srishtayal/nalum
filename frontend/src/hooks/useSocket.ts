@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { io, Socket } from "socket.io-client";
 import { useAuth } from "../context/AuthContext";
-import { BASE_URL } from "@/lib/constants";
 
 export const useSocket = () => {
   const [socket, setSocket] = useState<Socket | null>(null);
@@ -11,9 +10,10 @@ export const useSocket = () => {
   useEffect(() => {
     if (!accessToken) return;
 
-    // Socket.io connects to the same origin as the API
-    // Remove '/api' if present and use the base URL directly
-    const socketUrl = BASE_URL;
+    // Socket.io connects directly to the backend server (not through /api prefix)
+    const socketUrl = import.meta.env.MODE === "production"
+      ? import.meta.env.VITE_API_URL_PROD
+      : import.meta.env.VITE_API_URL_DEV;
     
     const newSocket = io(socketUrl, {
       auth: { token: accessToken },

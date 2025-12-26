@@ -1,0 +1,4 @@
+# Load test results are generated during testing
+# Keep this directory but ignore its contents
+*
+!.gitignore

@@ -223,7 +223,20 @@ exports.updatePost = async (req, res) => {
 
     if (title) post.title = title;
     if (content) post.content = content;
-    if (newImages.length > 0) post.images = newImages;
+    if (newImages.length > 0) {
+      // Delete old image files if they exist
+      if (post.images && post.images.length > 0) {
+        const fs = require('fs');
+        const path = require('path');
+        post.images.forEach((filename) => {
+          const filePath = path.join(__dirname, "../uploads/posts", filename);
+          if (fs.existsSync(filePath)) {
+            fs.unlinkSync(filePath);
+          }
+        });
+      }
+      post.images = newImages;
+    }
 
     // Check if posts should be auto-approved
     const autoApprove = await shouldAutoApprove();
@@ -270,6 +283,18 @@ exports.deletePost = async (req, res) => {
       return res.status(403).json({
         success: false,
         message: "You are not authorized to delete this post",
+      });
+    }
+
+    // Delete associated image files
+    if (post.images && post.images.length > 0) {
+      const fs = require('fs');
+      const path = require('path');
+      post.images.forEach((filename) => {
+        const filePath = path.join(__dirname, "../uploads/posts", filename);
+        if (fs.existsSync(filePath)) {
+          fs.unlinkSync(filePath);
+        }
       });
     }
 

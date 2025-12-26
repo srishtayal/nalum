@@ -252,6 +252,16 @@ exports.deleteEvent = async (req, res) => {
       });
     }
 
+    // Delete event image file if exists
+    if (event.image_url) {
+      const fs = require('fs');
+      const path = require('path');
+      const imagePath = path.join(__dirname, "../..", event.image_url);
+      if (fs.existsSync(imagePath)) {
+        fs.unlinkSync(imagePath);
+      }
+    }
+
     // Soft delete
     event.is_active = false;
     await event.save();
