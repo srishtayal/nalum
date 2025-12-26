@@ -58,44 +58,28 @@ const facultyMembers: TeamMember[] = [
 // CORE TEAM (5 members)
 const coreTeamMembers: TeamMember[] = [
   {
-    name: 'Core Team Member 1',
-    branch: 'CSE',  // ADD BRANCH HERE
-    year: '2025',   // ADD YEAR HERE
-    designation: 'President',  // ADD DESIGNATION HERE
-    image: '/about/team/core/core-1.jpg',  // ADD IMAGE PATH HERE
-    linkedinUrl: 'https://www.linkedin.com/in/username'  // ADD LINKEDIN URL HERE
+    name: 'Aditi Gupta',
+    branch: 'Mech',  // ADD BRANCH HERE
+    year: '2026',   // ADD YEAR HERE
+    designation: 'Director',  // ADD DESIGNATION HERE
+    image: '/about/team/core/aditigupta.webp',  // ADD IMAGE PATH HERE
+    linkedinUrl: 'https://www.linkedin.com/mwlite/profile/me?trk=p_mwlite_profile_view-secondary_nav'  // ADD LINKEDIN URL HERE
   },
   {
-    name: 'Core Team Member 2',
-    branch: 'CSE',  // ADD BRANCH HERE
-    year: '2025',   // ADD YEAR HERE
-    designation: 'Vice President',  // ADD DESIGNATION HERE
-    image: '/about/team/core/core-2.jpg',  // ADD IMAGE PATH HERE
-    linkedinUrl: 'https://www.linkedin.com/in/username'  // ADD LINKEDIN URL HERE
+    name: 'Shivam Narula',
+    branch: 'Mech',  // ADD BRANCH HERE
+    year: '2026',   // ADD YEAR HERE
+    designation: 'Director, Operations',  // ADD DESIGNATION HERE
+    image: '/about/team/core/shivamnarula.webp',  // ADD IMAGE PATH HERE
+    linkedinUrl: 'https://www.linkedin.com/in/shivam-narula-b37b5b256?utm_source=share&utm_campaign=share_via&utm_content=profile&utm_medium=ios_app'  // ADD LINKEDIN URL HERE
   },
   {
-    name: 'Core Team Member 3',
-    branch: 'CSE',  // ADD BRANCH HERE
-    year: '2025',   // ADD YEAR HERE
+    name: 'Vatsal Maskara',
+    branch: 'Mech',  // ADD BRANCH HERE
+    year: '2026',   // ADD YEAR HERE
     designation: 'General Secretary',  // ADD DESIGNATION HERE
-    image: '/about/team/core/core-3.jpg',  // ADD IMAGE PATH HERE
-    linkedinUrl: 'https://www.linkedin.com/in/username'  // ADD LINKEDIN URL HERE
-  },
-  {
-    name: 'Core Team Member 4',
-    branch: 'CSE',  // ADD BRANCH HERE
-    year: '2025',   // ADD YEAR HERE
-    designation: 'Treasurer',  // ADD DESIGNATION HERE
-    image: '/about/team/core/core-4.jpg',  // ADD IMAGE PATH HERE
-    linkedinUrl: 'https://www.linkedin.com/in/username'  // ADD LINKEDIN URL HERE
-  },
-  {
-    name: 'Core Team Member 5',
-    branch: 'CSE',  // ADD BRANCH HERE
-    year: '2025',   // ADD YEAR HERE
-    designation: 'Coordinator',  // ADD DESIGNATION HERE
-    image: '/about/team/core/core-5.jpg',  // ADD IMAGE PATH HERE
-    linkedinUrl: 'https://www.linkedin.com/in/username'  // ADD LINKEDIN URL HERE
+    image: '/about/team/core/vatsalmaskara.webp',  // ADD IMAGE PATH HERE
+    linkedinUrl: 'https://www.linkedin.com/in/vatsal-maskara?utm_source=share&utm_campaign=share_via&utm_content=profile&utm_medium=ios_app'  // ADD LINKEDIN URL HERE
   }
 ];
 
@@ -143,37 +127,16 @@ const operationsMembers: TeamMember[] = [
   {
     name: 'Sarthak Verma',
     branch: 'IT',  // ADD BRANCH HERE
-    year: '2028',   // ADD YEAR HERE
+    year: '2027',   // ADD YEAR HERE
     image: '/about/team/operations/sarthakverma.webp',  // ADD IMAGE PATH HERE
     linkedinUrl: 'https://linkedin.com/in/rn-vrma'  // ADD LINKEDIN URL HERE
   },
   {
-    name: 'Operations Member 2',
-    branch: 'CSE',  // ADD BRANCH HERE
-    year: '2025',   // ADD YEAR HERE
-    image: '/about/team/operations/ops-2.jpg',  // ADD IMAGE PATH HERE
-    linkedinUrl: 'https://www.linkedin.com/in/username'  // ADD LINKEDIN URL HERE
-  },
-  {
-    name: 'Operations Member 3',
-    branch: 'CSE',  // ADD BRANCH HERE
-    year: '2025',   // ADD YEAR HERE
-    image: '/about/team/operations/ops-3.jpg',  // ADD IMAGE PATH HERE
-    linkedinUrl: 'https://www.linkedin.com/in/username'  // ADD LINKEDIN URL HERE
-  },
-  {
-    name: 'Operations Member 4',
-    branch: 'CSE',  // ADD BRANCH HERE
-    year: '2025',   // ADD YEAR HERE
-    image: '/about/team/operations/ops-4.jpg',  // ADD IMAGE PATH HERE
-    linkedinUrl: 'https://www.linkedin.com/in/username'  // ADD LINKEDIN URL HERE
-  },
-  {
-    name: 'Operations Member 5',
-    branch: 'CSE',  // ADD BRANCH HERE
-    year: '2025',   // ADD YEAR HERE
-    image: '/about/team/operations/ops-5.jpg',  // ADD IMAGE PATH HERE
-    linkedinUrl: 'https://www.linkedin.com/in/username'  // ADD LINKEDIN URL HERE
+    name: 'Vansh Bhardwaj',
+    branch: 'ITNS',  // ADD BRANCH HERE
+    year: '2027',   // ADD YEAR HERE
+    image: '/about/team/operations/vanshbhardwaj.webp',  // ADD IMAGE PATH HERE
+    linkedinUrl: 'https://www.linkedin.com/in/vansh-bhardwaj-b9734a285/'  // ADD LINKEDIN URL HERE
   }
 ];
 // ============================================
