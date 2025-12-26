@@ -104,7 +104,7 @@ const developerMembers: TeamMember[] = [
   {
     name: 'Manik Gaur',
     branch: 'IT',  // ADD BRANCH HERE
-    year: '2028',   // ADD YEAR HERE
+    year: '2027',   // ADD YEAR HERE
     image: '/about/team/developers/manikgaur.webp',  // ADD IMAGE PATH HERE
     linkedinUrl: 'https://www.linkedin.com/in/manik-gaur-083922285/'  // ADD LINKEDIN URL HERE
   },
@@ -234,7 +234,7 @@ const AboutPage = () => {
       <div className="relative bg-gradient-to-r from-nsut-maroon to-[#800000] text-white py-20 px-4 overflow-hidden">
         <div className="absolute top-0 right-0 w-96 h-96 bg-nsut-yellow/10 rounded-full blur-3xl"></div>
         <div className="absolute bottom-0 left-0 w-96 h-96 bg-nsut-yellow/10 rounded-full blur-3xl"></div>
-        
+
         <div className="container mx-auto max-w-7xl relative z-10">
           <div className="flex items-center gap-4 mb-6 animate-fade-in">
             <Building2 className="w-12 h-12 text-nsut-yellow" />
@@ -257,11 +257,10 @@ const AboutPage = () => {
           <div className="flex justify-center gap-4 border-b-2 border-gray-200">
             <button
               onClick={() => setActiveTab('about')}
-              className={`px-8 py-4 font-serif text-xl font-bold transition-all duration-300 relative ${
-                activeTab === 'about'
+              className={`px-8 py-4 font-serif text-xl font-bold transition-all duration-300 relative ${activeTab === 'about'
                   ? 'text-nsut-maroon'
                   : 'text-gray-500 hover:text-gray-700'
-              }`}
+                }`}
             >
               About Us
               {activeTab === 'about' && (
@@ -270,11 +269,10 @@ const AboutPage = () => {
             </button>
             <button
               onClick={() => setActiveTab('team')}
-              className={`px-8 py-4 font-serif text-xl font-bold transition-all duration-300 relative ${
-                activeTab === 'team'
+              className={`px-8 py-4 font-serif text-xl font-bold transition-all duration-300 relative ${activeTab === 'team'
                   ? 'text-nsut-maroon'
                   : 'text-gray-500 hover:text-gray-700'
-              }`}
+                }`}
             >
               Our Team
               {activeTab === 'team' && (
@@ -444,40 +442,40 @@ const AboutPage = () => {
                   <h3 className="font-serif text-2xl font-bold">Faculty</h3>
                 </div>
               </div>
-              
+
               <div className="flex flex-wrap justify-center gap-8 max-w-6xl mx-auto">
                 {facultyMembers.map((member, index) => (
-                    <div
-                      key={index}
-                      className="group bg-white rounded-xl shadow-md hover:shadow-2xl transition-all duration-500 p-6 border border-gray-100 hover:border-nsut-yellow/50 animate-fade-in hover:-translate-y-2 flex flex-col items-center w-44"
-                      style={{ animationDelay: `${index * 100}ms` }}
-                    >
-                      {/* Profile Picture */}
-                      <div className="w-32 h-32 rounded-full overflow-hidden bg-gradient-to-br from-nsut-maroon to-nsut-yellow flex-shrink-0 shadow-lg group-hover:scale-110 transition-transform duration-300 border-4 border-white mb-4">
-                        <img
-                          src={member.image}
-                          alt={member.name}
-                          className="w-full h-full object-cover"
-                          onError={(e) => {
-                            e.currentTarget.style.display = 'none';
-                            e.currentTarget.parentElement!.innerHTML = `<div class="w-full h-full flex items-center justify-center text-white text-2xl font-bold bg-gradient-to-br from-nsut-maroon to-nsut-yellow">${member.name.split(' ').map((n: string) => n[0]).join('').slice(0, 2)}</div>`;
-                          }}
-                        />
-                      </div>
-                      
-                      {/* Member Name */}
-                      <h4 className="font-serif text-lg font-bold text-nsut-maroon mb-1 text-center group-hover:text-[#800000] transition-colors">
-                        {member.name}
-                      </h4>
-
-                      {/* Designation */}
-                      {member.designation && (
-                        <p className="text-gray-600 text-sm text-center">
-                          {member.designation}
-                        </p>
-                      )}
+                  <div
+                    key={index}
+                    className="group bg-white rounded-xl shadow-md hover:shadow-2xl transition-all duration-500 p-6 border border-gray-100 hover:border-nsut-yellow/50 animate-fade-in hover:-translate-y-2 flex flex-col items-center w-44"
+                    style={{ animationDelay: `${index * 100}ms` }}
+                  >
+                    {/* Profile Picture */}
+                    <div className="w-32 h-32 rounded-full overflow-hidden bg-gradient-to-br from-nsut-maroon to-nsut-yellow flex-shrink-0 shadow-lg group-hover:scale-110 transition-transform duration-300 border-4 border-white mb-4">
+                      <img
+                        src={member.image}
+                        alt={member.name}
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          e.currentTarget.style.display = 'none';
+                          e.currentTarget.parentElement!.innerHTML = `<div class="w-full h-full flex items-center justify-center text-white text-2xl font-bold bg-gradient-to-br from-nsut-maroon to-nsut-yellow">${member.name.split(' ').map((n: string) => n[0]).join('').slice(0, 2)}</div>`;
+                        }}
+                      />
                     </div>
-                  ))}
+
+                    {/* Member Name */}
+                    <h4 className="font-serif text-lg font-bold text-nsut-maroon mb-1 text-center group-hover:text-[#800000] transition-colors">
+                      {member.name}
+                    </h4>
+
+                    {/* Designation */}
+                    {member.designation && (
+                      <p className="text-gray-600 text-sm text-center">
+                        {member.designation}
+                      </p>
+                    )}
+                  </div>
+                ))}
               </div>
             </div>
 
@@ -489,56 +487,56 @@ const AboutPage = () => {
                   <h3 className="font-serif text-2xl font-bold">Core Team</h3>
                 </div>
               </div>
-              
+
               <div className="flex flex-wrap justify-center gap-8 max-w-6xl mx-auto">
                 {coreTeamMembers.map((member, index) => (
-                    <div
-                      key={index}
-                      className="group bg-white rounded-xl shadow-md hover:shadow-2xl transition-all duration-500 p-6 border border-gray-100 hover:border-emerald-300 animate-fade-in hover:-translate-y-2 flex flex-col items-center w-44"
-                      style={{ animationDelay: `${index * 100}ms` }}
-                    >
-                      {/* Profile Picture */}
-                      <div className="w-32 h-32 rounded-full overflow-hidden bg-gradient-to-br from-emerald-500 to-emerald-700 flex-shrink-0 shadow-lg group-hover:scale-110 transition-transform duration-300 border-4 border-white mb-4">
-                        <img
-                          src={member.image}
-                          alt={member.name}
-                          className="w-full h-full object-cover"
-                          onError={(e) => {
-                            e.currentTarget.style.display = 'none';
-                            e.currentTarget.parentElement!.innerHTML = `<div class="w-full h-full flex items-center justify-center text-white text-2xl font-bold bg-gradient-to-br from-emerald-500 to-emerald-700">${member.name.split(' ').map((n: string) => n[0]).join('').slice(0, 2)}</div>`;
-                          }}
-                        />
-                      </div>
-                      
-                      {/* Member Name */}
-                      <h4 className="font-serif text-lg font-bold text-nsut-maroon mb-1 text-center group-hover:text-emerald-700 transition-colors">
-                        {member.name}
-                      </h4>
-
-                      {/* Designation */}
-                      {member.designation && (
-                        <p className="text-emerald-700 text-xs font-semibold mb-1 text-center">
-                          {member.designation}
-                        </p>
-                      )}
-
-                      {/* Branch - Year */}
-                      <p className="text-gray-600 text-sm mb-3 text-center">
-                        {member.branch} - {member.year}
-                      </p>
-
-                      {/* LinkedIn Icon */}
-                      <a
-                        href={member.linkedinUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="mt-auto w-10 h-10 rounded-full bg-[#0077B5] hover:bg-[#005582] flex items-center justify-center transition-all duration-300 hover:scale-110 shadow-md"
-                        aria-label={`LinkedIn profile of ${member.name}`}
-                      >
-                        <Linkedin className="w-5 h-5 text-white" />
-                      </a>
+                  <div
+                    key={index}
+                    className="group bg-white rounded-xl shadow-md hover:shadow-2xl transition-all duration-500 p-6 border border-gray-100 hover:border-emerald-300 animate-fade-in hover:-translate-y-2 flex flex-col items-center w-44"
+                    style={{ animationDelay: `${index * 100}ms` }}
+                  >
+                    {/* Profile Picture */}
+                    <div className="w-32 h-32 rounded-full overflow-hidden bg-gradient-to-br from-emerald-500 to-emerald-700 flex-shrink-0 shadow-lg group-hover:scale-110 transition-transform duration-300 border-4 border-white mb-4">
+                      <img
+                        src={member.image}
+                        alt={member.name}
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          e.currentTarget.style.display = 'none';
+                          e.currentTarget.parentElement!.innerHTML = `<div class="w-full h-full flex items-center justify-center text-white text-2xl font-bold bg-gradient-to-br from-emerald-500 to-emerald-700">${member.name.split(' ').map((n: string) => n[0]).join('').slice(0, 2)}</div>`;
+                        }}
+                      />
                     </div>
-                  ))}
+
+                    {/* Member Name */}
+                    <h4 className="font-serif text-lg font-bold text-nsut-maroon mb-1 text-center group-hover:text-emerald-700 transition-colors">
+                      {member.name}
+                    </h4>
+
+                    {/* Designation */}
+                    {member.designation && (
+                      <p className="text-emerald-700 text-xs font-semibold mb-1 text-center">
+                        {member.designation}
+                      </p>
+                    )}
+
+                    {/* Branch - Year */}
+                    <p className="text-gray-600 text-sm mb-3 text-center">
+                      {member.branch} - {member.year}
+                    </p>
+
+                    {/* LinkedIn Icon */}
+                    <a
+                      href={member.linkedinUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="mt-auto w-10 h-10 rounded-full bg-[#0077B5] hover:bg-[#005582] flex items-center justify-center transition-all duration-300 hover:scale-110 shadow-md"
+                      aria-label={`LinkedIn profile of ${member.name}`}
+                    >
+                      <Linkedin className="w-5 h-5 text-white" />
+                    </a>
+                  </div>
+                ))}
               </div>
             </div>
 
@@ -550,49 +548,49 @@ const AboutPage = () => {
                   <h3 className="font-serif text-2xl font-bold">Developers Team</h3>
                 </div>
               </div>
-              
+
               <div className="flex flex-wrap justify-center gap-8 max-w-6xl mx-auto">
                 {developerMembers.map((member, index) => (
-                    <div
-                      key={index}
-                      className="group bg-white rounded-xl shadow-md hover:shadow-2xl transition-all duration-500 p-6 border border-gray-100 hover:border-blue-300 animate-fade-in hover:-translate-y-2 flex flex-col items-center w-44"
-                      style={{ animationDelay: `${index * 100}ms` }}
-                    >
-                      {/* Profile Picture */}
-                      <div className="w-32 h-32 rounded-full overflow-hidden bg-gradient-to-br from-blue-500 to-blue-700 flex-shrink-0 shadow-lg group-hover:scale-110 transition-transform duration-300 border-4 border-white mb-4">
-                        <img
-                          src={member.image}
-                          alt={member.name}
-                          className="w-full h-full object-cover"
-                          onError={(e) => {
-                            e.currentTarget.style.display = 'none';
-                            e.currentTarget.parentElement!.innerHTML = `<div class="w-full h-full flex items-center justify-center text-white text-2xl font-bold bg-gradient-to-br from-blue-500 to-blue-700">${member.name.split(' ').map((n: string) => n[0]).join('').slice(0, 2)}</div>`;
-                          }}
-                        />
-                      </div>
-                      
-                      {/* Member Name */}
-                      <h4 className="font-serif text-lg font-bold text-nsut-maroon mb-1 text-center group-hover:text-blue-700 transition-colors">
-                        {member.name}
-                      </h4>
-
-                      {/* Branch - Year */}
-                      <p className="text-gray-600 text-sm mb-3 text-center">
-                        {member.branch} - {member.year}
-                      </p>
-
-                      {/* LinkedIn Icon */}
-                      <a
-                        href={member.linkedinUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="mt-auto w-10 h-10 rounded-full bg-[#0077B5] hover:bg-[#005582] flex items-center justify-center transition-all duration-300 hover:scale-110 shadow-md"
-                        aria-label={`LinkedIn profile of ${member.name}`}
-                      >
-                        <Linkedin className="w-5 h-5 text-white" />
-                      </a>
+                  <div
+                    key={index}
+                    className="group bg-white rounded-xl shadow-md hover:shadow-2xl transition-all duration-500 p-6 border border-gray-100 hover:border-blue-300 animate-fade-in hover:-translate-y-2 flex flex-col items-center w-44"
+                    style={{ animationDelay: `${index * 100}ms` }}
+                  >
+                    {/* Profile Picture */}
+                    <div className="w-32 h-32 rounded-full overflow-hidden bg-gradient-to-br from-blue-500 to-blue-700 flex-shrink-0 shadow-lg group-hover:scale-110 transition-transform duration-300 border-4 border-white mb-4">
+                      <img
+                        src={member.image}
+                        alt={member.name}
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          e.currentTarget.style.display = 'none';
+                          e.currentTarget.parentElement!.innerHTML = `<div class="w-full h-full flex items-center justify-center text-white text-2xl font-bold bg-gradient-to-br from-blue-500 to-blue-700">${member.name.split(' ').map((n: string) => n[0]).join('').slice(0, 2)}</div>`;
+                        }}
+                      />
                     </div>
-                  ))}
+
+                    {/* Member Name */}
+                    <h4 className="font-serif text-lg font-bold text-nsut-maroon mb-1 text-center group-hover:text-blue-700 transition-colors">
+                      {member.name}
+                    </h4>
+
+                    {/* Branch - Year */}
+                    <p className="text-gray-600 text-sm mb-3 text-center">
+                      {member.branch} - {member.year}
+                    </p>
+
+                    {/* LinkedIn Icon */}
+                    <a
+                      href={member.linkedinUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="mt-auto w-10 h-10 rounded-full bg-[#0077B5] hover:bg-[#005582] flex items-center justify-center transition-all duration-300 hover:scale-110 shadow-md"
+                      aria-label={`LinkedIn profile of ${member.name}`}
+                    >
+                      <Linkedin className="w-5 h-5 text-white" />
+                    </a>
+                  </div>
+                ))}
               </div>
             </div>
 
@@ -604,49 +602,49 @@ const AboutPage = () => {
                   <h3 className="font-serif text-2xl font-bold">Operations Team</h3>
                 </div>
               </div>
-              
+
               <div className="flex flex-wrap justify-center gap-8 max-w-6xl mx-auto">
                 {operationsMembers.map((member, index) => (
-                    <div
-                      key={index}
-                      className="group bg-white rounded-xl shadow-md hover:shadow-2xl transition-all duration-500 p-6 border border-gray-100 hover:border-purple-300 animate-fade-in hover:-translate-y-2 flex flex-col items-center w-44"
-                      style={{ animationDelay: `${index * 100}ms` }}
-                    >
-                      {/* Profile Picture */}
-                      <div className="w-32 h-32 rounded-full overflow-hidden bg-gradient-to-br from-purple-500 to-purple-700 flex-shrink-0 shadow-lg group-hover:scale-110 transition-transform duration-300 border-4 border-white mb-4">
-                        <img
-                          src={member.image}
-                          alt={member.name}
-                          className="w-full h-full object-cover"
-                          onError={(e) => {
-                            e.currentTarget.style.display = 'none';
-                            e.currentTarget.parentElement!.innerHTML = `<div class="w-full h-full flex items-center justify-center text-white text-2xl font-bold bg-gradient-to-br from-purple-500 to-purple-700">${member.name.split(' ').map((n: string) => n[0]).join('').slice(0, 2)}</div>`;
-                          }}
-                        />
-                      </div>
-                      
-                      {/* Member Name */}
-                      <h4 className="font-serif text-lg font-bold text-nsut-maroon mb-1 text-center group-hover:text-purple-700 transition-colors">
-                        {member.name}
-                      </h4>
-
-                      {/* Branch - Year */}
-                      <p className="text-gray-600 text-sm mb-3 text-center">
-                        {member.branch} - {member.year}
-                      </p>
-
-                      {/* LinkedIn Icon */}
-                      <a
-                        href={member.linkedinUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="mt-auto w-10 h-10 rounded-full bg-[#0077B5] hover:bg-[#005582] flex items-center justify-center transition-all duration-300 hover:scale-110 shadow-md"
-                        aria-label={`LinkedIn profile of ${member.name}`}
-                      >
-                        <Linkedin className="w-5 h-5 text-white" />
-                      </a>
+                  <div
+                    key={index}
+                    className="group bg-white rounded-xl shadow-md hover:shadow-2xl transition-all duration-500 p-6 border border-gray-100 hover:border-purple-300 animate-fade-in hover:-translate-y-2 flex flex-col items-center w-44"
+                    style={{ animationDelay: `${index * 100}ms` }}
+                  >
+                    {/* Profile Picture */}
+                    <div className="w-32 h-32 rounded-full overflow-hidden bg-gradient-to-br from-purple-500 to-purple-700 flex-shrink-0 shadow-lg group-hover:scale-110 transition-transform duration-300 border-4 border-white mb-4">
+                      <img
+                        src={member.image}
+                        alt={member.name}
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          e.currentTarget.style.display = 'none';
+                          e.currentTarget.parentElement!.innerHTML = `<div class="w-full h-full flex items-center justify-center text-white text-2xl font-bold bg-gradient-to-br from-purple-500 to-purple-700">${member.name.split(' ').map((n: string) => n[0]).join('').slice(0, 2)}</div>`;
+                        }}
+                      />
                     </div>
-                  ))}
+
+                    {/* Member Name */}
+                    <h4 className="font-serif text-lg font-bold text-nsut-maroon mb-1 text-center group-hover:text-purple-700 transition-colors">
+                      {member.name}
+                    </h4>
+
+                    {/* Branch - Year */}
+                    <p className="text-gray-600 text-sm mb-3 text-center">
+                      {member.branch} - {member.year}
+                    </p>
+
+                    {/* LinkedIn Icon */}
+                    <a
+                      href={member.linkedinUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="mt-auto w-10 h-10 rounded-full bg-[#0077B5] hover:bg-[#005582] flex items-center justify-center transition-all duration-300 hover:scale-110 shadow-md"
+                      aria-label={`LinkedIn profile of ${member.name}`}
+                    >
+                      <Linkedin className="w-5 h-5 text-white" />
+                    </a>
+                  </div>
+                ))}
               </div>
             </div>
           </div>
