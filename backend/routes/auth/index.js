@@ -1,5 +1,6 @@
 const express = require("express");
 const router = express.Router();
+const { rateLimiters } = require("../../middleware/rateLimiter");
 
 const signIn = require("./signIn");
 const signUp = require("./signUp");
@@ -13,17 +14,23 @@ const sendOTP = require("./sendOTP");
 const verifyAccountUsingLink = require("./verifyAccountUsingLink");
 const verifyAccountUsingOTP = require("./verifyAccountUsingOTP");
 
-// define routes 
+// define routes with rate limiting
 
-router.use("/sign-in", signIn);
-router.use("/sign-up", signUp);
-router.use("/refresh", refresh);
+// Auth routes - stricter limits
+router.use("/sign-in", rateLimiters.auth, signIn);
+router.use("/sign-up", rateLimiters.auth, signUp);
+router.use("/refresh", refresh); // No rate limit on refresh
 router.use("/revoke-token", revokeToken);
 router.use("/logout", logout);
-router.use("/forget-password", forgetPassword);
-router.use("/reset-password", resetPassword);
-router.use("/send-verification-link", sendVerificationLink);
-router.use("/send-otp", sendOTP);
-router.use("/verify-account-link", verifyAccountUsingLink);
-router.use("/verify-account-otp", verifyAccountUsingOTP);
+
+// Email routes - very strict limits to prevent abuse
+router.use("/forget-password", rateLimiters.email, forgetPassword);
+router.use("/reset-password", rateLimiters.auth, resetPassword);
+router.use("/send-verification-link", rateLimiters.email, sendVerificationLink);
+router.use("/send-otp", rateLimiters.email, sendOTP);
+
+// Verification routes - moderate limits
+router.use("/verify-account-link", rateLimiters.api, verifyAccountUsingLink);
+router.use("/verify-account-otp", rateLimiters.auth, verifyAccountUsingOTP);
+
 module.exports = router;

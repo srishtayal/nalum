@@ -106,12 +106,26 @@ export const ChatWindow = ({ conversation, onBack }: ChatWindowProps) => {
     }
   }, [messages, activeConversationId, firstUnreadMessageId, user?.id]);
 
-  // Auto-scroll to bottom when new messages arrive
-  useEffect(() => {
+  const scrollToBottom = useCallback(() => {
     if (scrollRef.current) {
       scrollRef.current.scrollIntoView({ behavior: "smooth" });
     }
-  }, [messages]);
+  }, []);
+
+  // Auto-scroll to bottom when new messages arrive
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages, scrollToBottom]);
+
+  // Scroll to bottom on window resize (e.g. keyboard open)
+  useEffect(() => {
+    const handleResize = () => {
+      // Small delay to allow layout to update
+      setTimeout(scrollToBottom, 100);
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, [scrollToBottom]);
 
   const markAsRead = useCallback(() => {
     if (activeConversationId && socket && isConnected) {
@@ -194,6 +208,7 @@ export const ChatWindow = ({ conversation, onBack }: ChatWindowProps) => {
   const handleInputFocus = () => {
     markAsRead();
     setFirstUnreadMessageId(null);
+    setTimeout(scrollToBottom, 300); // Delay to wait for keyboard animation
   };
 
 

@@ -21,6 +21,7 @@ const verificationTokenSchema = new mongoose.Schema(
       type: Date,
       required: true,
       default: () => new Date(Date.now() + 1000 * 60 * 60 * 1), // 1 hour
+      expires: 0, // auto-delete when expired (TTL index)
     },
   },
   { timestamps: true }

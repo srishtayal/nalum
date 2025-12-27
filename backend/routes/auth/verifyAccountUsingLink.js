@@ -38,6 +38,12 @@ router.get("/", async (req, res) => {
 
   // 5. Delete the token so it can't be reused
   await verificationTokens.remove(email, token);
+
+  // 6. Return success response
+  return res.status(200).json({
+    error: false,
+    message: "Email verified successfully",
+  });
 });
 
 module.exports = router;

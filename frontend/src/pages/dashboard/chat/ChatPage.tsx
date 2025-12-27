@@ -45,13 +45,13 @@ const ChatPageContent = () => {
 
 
   return (
-    <div className="h-full p-2 md:p-4 bg-transparent">
+    <div className="h-full p-0 md:p-4 bg-transparent">
       <div className="h-full max-w-7xl mx-auto">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 h-full">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-0 md:gap-4 h-full">
           {/* Left Sidebar - Glass Panel */}
           {/* Hidden on mobile when a conversation is selected to show the chat window */}
           <div className={`${selectedConversation ? "hidden md:block" : "block"} md:col-span-1 h-full min-h-0`}>
-            <div className="h-full flex flex-col bg-black/40 backdrop-blur-xl border border-white/10 shadow-2xl rounded-xl overflow-hidden">
+            <div className="h-full flex flex-col bg-black/40 backdrop-blur-xl md:border border-white/10 shadow-2xl md:rounded-xl overflow-hidden">
               <div className="h-full flex flex-col">
                 <div className="flex-1 mt-0 overflow-hidden min-h-0">
                   <ChatList
@@ -66,7 +66,7 @@ const ChatPageContent = () => {
 
           {/* Right Area - Chat Window Glass Panel */}
           <div className={`${selectedConversation ? "block" : "hidden md:block"} md:col-span-2 h-full min-h-0`}>
-            <div className="h-full flex flex-col bg-black/40 backdrop-blur-xl border border-white/10 shadow-2xl rounded-xl overflow-hidden relative">
+            <div className="h-full flex flex-col bg-black/40 backdrop-blur-xl md:border border-white/10 shadow-2xl md:rounded-xl overflow-hidden relative">
               {selectedConversation ? (
                 <ChatWindow
                   conversation={selectedConversation}

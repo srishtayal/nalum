@@ -31,9 +31,9 @@ const OtpVerificationPage = () => {
           <img src={nsutLogo} alt="NSUT Logo" className="h-10 w-10" />
           <div className="flex flex-col items-start">
             <h1 className="text-xl md:text-2xl font-bold leading-none tracking-wide whitespace-nowrap">
-              <span className="text-nsut-yellow">N</span>
+              <span className="text-red-600">N</span>
               <span className="text-white">SUT</span>
-              <span className="text-nsut-yellow"> ALUM</span>
+              <span className="text-red-600"> ALUM</span>
               <span className="text-white">NI</span>
             </h1>
             <span className="block text-[8px] md:text-xs font-bold tracking-widest">

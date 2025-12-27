@@ -20,12 +20,13 @@ router.post("/", async (req, res) => {
   try {
     decoded = jwt.verify(token, JWT_SECRET);
   } catch (err) {
+    if (err.name === "TokenExpiredError") {
+      return res.status(400).json({ error: true, message: "Reset link has expired, request a new one." });
+    }
     return res.status(400).json({ error: true, message: "Invalid or expired token" });
   }
-  if (err.name === "TokenExpiredError") {
-    return res.status(400).json({ error: true, message: "Reset link has expired, request a new one." });
-  }
-    const { email } = decoded;
+  
+  const { email } = decoded;
   // Basic password validation  
   if (password.length < 8) {
     return res.status(400).json({

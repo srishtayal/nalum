@@ -334,7 +334,7 @@ const AboutPage = () => {
                     <div>
                       <h3 className="font-serif text-lg font-bold text-nsut-maroon mb-2">Email Us</h3>
                       <a href="mailto:alumni@nsut.ac.in" className="text-gray-700 hover:text-nsut-maroon transition-colors">
-                        alumni@nsut.ac.in
+                        admin@alumninet.in
                       </a>
                     </div>
                   </div>
@@ -346,8 +346,8 @@ const AboutPage = () => {
                     </div>
                     <div>
                       <h3 className="font-serif text-lg font-bold text-nsut-maroon mb-2">Call Us</h3>
-                      <a href="tel:+911125000000" className="text-gray-700 hover:text-nsut-maroon transition-colors">
-                        +91 11 2500 0000
+                      <a href="tel:+919034064575" className="text-gray-700 hover:text-nsut-maroon transition-colors">
+                        +91 90340 64575
                       </a>
                     </div>
                   </div>

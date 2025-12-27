@@ -76,6 +76,7 @@ exports.login = async (req, res) => {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+      path: "/",
       maxAge: 365 * 24 * 60 * 60 * 1000, // 1 year
     });
 
@@ -110,7 +111,12 @@ exports.logout = async (req, res) => {
     // You could implement session deletion here if needed
     // For now, just clear the refresh token cookie
 
-    res.clearCookie("refresh_token");
+    res.clearCookie("refresh_token", {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+      path: "/",
+    });
 
     // Log activity
     await logAdminActivity(email, "logout", "system", null, {}, req.ip);

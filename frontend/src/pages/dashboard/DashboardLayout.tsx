@@ -648,7 +648,10 @@ const DashboardContent = () => {
       </div>
 
       {/* Main Content Area */}
-      <main className="flex-1 h-full overflow-y-auto relative z-10 scrollbar-hide">
+      <main className={cn(
+        "flex-1 h-full relative z-10 scrollbar-hide",
+        isChatPage ? "overflow-hidden" : "overflow-y-auto"
+      )}>
         <div className={cn(
           "relative mx-auto transition-all duration-300 min-h-full flex flex-col",
           isChatPage
