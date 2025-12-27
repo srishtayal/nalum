@@ -72,7 +72,10 @@ export const MessageInput = ({
     // Scroll into view on mobile when keyboard appears
     if (window.innerWidth < 768) {
       setTimeout(() => {
-        e.target.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        // Check if element still exists and is mounted
+        if (e.target && document.contains(e.target)) {
+          e.target.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
       }, 300);
     }
     onInputFocus?.();

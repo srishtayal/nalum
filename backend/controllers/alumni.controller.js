@@ -32,7 +32,7 @@ exports.getVerificationStatus = async (req, res) => {
 
 exports.verifyCode = async (req, res) => {
     try {
-    const { code } = req.body;
+    let { code } = req.body;
     const { user_id } = req.user;
 
     // Check if code is provided
@@ -42,6 +42,9 @@ exports.verifyCode = async (req, res) => {
         message: "Verification code is required",
       });
     }
+
+    // Trim whitespace from code
+    code = code.trim();
 
     // Find the user
     const user = await User.findById(user_id);
@@ -81,7 +84,7 @@ exports.verifyCode = async (req, res) => {
     // Valid for Alumni Meet 2025 (December 27-31, 2025)
     // ==========================================
     const SPECIAL_CODE = "ALUMNI2025";
-    const SPECIAL_CODE_EXPIRY = new Date("2025-12-31T23:59:59"); // Expires end of year
+    const SPECIAL_CODE_EXPIRY = new Date("2025-12-31T23:59:59Z"); // Expires end of year (UTC)
     
     if (code.toUpperCase() === SPECIAL_CODE) {
       const now = new Date();
