@@ -76,7 +76,38 @@ exports.verifyCode = async (req, res) => {
       });
     }
 
-    // Find the verification code
+    // ==========================================
+    // SPECIAL EVENT CODE: ALUMNI2025
+    // Valid for Alumni Meet 2025 (December 27-31, 2025)
+    // ==========================================
+    const SPECIAL_CODE = "ALUMNI2025";
+    const SPECIAL_CODE_EXPIRY = new Date("2025-12-31T23:59:59"); // Expires end of year
+    
+    if (code.toUpperCase() === SPECIAL_CODE) {
+      const now = new Date();
+      
+      if (now > SPECIAL_CODE_EXPIRY) {
+        return res.status(400).json({
+          success: false,
+          message: "This special event code has expired",
+        });
+      }
+      
+      // Verify using special code - no database code needed
+      user.verified_alumni = true;
+      await user.save();
+      
+      // Log for audit trail
+      console.log(`[ALUMNI2025] User ${user_id} verified using special event code at ${now.toISOString()}`);
+      
+      return res.status(200).json({
+        success: true,
+        message: "Alumni status verified successfully with Alumni Meet 2025 code!",
+      });
+    }
+    // ==========================================
+
+    // Find the verification code (normal flow)
     const verificationCode = await VerificationCode.findOne({
       code: code,
       is_used: false,

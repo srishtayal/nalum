@@ -64,35 +64,25 @@
     font-display: swap;
   }
 
-  /* Mobile-only: Prevent scroll bounce and white space */
+  /* Mobile-only: Prevent overscroll bounce (rubber band effect) */
   @media (max-width: 768px) {
     html {
-      position: fixed;
-      width: 100%;
-      height: 100%;
-      overflow: hidden;
+      overscroll-behavior: none;
+      -webkit-overflow-scrolling: touch;
     }
 
     body {
-      width: 100%;
-      height: 100%;
-      overflow: hidden;
-      position: fixed;
       overscroll-behavior: none;
       -webkit-overflow-scrolling: touch;
     }
 
     #root {
-      width: 100%;
-      height: 100%;
-      overflow: hidden;
-      position: relative;
+      overscroll-behavior: none;
     }
 
     /* iOS specific mobile fixes */
     @supports (-webkit-touch-callout: none) {
       body {
-        height: -webkit-fill-available;
         min-height: -webkit-fill-available;
       }
     }
