@@ -3,11 +3,12 @@ const router = express.Router();
 const Profile = require("../../models/user/profile.model");
 const { protect } = require("../../middleware/auth");
 const uploadProfilePicture = require("../../config/profilePicture.multer");
+const { compressionPresets } = require("../../middleware/imageCompression");
 const fs = require("fs");
 const path = require("path");
 
 // POST /profile/picture - Upload or update profile picture
-router.post("/picture", protect, uploadProfilePicture.single("profile_picture"), async (req, res) => {
+router.post("/picture", protect, uploadProfilePicture.single("profile_picture"), compressionPresets.profilePicture, async (req, res) => {
   try {
     const userId = req.user.user_id;
     

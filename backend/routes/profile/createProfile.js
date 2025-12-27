@@ -4,9 +4,10 @@ const Profile = require("../../models/user/profile.model");
 const { protect } = require("../../middleware/auth");
 const User = require("../../models/user/user.model");
 const uploadProfilePicture = require("../../config/profilePicture.multer");
+const { compressionPresets } = require("../../middleware/imageCompression");
 
 // POST /profile - Create profile with optional profile picture
-router.post("/", protect, uploadProfilePicture.single("profile_picture"), async (req, res) => {
+router.post("/", protect, uploadProfilePicture.single("profile_picture"), compressionPresets.profilePicture, async (req, res) => {
   try {
     // User ID from auth middleware
     const userId = req.user.user_id;

@@ -4,6 +4,7 @@ const { protect } = require('../middleware/auth');
 const { protectAdmin } = require('../middleware/adminAuth');
 const { checkBanned } = require('../middleware/checkBanned');
 const uploadGivingImage = require('../config/givingImage.multer');
+const { compressionPresets } = require('../middleware/imageCompression');
 const {
   createGiving,
   getMyGiving,
@@ -13,7 +14,7 @@ const {
 } = require('../controllers/giving.controller');
 
 // User routes (Alumni only - checked in controller)
-router.post('/', protect, checkBanned, uploadGivingImage.array('images', 2), createGiving);
+router.post('/', protect, checkBanned, uploadGivingImage.array('images', 2), compressionPresets.postImage, createGiving);
 router.get('/my', protect, getMyGiving);
 
 // Admin routes

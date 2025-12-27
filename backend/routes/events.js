@@ -4,6 +4,7 @@ const Event = require("../models/admin/event.model");
 const Settings = require("../models/admin/settings.model");
 const { protect } = require("../middleware/auth");
 const uploadEventImage = require("../config/eventImage.multer");
+const { compressionPresets } = require("../middleware/imageCompression");
 const fs = require("fs");
 const path = require("path");
 
@@ -28,7 +29,7 @@ router.get("/hosting-allowed", async (req, res) => {
 });
 
 // Create a new event (Alumni only)
-router.post("/create", protect, uploadEventImage.single("event_image"), async (req, res) => {
+router.post("/create", protect, uploadEventImage.single("event_image"), compressionPresets.eventImage, async (req, res) => {
   try {
     // Check if hosting is allowed
     const hostingSetting = await Settings.findOne({ key: "allow_event_hosting" });
