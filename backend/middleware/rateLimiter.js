@@ -108,9 +108,9 @@ const rateLimiters = {
     message: "Too many email requests. Please try again in 15 minutes.",
   }),
 
-  // General API rate limit (100 requests per 15 minutes)
+  // General API rate limit (100 requests per 1 minute)
   api: rateLimiter({
-    windowMs: 15 * 60 * 1000,
+    windowMs: 1 * 60 * 1000,
     max: 100,
     message: "Too many requests. Please try again later.",
   }),

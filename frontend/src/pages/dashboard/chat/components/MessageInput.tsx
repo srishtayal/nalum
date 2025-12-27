@@ -68,23 +68,34 @@ export const MessageInput = ({
     }
   };
 
+  const handleFocus = (e: React.FocusEvent<HTMLTextAreaElement>) => {
+    // Scroll into view on mobile when keyboard appears
+    if (window.innerWidth < 768) {
+      setTimeout(() => {
+        e.target.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }, 300);
+    }
+    onInputFocus?.();
+  };
+
   return (
     <div className="p-3 border-t border-white/10 bg-black/20 backdrop-blur-md">
-      <div className="flex gap-2 items-center">
+      <div className="flex gap-2 items-end">
         <Textarea
           value={message}
           onChange={handleInputChange}
           onKeyDown={handleKeyDown}
-          onFocus={onInputFocus}
+          onFocus={handleFocus}
           placeholder="Type a message..."
-          className="flex-1 min-h-[44px] max-h-[120px] resize-none bg-white/5 border-white/10 focus:bg-white/10 backdrop-blur-sm rounded-lg transition-all shadow-sm text-sm text-white placeholder:text-gray-400"
+          className="flex-1 min-h-[44px] max-h-[120px] resize-none bg-white/5 border-white/10 focus:bg-white/10 backdrop-blur-sm rounded-lg transition-all shadow-sm text-sm text-white placeholder:text-gray-400 pr-2"
           disabled={disabled}
+          rows={1}
         />
         <Button
           onClick={handleSend}
           disabled={!message.trim() || disabled}
           size="icon"
-          className="h-[44px] w-[44px] rounded-lg shadow-sm transition-all hover:scale-105 shrink-0 bg-indigo-600 hover:bg-indigo-700 text-white border border-white/10"
+          className="h-[44px] w-[44px] rounded-lg shadow-sm transition-all hover:scale-105 shrink-0 bg-indigo-600 hover:bg-indigo-700 text-white border border-white/10 mb-0"
         >
           <Send className="h-4 w-4" />
         </Button>

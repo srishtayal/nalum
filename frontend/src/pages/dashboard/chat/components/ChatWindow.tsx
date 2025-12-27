@@ -15,6 +15,7 @@ import { useConversations } from "@/hooks/useConversations";
 import { useAuth } from "@/context/AuthContext";
 import { useQueryClient } from "@tanstack/react-query";
 import UserAvatar from "@/components/UserAvatar";
+import { useViewportHeight } from "@/hooks/useViewportHeight";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -56,6 +57,9 @@ export const ChatWindow = ({ conversation, onBack }: ChatWindowProps) => {
   const { createConversation } = useConversations();
   const queryClient = useQueryClient();
   const navigate = useNavigate();
+  
+  // Handle mobile viewport height changes
+  useViewportHeight();
 
   // Track the real conversation ID locally to handle transitions from connection-only
   const [activeConversationId, setActiveConversationId] = useState<string | null>(
@@ -108,7 +112,12 @@ export const ChatWindow = ({ conversation, onBack }: ChatWindowProps) => {
 
   const scrollToBottom = useCallback(() => {
     if (scrollRef.current) {
-      scrollRef.current.scrollIntoView({ behavior: "smooth" });
+      // Use scrollIntoView with instant behavior on mobile to prevent janky animations
+      const isMobile = window.innerWidth < 768;
+      scrollRef.current.scrollIntoView({ 
+        behavior: isMobile ? "auto" : "smooth",
+        block: "end"
+      });
     }
   }, []);
 
@@ -117,14 +126,25 @@ export const ChatWindow = ({ conversation, onBack }: ChatWindowProps) => {
     scrollToBottom();
   }, [messages, scrollToBottom]);
 
-  // Scroll to bottom on window resize (e.g. keyboard open)
+  // Scroll to bottom on window resize (e.g. keyboard open/close)
   useEffect(() => {
     const handleResize = () => {
       // Small delay to allow layout to update
       setTimeout(scrollToBottom, 100);
     };
+    
+    const handleVisualViewportResize = () => {
+      // Handle visual viewport changes (keyboard open/close)
+      setTimeout(scrollToBottom, 150);
+    };
+
     window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
+    window.visualViewport?.addEventListener('resize', handleVisualViewportResize);
+    
+    return () => {
+      window.removeEventListener('resize', handleResize);
+      window.visualViewport?.removeEventListener('resize', handleVisualViewportResize);
+    };
   }, [scrollToBottom]);
 
   const markAsRead = useCallback(() => {
@@ -269,9 +289,9 @@ export const ChatWindow = ({ conversation, onBack }: ChatWindowProps) => {
 
 
   return (
-    <div className="flex-1 h-full flex flex-col min-h-0 bg-transparent">
+    <div className="flex-1 h-full flex flex-col min-h-0 bg-transparent relative">
       {/* Header */}
-      <div className="p-3 border-b border-white/10 flex items-center gap-3 bg-black/20 backdrop-blur-sm z-10">
+      <div className="p-3 border-b border-white/10 flex items-center gap-3 bg-black/20 backdrop-blur-sm z-10 shrink-0">
         <Button variant="ghost" size="icon" onClick={onBack} className="md:hidden text-gray-300 hover:text-white hover:bg-white/10">
           <ArrowLeft className="h-5 w-5" />
         </Button>
@@ -325,7 +345,8 @@ export const ChatWindow = ({ conversation, onBack }: ChatWindowProps) => {
       </div>
 
       {/* Messages */}
-      <ScrollArea className="flex-1 p-4">
+      <ScrollArea className="flex-1 shrink min-h-0">
+        <div className="p-4 pb-2">
         {isLoading ? (
           <div className="text-center text-gray-400 pt-10 text-sm">Loading messages...</div>
         ) : messages.length === 0 ? (
@@ -396,6 +417,7 @@ export const ChatWindow = ({ conversation, onBack }: ChatWindowProps) => {
             <div ref={scrollRef} />
           </div>
         )}
+        </div>
       </ScrollArea>
 
       {/* Typing Indicator */}
@@ -403,7 +425,7 @@ export const ChatWindow = ({ conversation, onBack }: ChatWindowProps) => {
 
       {/* Input or Blocked/Pending Message */}
       {isBlocked ? (
-        <div className="p-4 bg-black/20 backdrop-blur-sm border-t border-white/10 text-center">
+        <div className="p-4 bg-black/20 backdrop-blur-sm border-t border-white/10 text-center shrink-0">
           {isBlockedByMe ? (
             <div className="text-gray-400 text-sm">
               You have blocked this user. <span className="text-blue-400 cursor-pointer hover:underline" onClick={() => setShowUnblockDialog(true)}>Unblock</span> to send messages.
@@ -415,13 +437,13 @@ export const ChatWindow = ({ conversation, onBack }: ChatWindowProps) => {
           )}
         </div>
       ) : conversation.connectionStatus !== 'accepted' && conversation.connectionStatus !== 'pending' ? (
-        <div className="p-4 bg-black/20 backdrop-blur-sm border-t border-white/10 text-center">
+        <div className="p-4 bg-black/20 backdrop-blur-sm border-t border-white/10 text-center shrink-0">
           <div className="text-gray-400 text-sm">
             You are not connected with this user.
           </div>
         </div>
       ) : conversation.connectionStatus === 'pending' && conversation.connectionRequester && (typeof conversation.connectionRequester === 'string' ? conversation.connectionRequester : conversation.connectionRequester._id) !== user?.id ? (
-        <div className="p-4 bg-black/40 backdrop-blur-md border-t border-white/10">
+        <div className="p-4 bg-black/40 backdrop-blur-md border-t border-white/10 shrink-0">
           <div className="flex flex-col items-center gap-3">
             <p className="text-sm text-gray-300">
               {conversation.otherParticipant?.name} sent you a connection request.
@@ -460,19 +482,21 @@ export const ChatWindow = ({ conversation, onBack }: ChatWindowProps) => {
           </div>
         </div>
       ) : conversation.connectionStatus === 'pending' && conversation.connectionRequester && (typeof conversation.connectionRequester === 'string' ? conversation.connectionRequester : conversation.connectionRequester._id) === user?.id ? (
-        <div className="p-4 bg-black/20 backdrop-blur-sm border-t border-white/10 text-center">
+        <div className="p-4 bg-black/20 backdrop-blur-sm border-t border-white/10 text-center shrink-0">
           <div className="text-gray-400 text-sm">
             Connection request sent. You can send messages once accepted.
           </div>
         </div>
       ) : (
-        <MessageInput
-          onSendMessage={handleSendMessage}
-          disabled={sendMessage.isPending || createConversation.isPending}
-          conversationId={activeConversationId || 'temp'}
-          receiverId={conversation.otherParticipant._id}
-          onInputFocus={handleInputFocus}
-        />
+        <div className="shrink-0">
+          <MessageInput
+            onSendMessage={handleSendMessage}
+            disabled={sendMessage.isPending || createConversation.isPending}
+            conversationId={activeConversationId || 'temp'}
+            receiverId={conversation.otherParticipant._id}
+            onInputFocus={handleInputFocus}
+          />
+        </div>
       )}
 
       <AlertDialog open={!!messageToDelete} onOpenChange={(open) => !open && setMessageToDelete(null)}>

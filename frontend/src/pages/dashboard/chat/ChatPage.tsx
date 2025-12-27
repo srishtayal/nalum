@@ -45,7 +45,7 @@ const ChatPageContent = () => {
 
 
   return (
-    <div className="h-full p-0 md:p-4 bg-transparent">
+    <div className="h-full md:h-full p-0 md:p-4 bg-transparent">
       <div className="h-full max-w-7xl mx-auto">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-0 md:gap-4 h-full">
           {/* Left Sidebar - Glass Panel */}

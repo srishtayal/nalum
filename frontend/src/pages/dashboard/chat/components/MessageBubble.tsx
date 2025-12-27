@@ -39,7 +39,7 @@ export const MessageBubble = ({ message, isOwn, onDelete, isStacked, isLastInSta
   });
 
   return (
-    <div className={`flex ${isOwn ? "justify-end" : "justify-start"} group animate-in fade-in slide-in-from-bottom-2 duration-300 ${isStacked ? "mt-0.5" : "mt-4"}`}>
+    <div className={`flex ${isOwn ? "justify-end" : "justify-start"} group animate-in fade-in slide-in-from-bottom-2 duration-300 ${isStacked ? "mt-0.5" : "mt-4"} pr-1`}>
       <div className={`relative max-w-[85%] sm:max-w-[75%] ${isOwn ? "items-end" : "items-start"} flex flex-col gap-1`}>
         {/* Message Content Bubble */}
         <div

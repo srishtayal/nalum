@@ -63,6 +63,40 @@
   h1, h2, h3, h4, h5, h6 {
     font-display: swap;
   }
+
+  /* Mobile-only: Prevent scroll bounce and white space */
+  @media (max-width: 768px) {
+    html {
+      position: fixed;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+    }
+
+    body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      position: fixed;
+      overscroll-behavior: none;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    #root {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      position: relative;
+    }
+
+    /* iOS specific mobile fixes */
+    @supports (-webkit-touch-callout: none) {
+      body {
+        height: -webkit-fill-available;
+        min-height: -webkit-fill-available;
+      }
+    }
+  }
 }
 
 @layer utilities {
@@ -94,5 +128,24 @@
     0%, 100% { border-color: rgb(59 130 246); }
     25%, 75% { border-color: rgb(147 197 253); }
     50% { border-color: rgb(59 130 246); }
+  }
+
+  /* Mobile-safe viewport height utilities */
+  .h-screen-safe {
+    height: 100vh; /* Fallback */
+    height: 100dvh; /* Dynamic viewport height */
+    height: calc(var(--vh, 1vh) * 100); /* Custom property fallback */
+  }
+
+  .min-h-screen-safe {
+    min-height: 100vh; /* Fallback */
+    min-height: 100dvh; /* Dynamic viewport height */
+    min-height: calc(var(--vh, 1vh) * 100); /* Custom property fallback */
+  }
+
+  .max-h-screen-safe {
+    max-height: 100vh; /* Fallback */
+    max-height: 100dvh; /* Dynamic viewport height */
+    max-height: calc(var(--vh, 1vh) * 100); /* Custom property fallback */
   }
 }
